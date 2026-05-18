@@ -1,0 +1,2427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZTE Training Report Builder - FASE 3</title>
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Montserrat, sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+
+    .header {
+      background: #0d1628;
+      color: #fff;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .sync-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .sync-badge.online {
+      color: #27ae60;
+    }
+
+    .sync-badge.offline {
+      color: #e74c3c;
+    }
+
+    .sync-badge.syncing {
+      color: #f39c12;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .sync-badge.online .dot {
+      background: #27ae60;
+    }
+
+    .sync-badge.offline .dot {
+      background: #e74c3c;
+    }
+
+    .sync-badge.syncing .dot {
+      background: #f39c12;
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: #00a0d2;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #0084ad;
+    }
+
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: #0d1628;
+      border: 1px solid #ddd;
+    }
+
+    .btn-secondary:hover {
+      background: #f9f9f9;
+    }
+
+    .btn-secondary:disabled {
+      background: #eee;
+      cursor: not-allowed;
+    }
+
+    .nav {
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      gap: 0;
+      padding: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      overflow-x: auto;
+    }
+
+    .nav-item {
+      flex: 1;
+      min-width: 120px;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      font-weight: 500;
+      color: #666;
+      white-space: nowrap;
+    }
+
+    .nav-item.active {
+      border-bottom-color: #00a0d2;
+      color: #00a0d2;
+      background: #f0f8fc;
+    }
+
+    .nav-item:hover {
+      background: #f9f9f9;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .status-box {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .status-box h2 {
+      margin-bottom: 1rem;
+      color: #00a0d2;
+    }
+
+    .status-box p {
+      color: #666;
+      margin-bottom: 1rem;
+    }
+
+    .info-msg {
+      background: #f0f8fc;
+      border-left: 4px solid #00a0d2;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      color: #0d1628;
+    }
+
+    /* FORM STYLES */
+    .form-container {
+      background: #fff;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .form-container h2 {
+      margin-bottom: 2rem;
+      color: #0d1628;
+      font-size: 1.8rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .form-col {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-col.full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: #0d1628;
+      font-size: 0.95rem;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    select,
+    textarea {
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    input[type="number"]:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #00a0d2;
+      box-shadow: 0 0 0 3px rgba(0, 160, 210, 0.1);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    input[type="text"][readonly] {
+      background: #f0f0f0;
+      cursor: not-allowed;
+    }
+
+    #weekDisplay {
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 0.3rem;
+      font-weight: 400;
+    }
+
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .checkbox-group label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 400;
+      cursor: pointer;
+      margin-bottom: 0;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      cursor: pointer;
+      accent-color: #00a0d2;
+    }
+
+    .photo-upload {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .photo-upload input[type="file"] {
+      padding: 1rem;
+      border: 2px dashed #00a0d2;
+      border-radius: 6px;
+      background: #f0f8fc;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .photo-upload input[type="file"]:hover {
+      border-color: #0084ad;
+      background: #e6f4fa;
+    }
+
+    .photos-preview {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 1rem;
+    }
+
+    .photo-item {
+      position: relative;
+      border-radius: 6px;
+      overflow: hidden;
+      aspect-ratio: 1;
+      background: #f0f0f0;
+    }
+
+    .photo-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-item .delete-btn {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .photo-item:hover .delete-btn {
+      opacity: 1;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-start;
+      flex-wrap: wrap;
+    }
+
+    /* ARCHIVE STYLES */
+    .archive-container {
+      background: #fff;
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .archive-container h2 {
+      margin-bottom: 1rem;
+      color: #0d1628;
+    }
+
+    .archive-container > p {
+      color: #666;
+      margin-bottom: 2rem;
+    }
+
+    .visits-table {
+      overflow-x: auto;
+    }
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 120px 120px 100px 70px 80px 80px 150px;
+      gap: 1rem;
+      padding: 1rem;
+      background: #f0f8fc;
+      border-radius: 6px 6px 0 0;
+      font-weight: 600;
+      color: #0d1628;
+      font-size: 0.9rem;
+      border-bottom: 2px solid #00a0d2;
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 120px 120px 100px 70px 80px 80px 150px;
+      gap: 1rem;
+      padding: 1rem;
+      border-bottom: 1px solid #eee;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+
+    .table-row:hover {
+      background: #f9f9f9;
+    }
+
+    .col-store { font-weight: 500; color: #0d1628; }
+    .col-location { color: #666; }
+    .col-date { color: #666; }
+    .col-week { color: #00a0d2; font-weight: 500; }
+    .col-sellout { color: #27ae60; font-weight: 500; }
+    .col-target { color: #f39c12; font-weight: 500; }
+
+    .col-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-action {
+      padding: 0.4rem 0.8rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-action.edit {
+      background: #00a0d2;
+      color: #fff;
+    }
+
+    .btn-action.edit:hover {
+      background: #0084ad;
+    }
+
+    .btn-action.delete {
+      background: #e74c3c;
+      color: #fff;
+    }
+
+    .btn-action.delete:hover {
+      background: #c0392b;
+    }
+
+    /* DASHBOARD STYLES */
+    .dashboard-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      color: #fff;
+      padding: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .stat-card.blue {
+      background: linear-gradient(135deg, #00a0d2 0%, #0084ad 100%);
+    }
+
+    .stat-card.green {
+      background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+    }
+
+    .stat-card.orange {
+      background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);
+    }
+
+    .stat-card.red {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      opacity: 0.9;
+      margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+    }
+
+    .summary-section {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .summary-box {
+      background: #fff;
+      border: 1px solid #eee;
+      border-radius: 8px;
+      padding: 1.5rem;
+    }
+
+    .summary-box h3 {
+      margin-bottom: 1rem;
+      color: #0d1628;
+      font-size: 1.1rem;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #eee;
+    }
+
+    .summary-row:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .summary-label {
+      color: #666;
+    }
+
+    .summary-value {
+      font-weight: 600;
+    }
+
+    .summary-value.green { color: #27ae60; }
+    .summary-value.blue { color: #00a0d2; }
+    .summary-value.orange { color: #f39c12; }
+
+    .dashboard-buttons {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .dashboard-buttons .btn {
+      margin: 0 0.5rem;
+    }
+
+    @media (max-width: 1024px) {
+      .table-header,
+      .table-row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .form-container {
+        padding: 1.5rem;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+      }
+
+      .checkbox-group {
+        grid-template-columns: 1fr;
+      }
+
+      .photos-preview {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+      }
+
+      .header {
+        flex-direction: column;
+      }
+
+      .header h1 {
+        width: 100%;
+        text-align: center;
+      }
+
+      .header-right {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .nav {
+        flex-direction: column;
+      }
+
+      .nav-item {
+        border-bottom: none;
+        border-left: 3px solid transparent;
+      }
+
+      .nav-item.active {
+        border-left-color: #00a0d2;
+        border-bottom: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ZTE Training Report Builder</h1>
+  <div class="header-right">
+    <div class="sync-badge offline" id="syncBadge">
+      <span class="dot"></span>
+      <span id="syncText">Offline</span>
+    </div>
+    <button class="btn btn-secondary" id="authBtn" onclick="handleGoogleAuth()">Authorize Google Drive</button>
+    <button class="btn btn-secondary" id="syncBtn" onclick="manualSync()" style="display:none;">Sync Now</button>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-item active" onclick="switchToSection('dashboard')">Dashboard</div>
+  <div class="nav-item" onclick="switchToSection('newVisit')">New Visit</div>
+  <div class="nav-item" onclick="switchToSection('archive')">Archive</div>
+  <div class="nav-item" onclick="switchToSection('reports')">Generate Report</div>
+</div>
+
+<div class="container">
+
+  <!-- DASHBOARD SECTION -->
+  <div class="section active" id="dashboard">
+    <div id="dashboardStatus">
+      <div class="status-box">
+        <h2>Loading Dashboard...</h2>
+        <p>Initializing application</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEW VISIT SECTION -->
+  <div class="section" id="newVisit">
+    <div class="form-container">
+      <h2>New Visit</h2>
+      
+      <form id="visitForm">
+        
+        <!-- ROW 1: Store Name + Location -->
+        <div class="form-row">
+          <div class="form-col">
+            <label for="storeName">Store Name *</label>
+            <select id="storeName" required>
+              <option value="">-- Select Store --</option>
+              <option>Mediaworld</option>
+              <option>Comet</option>
+              <option>Bruno</option>
+              <option>Unieuro</option>
+              <option>Euronics</option>
+              <option>Expert</option>
+              <option>DG Group</option>
+              <option>Ires</option>
+              <option>Gamelife</option>
+              <option>TIM</option>
+              <option>Wind Tre</option>
+              <option>Carrefour</option>
+              <option>Other</option>
+            </select>
+          </div>
+          
+          <div class="form-col">
+            <label for="storeLocation">Store Location *</label>
+            <input type="text" id="storeLocation" placeholder="e.g., Bologna" required>
+          </div>
+        </div>
+
+        <!-- ROW 1B: Date -->
+        <div class="form-row">
+          <div class="form-col">
+            <label for="visitDate">Visit Date *</label>
+            <input type="date" id="visitDate" required>
+            <small id="weekDisplay">Week: --</small>
+          </div>
+        </div>
+
+        <!-- ROW 2: Objectives -->
+        <div class="form-row">
+          <div class="form-col full-width">
+            <label>Objectives *</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" name="objective" value="Focus on flagship"> Focus on flagship</label>
+              <label><input type="checkbox" name="objective" value="Increase sales"> Increase sales</label>
+              <label><input type="checkbox" name="objective" value="Brand awareness"> Brand awareness</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 3: Contents -->
+        <div class="form-row">
+          <div class="form-col full-width">
+            <label>Contents</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" name="content" value="2026 Lineup"> 2026 Lineup</label>
+              <label><input type="checkbox" name="content" value="ZTE Lineup"> ZTE Lineup</label>
+              <label><input type="checkbox" name="content" value="Corporate Info"> Corporate Info</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 4: Product Categories -->
+        <div class="form-row">
+          <div class="form-col full-width">
+            <label>Product Categories</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" name="productCategory" value="nubia AIR Lineup"> nubia AIR Lineup</label>
+              <label><input type="checkbox" name="productCategory" value="nubia NEO Lineup"> nubia NEO Lineup</label>
+              <label><input type="checkbox" name="productCategory" value="Blade V80/V70 Lineup"> Blade V80/V70 Lineup</label>
+              <label><input type="checkbox" name="productCategory" value="Blade V36/V55 Lineup"> Blade V36/V55 Lineup</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 5: Reason for Visit -->
+        <div class="form-row">
+          <div class="form-col full-width">
+            <label>Reason for Visit *</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" name="reasonForVisit" value="Promoter"> Promoter</label>
+              <label><input type="checkbox" name="reasonForVisit" value="Field Ambassador"> Field Ambassador</label>
+              <label><input type="checkbox" name="reasonForVisit" value="Staff Training"> Staff Training</label>
+              <label><input type="checkbox" name="reasonForVisit" value="Display & Visual Merchandising Check"> Display & Visual Merchandising Check</label>
+              <label><input type="checkbox" name="reasonForVisit" value="Schedule Training Room"> Schedule Training Room</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 5B: Participants Count -->
+        <div class="form-row">
+          <div class="form-col">
+            <label for="promotersCount">Promoters (count)</label>
+            <input type="number" id="promotersCount" min="0" step="1" value="0">
+          </div>
+          <div class="form-col">
+            <label for="ambassadorsCount">Ambassadors (count)</label>
+            <input type="number" id="ambassadorsCount" min="0" step="1" value="0">
+          </div>
+          <div class="form-col">
+            <label for="staffCount">Staff Trained (count)</label>
+            <input type="number" id="staffCount" min="0" step="1" value="0">
+          </div>
+        </div>
+
+        <!-- ROW 6: Delivery Mode -->
+        <div class="form-row">
+          <div class="form-col full-width">
+            <label>Delivery Mode *</label>
+            <div class="checkbox-group">
+              <label><input type="checkbox" name="deliveryMode" value="In Person"> In Person</label>
+              <label><input type="checkbox" name="deliveryMode" value="Online Session"> Online Session</label>
+              <label><input type="checkbox" name="deliveryMode" value="On the Job"> On the Job</label>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 7: Performance -->
+        <div class="form-row">
+          <div class="form-col">
+            <label for="sellout">Sell-out (units)</label>
+            <input type="number" id="sellout" min="0" step="1">
+          </div>
+          <div class="form-col">
+            <label for="stock">Stock (units)</label>
+            <input type="number" id="stock" min="0" step="1">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-col">
+            <label for="target">Target (units)</label>
+            <input type="number" id="target" min="0" step="1">
+          </div>
+          <div class="form-col">
+            <label for="targetPercentage">Target Achieved (%)</label>
+            <input type="text" id="targetPercentage" readonly>
+          </div>
+        </div>
+
+        <!-- ROW 8: Visit Photos -->
+        <div class="form-row">
+          <div class="form-col full-width">
+            <label>Visit Photos</label>
+            <div class="photo-upload">
+              <input type="file" id="visitPhotos" multiple accept="image/*">
+              <small style="color: #666;">Upload training, visual merchandising, and other visit-related photos. You can remove individual photos before saving.</small>
+              <div id="visitPhotosPreview" class="photos-preview"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 9: Power BI Screenshot -->
+        <div class="form-row">
+          <div class="form-col full-width">
+            <label>Power BI Screenshot</label>
+            <div class="photo-upload">
+              <input type="file" id="powerBiPhoto" accept="image/*">
+              <small style="color: #666;">Upload your sales trend screenshot from Power BI dashboard.</small>
+              <div id="powerBiPhotoPreview" class="photos-preview"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ROW 10: Notes -->
+        <div class="form-row">
+          <div class="form-col full-width">
+            <label for="notes">Notes</label>
+            <textarea id="notes" placeholder="Qualitative observations..."></textarea>
+          </div>
+        </div>
+
+        <!-- ROW 11: Actions -->
+        <div class="form-row">
+          <div class="form-col full-width">
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary">Save Visit</button>
+              <button type="reset" class="btn btn-secondary">Reset Form</button>
+              <button type="button" class="btn btn-secondary" onclick="switchToSection('dashboard')">Cancel</button>
+            </div>
+          </div>
+        </div>
+
+      </form>
+    </div>
+  </div>
+
+  <!-- ARCHIVE SECTION -->
+  <div class="section" id="archive">
+    <div class="archive-container">
+      <h2>Visit Archive</h2>
+      <p>All your recorded visits. Click Edit to modify or Delete to remove.</p>
+      <div id="archiveList"></div>
+    </div>
+  </div>
+
+  <!-- REPORTS SECTION -->
+  <div class="section" id="reports">
+    <div class="status-box">
+      <h2>Generate Reports</h2>
+      <p style="margin-bottom: 2rem;">Create PowerPoint reports with visit summaries and participant metrics.</p>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 2rem; max-width: 600px;">
+        
+        <!-- Weekly Report -->
+        <div style="background: #fff; padding: 1.5rem; border-radius: 8px; border: 1px solid #eee;">
+          <label for="weekSelect" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #0d1628;">Select Week</label>
+          <select id="weekSelect" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; font-size: 0.95rem;">
+            <option value="">-- Select Week --</option>
+          </select>
+          <button class="btn btn-primary" onclick="generateReport('weekly')" style="width: 100%; padding: 0.75rem;">
+            📊 Weekly Report
+          </button>
+        </div>
+        
+        <!-- Monthly Report -->
+        <div style="background: #fff; padding: 1.5rem; border-radius: 8px; border: 1px solid #eee;">
+          <label for="monthSelect" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #0d1628;">Select Month</label>
+          <select id="monthSelect" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; font-size: 0.95rem;">
+            <option value="">-- Select Month --</option>
+          </select>
+          <button class="btn btn-primary" onclick="generateReport('monthly')" style="width: 100%; padding: 0.75rem;">
+            📊 Monthly Report
+          </button>
+        </div>
+        
+        <!-- Quarterly Report -->
+        <div style="background: #fff; padding: 1.5rem; border-radius: 8px; border: 1px solid #eee;">
+          <label for="quarterSelect" style="display: block; font-weight: 600; margin-bottom: 0.5rem; color: #0d1628;">Select Quarter</label>
+          <select id="quarterSelect" style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; margin-bottom: 1rem; font-size: 0.95rem;">
+            <option value="">-- Select Quarter --</option>
+          </select>
+          <button class="btn btn-primary" onclick="generateReport('quarterly')" style="width: 100%; padding: 0.75rem;">
+            📊 Quarterly Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+
+const CONFIG = {
+  googleClientId: '866353469559-js28mr2r99rmbf8k1va8qpu4r0mr77b4.apps.googleusercontent.com',
+  googleScopes: 'https://www.googleapis.com/auth/drive',
+  dbName: 'ZTEReportDBv3',
+  dbVersion: 1
+};
+
+let db = null;
+let isOnline = navigator.onLine;
+let isSyncing = false;
+let visits = [];
+let googleAccessToken = null;
+let isGoogleAuthorized = false;
+let googleAuthClient = null;
+
+// ============================================================
+// ONLINE/OFFLINE MONITORING
+// ============================================================
+
+window.addEventListener('online', () => {
+  isOnline = true;
+  updateSyncStatus();
+  console.log('App is online');
+});
+
+window.addEventListener('offline', () => {
+  isOnline = false;
+  updateSyncStatus();
+  console.log('App is offline');
+});
+
+// ============================================================
+// INDEXEDDB INITIALIZATION
+// ============================================================
+
+async function initIndexedDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(CONFIG.dbName, CONFIG.dbVersion);
+    
+    request.onerror = () => {
+      console.error('IndexedDB error:', request.error);
+      reject(request.error);
+    };
+    
+    request.onsuccess = () => {
+      db = request.result;
+      console.log('IndexedDB initialized successfully');
+      resolve(db);
+    };
+    
+    request.onupgradeneeded = (e) => {
+      const database = e.target.result;
+      
+      if (!database.objectStoreNames.contains('visits')) {
+        const visitStore = database.createObjectStore('visits', { keyPath: 'id' });
+        visitStore.createIndex('date', 'date', { unique: false });
+        visitStore.createIndex('weekNumber', 'weekNumber', { unique: false });
+        visitStore.createIndex('storeName', 'storeName', { unique: false });
+        console.log('Created visits object store');
+      }
+      
+      if (!database.objectStoreNames.contains('syncMetadata')) {
+        database.createObjectStore('syncMetadata', { keyPath: 'key' });
+        console.log('Created syncMetadata object store');
+      }
+    };
+  });
+}
+
+async function loadVisitsFromDB() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('visits', 'readonly');
+    const store = tx.objectStore('visits');
+    const request = store.getAll();
+    
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      visits = request.result;
+      console.log(`Loaded ${visits.length} visits from IndexedDB`);
+      resolve(visits);
+    };
+  });
+}
+
+// ============================================================
+// GOOGLE IDENTITY SERVICES (GIS) SETUP
+// ============================================================
+
+function waitForGoogleLibrary(timeout = 10000) {
+  return new Promise((resolve, reject) => {
+    const startTime = Date.now();
+    const checkInterval = setInterval(() => {
+      if (typeof google !== 'undefined' && google.accounts && google.accounts.oauth2) {
+        clearInterval(checkInterval);
+        console.log('Google library loaded');
+        resolve();
+      } else if (Date.now() - startTime > timeout) {
+        clearInterval(checkInterval);
+        console.error('Google library did not load within timeout');
+        reject(new Error('Google library timeout'));
+      }
+    }, 100);
+  });
+}
+
+function initGoogleIdentityServices() {
+  return new Promise((resolve, reject) => {
+    if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+      console.error('Google Identity Services library not loaded');
+      reject(new Error('Google library not available'));
+      return;
+    }
+
+    try {
+      googleAuthClient = google.accounts.oauth2.initCodeClient({
+        client_id: CONFIG.googleClientId,
+        scope: CONFIG.googleScopes,
+        ux_mode: 'popup',
+        callback: handleAuthorizationCode
+      });
+
+      console.log('Google Identity Services initialized successfully');
+      resolve();
+    } catch (error) {
+      console.error('GIS initialization error:', error);
+      reject(error);
+    }
+  });
+}
+
+function handleAuthorizationCode(response) {
+  if (response.code) {
+    console.log('Authorization code received');
+    googleAccessToken = response.code;
+    isGoogleAuthorized = true;
+    updateSyncStatus();
+    performAutoSync();
+  }
+}
+
+async function handleGoogleAuth() {
+  if (!isOnline) {
+    alert('You are offline. Please connect to the internet to authorize Google Drive.');
+    return;
+  }
+
+  if (isGoogleAuthorized) {
+    alert('Already authorized. Click "Sync Now" to synchronize.');
+    return;
+  }
+
+  try {
+    if (!googleAuthClient) {
+      console.error('Google Auth client not initialized');
+      alert('Authorization system not ready. Please refresh the page.');
+      return;
+    }
+    
+    googleAuthClient.requestCode();
+  } catch (error) {
+    console.error('Authorization error:', error);
+    alert('Authorization failed. Please try again.');
+  }
+}
+
+async function manualSync() {
+  if (!isOnline) {
+    alert('You are offline. Sync will happen when you reconnect.');
+    return;
+  }
+
+  if (!isGoogleAuthorized) {
+    alert('Please authorize Google Drive first');
+    return;
+  }
+
+  await performAutoSync();
+  alert('Sync complete!');
+}
+
+async function performAutoSync() {
+  if (!isOnline || !isGoogleAuthorized) {
+    console.log('Cannot sync: offline or not authorized');
+    return;
+  }
+
+  isSyncing = true;
+  updateSyncStatus();
+
+  try {
+    console.log('Starting auto-sync...');
+    console.log('Auto-sync placeholder: will sync visits with Google Drive in Phase 3');
+    
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    isSyncing = false;
+    updateSyncStatus();
+    console.log('Auto-sync completed');
+  } catch (error) {
+    console.error('Sync error:', error);
+    isSyncing = false;
+    updateSyncStatus();
+  }
+}
+
+// ============================================================
+// UI STATUS MANAGEMENT
+// ============================================================
+
+function updateSyncStatus() {
+  const badge = document.getElementById('syncBadge');
+  const text = document.getElementById('syncText');
+  const authBtn = document.getElementById('authBtn');
+  const syncBtn = document.getElementById('syncBtn');
+
+  badge.classList.remove('online', 'offline', 'syncing');
+
+  if (isSyncing) {
+    badge.classList.add('syncing');
+    text.textContent = 'Syncing...';
+    authBtn.disabled = true;
+    syncBtn.disabled = true;
+  } else if (isOnline) {
+    if (isGoogleAuthorized) {
+      badge.classList.add('online');
+      text.textContent = 'Online - Authorized';
+      authBtn.textContent = 'Authorized ✓';
+      authBtn.disabled = true;
+      syncBtn.style.display = 'inline-block';
+      syncBtn.disabled = false;
+    } else {
+      badge.classList.add('online');
+      text.textContent = 'Online';
+      authBtn.textContent = 'Authorize Google Drive';
+      authBtn.disabled = false;
+      syncBtn.style.display = 'none';
+    }
+  } else {
+    badge.classList.add('offline');
+    text.textContent = 'Offline';
+    authBtn.disabled = true;
+    syncBtn.style.display = 'none';
+  }
+}
+
+// ============================================================
+// WEEK NUMBER CALCULATOR
+// ============================================================
+
+function getWeekNumber(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+// ============================================================
+// PHOTO COMPRESSION
+// ============================================================
+
+function compressImage(file, maxWidth = 1280) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        
+        canvas.toBlob((blob) => {
+          resolve(blob);
+        }, 'image/jpeg', 0.9);
+      };
+      img.onerror = () => reject(new Error('Failed to load image'));
+      img.src = e.target.result;
+    };
+    reader.onerror = () => reject(reader.error);
+    reader.readAsDataURL(file);
+  });
+}
+
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
+// ============================================================
+// SAVE VISIT LOGIC
+// ============================================================
+
+async function saveVisit(e) {
+  e.preventDefault();
+  
+  const storeName = document.getElementById('storeName').value;
+  const storeLocation = document.getElementById('storeLocation').value;
+  const visitDate = document.getElementById('visitDate').value;
+  const objectives = Array.from(document.querySelectorAll('input[name="objective"]:checked')).map(el => el.value);
+  const reasonForVisit = Array.from(document.querySelectorAll('input[name="reasonForVisit"]:checked')).map(el => el.value);
+  const deliveryMode = Array.from(document.querySelectorAll('input[name="deliveryMode"]:checked')).map(el => el.value);
+  
+  if (!storeName || !storeLocation || !visitDate || objectives.length === 0 || reasonForVisit.length === 0 || deliveryMode.length === 0) {
+    alert('Please fill all required fields (marked with *)');
+    return;
+  }
+  
+  try {
+    const visitPhotosFiles = document.getElementById('visitPhotos').files;
+    const powerBiFile = document.getElementById('powerBiPhoto').files[0];
+    
+    const visitPhotosCompressed = [];
+    for (let file of visitPhotosFiles) {
+      const compressedBlob = await compressImage(file, 1280);
+      const base64 = await blobToBase64(compressedBlob);
+      visitPhotosCompressed.push(base64);
+    }
+    
+    let powerBiCompressed = null;
+    if (powerBiFile) {
+      const compressedBlob = await compressImage(powerBiFile, 1280);
+      powerBiCompressed = await blobToBase64(compressedBlob);
+    }
+    
+    const dateObj = new Date(visitDate);
+    const weekNumber = getWeekNumber(dateObj);
+    const month = dateObj.getMonth() + 1;
+    const year = dateObj.getFullYear();
+    const quarter = Math.ceil(month / 3);
+    
+    const visit = {
+      id: 'visit_' + Date.now(),
+      storeName,
+      storeLocation,
+      visitDate,
+      weekNumber,
+      month,
+      year,
+      quarter,
+      objectives,
+      contents: Array.from(document.querySelectorAll('input[name="content"]:checked')).map(el => el.value),
+      productCategories: Array.from(document.querySelectorAll('input[name="productCategory"]:checked')).map(el => el.value),
+      reasonForVisit,
+      deliveryMode,
+      promotersCount: parseInt(document.getElementById('promotersCount').value) || 0,
+      ambassadorsCount: parseInt(document.getElementById('ambassadorsCount').value) || 0,
+      staffCount: parseInt(document.getElementById('staffCount').value) || 0,
+      sellout: parseInt(document.getElementById('sellout').value) || 0,
+      stock: parseInt(document.getElementById('stock').value) || 0,
+      target: parseInt(document.getElementById('target').value) || 0,
+      visitPhotos: visitPhotosCompressed,
+      powerBiScreenshot: powerBiCompressed,
+      notes: document.getElementById('notes').value,
+      lastModified: new Date().toISOString(),
+      syncedToGoogleDrive: false
+    };
+    
+    const tx = db.transaction('visits', 'readwrite');
+    const store = tx.objectStore('visits');
+    await new Promise((resolve, reject) => {
+      const request = store.add(visit);
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve();
+    });
+    
+    document.getElementById('visitForm').reset();
+    document.querySelectorAll('.photos-preview').forEach(el => el.innerHTML = '');
+    alert('Visit saved successfully!');
+    
+    await loadVisitsFromDB();
+    renderDashboard();
+    switchToSection('dashboard');
+    
+  } catch (error) {
+    console.error('Save error:', error);
+    alert('Error saving visit. Please try again.');
+  }
+}
+
+// ============================================================
+// ARCHIVE / EDIT / DELETE
+// ============================================================
+
+function renderArchive() {
+  const archiveList = document.getElementById('archiveList');
+  
+  if (visits.length === 0) {
+    archiveList.innerHTML = '<div class="status-box"><p>No visits recorded yet.</p></div>';
+    return;
+  }
+  
+  let html = '<div class="visits-table"><div class="table-header"><div class="col-store">Store</div><div class="col-location">Location</div><div class="col-date">Date</div><div class="col-week">Week</div><div class="col-sellout">Sell-out</div><div class="col-target">Target %</div><div class="col-actions">Actions</div></div>';
+  
+  const sortedVisits = [...visits].sort((a, b) => new Date(b.visitDate) - new Date(a.visitDate));
+  
+  sortedVisits.forEach(visit => {
+    const targetPercentage = visit.target > 0 ? ((visit.sellout / visit.target) * 100).toFixed(1) : '—';
+    html += `
+      <div class="table-row">
+        <div class="col-store">${visit.storeName}</div>
+        <div class="col-location">${visit.storeLocation}</div>
+        <div class="col-date">${visit.visitDate}</div>
+        <div class="col-week">W${visit.weekNumber}</div>
+        <div class="col-sellout">${visit.sellout}</div>
+        <div class="col-target">${targetPercentage}%</div>
+        <div class="col-actions">
+          <button class="btn-action edit" onclick="openEditModal('${visit.id}')">Edit</button>
+          <button class="btn-action delete" onclick="deleteVisit('${visit.id}')">Delete</button>
+        </div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  archiveList.innerHTML = html;
+}
+
+async function openEditModal(visitId) {
+  // Load visit directly from IndexedDB instead of relying on visits array
+  return new Promise((resolve) => {
+    const tx = db.transaction('visits', 'readonly');
+    const store = tx.objectStore('visits');
+    const request = store.get(visitId);
+    
+    request.onsuccess = function() {
+      const visit = request.result;
+      if (!visit) {
+        alert('Visit not found');
+        return;
+      }
+      
+      document.getElementById('storeName').value = visit.storeName;
+      document.getElementById('storeLocation').value = visit.storeLocation;
+      document.getElementById('visitDate').value = visit.visitDate;
+      
+      document.querySelectorAll('input[name="objective"]').forEach(el => {
+        el.checked = visit.objectives.includes(el.value);
+      });
+      
+      document.querySelectorAll('input[name="content"]').forEach(el => {
+        el.checked = visit.contents.includes(el.value);
+      });
+      
+      document.querySelectorAll('input[name="productCategory"]').forEach(el => {
+        el.checked = visit.productCategories.includes(el.value);
+      });
+      
+      document.querySelectorAll('input[name="reasonForVisit"]').forEach(el => {
+        el.checked = visit.reasonForVisit.includes(el.value);
+      });
+      
+      document.querySelectorAll('input[name="deliveryMode"]').forEach(el => {
+        el.checked = visit.deliveryMode.includes(el.value);
+      });
+      
+      document.getElementById('sellout').value = visit.sellout;
+      document.getElementById('stock').value = visit.stock;
+      document.getElementById('target').value = visit.target;
+      document.getElementById('promotersCount').value = visit.promotersCount || 0;
+      document.getElementById('ambassadorsCount').value = visit.ambassadorsCount || 0;
+      document.getElementById('staffCount').value = visit.staffCount || 0;
+      calculateTargetPercentage();
+      
+      document.getElementById('notes').value = visit.notes;
+      
+      const visitPhotosPreview = document.getElementById('visitPhotosPreview');
+      const powerBiPreview = document.getElementById('powerBiPhotoPreview');
+      
+      visitPhotosPreview.innerHTML = '';
+      if (visit.visitPhotos && visit.visitPhotos.length > 0) {
+        visit.visitPhotos.forEach(base64 => {
+          const photoItem = document.createElement('div');
+          photoItem.className = 'photo-item';
+          photoItem.innerHTML = `<img src="${base64}" alt="Visit Photo"><button type="button" class="delete-btn" onclick="this.parentElement.remove()">×</button>`;
+          visitPhotosPreview.appendChild(photoItem);
+        });
+      }
+      
+      powerBiPreview.innerHTML = '';
+      if (visit.powerBiScreenshot) {
+        const photoItem = document.createElement('div');
+        photoItem.className = 'photo-item';
+        photoItem.innerHTML = `<img src="${visit.powerBiScreenshot}" alt="Power BI"><button type="button" class="delete-btn" onclick="this.parentElement.remove()">×</button>`;
+        powerBiPreview.appendChild(photoItem);
+      }
+      
+      document.getElementById('visitPhotos').style.display = 'none';
+      document.getElementById('powerBiPhoto').style.display = 'none';
+      
+      const submitBtn = document.querySelector('#visitForm button[type="submit"]');
+      submitBtn.textContent = 'Update Visit';
+      submitBtn.dataset.editingVisitId = visitId;
+      
+      document.querySelector('.form-container h2').textContent = 'Edit Visit';
+      switchToSection('newVisit');
+      window.scrollTo(0, 0);
+      resolve();
+    };
+  });
+}
+
+async function deleteVisit(visitId) {
+  if (!confirm('Are you sure you want to delete this visit? This action cannot be undone.')) {
+    return;
+  }
+  
+  try {
+    const tx = db.transaction('visits', 'readwrite');
+    const store = tx.objectStore('visits');
+    
+    await new Promise((resolve, reject) => {
+      const request = store.delete(visitId);
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve();
+    });
+    
+    await loadVisitsFromDB();
+    renderArchive();
+    alert('Visit deleted successfully!');
+    
+  } catch (error) {
+    console.error('Delete error:', error);
+    alert('Error deleting visit. Please try again.');
+  }
+}
+
+async function updateVisit(visitId, updatedData) {
+  try {
+    const tx = db.transaction('visits', 'readwrite');
+    const store = tx.objectStore('visits');
+    
+    await new Promise((resolve, reject) => {
+      const request = store.put({ ...updatedData, id: visitId, lastModified: new Date().toISOString() });
+      request.onerror = () => reject(request.error);
+      request.onsuccess = () => resolve();
+    });
+    
+    await loadVisitsFromDB();
+    renderArchive();
+    alert('Visit updated successfully!');
+    switchToSection('archive');
+    
+  } catch (error) {
+    console.error('Update error:', error);
+    alert('Error updating visit. Please try again.');
+  }
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+
+function renderDashboard() {
+  const dashboardStatus = document.getElementById('dashboard');
+
+  if (visits.length === 0) {
+    dashboardStatus.innerHTML = `
+      <div class="status-box">
+        <h2>Welcome!</h2>
+        <p>You have no visits recorded yet.</p>
+        <p style="margin-top: 2rem;">
+          <button class="btn btn-primary" onclick="switchToSection('newVisit')">Create Your First Visit</button>
+        </p>
+      </div>
+    `;
+    return;
+  }
+
+  const today = new Date();
+  const currentWeek = getWeekNumber(today);
+  const currentYear = today.getFullYear();
+  
+  const thisWeekVisits = visits.filter(v => v.weekNumber === currentWeek && v.year === currentYear);
+  const thisMonthVisits = visits.filter(v => v.month === today.getMonth() + 1 && v.year === currentYear);
+  
+  const totalSellout = visits.reduce((sum, v) => sum + (v.sellout || 0), 0);
+  const totalTarget = visits.reduce((sum, v) => sum + (v.target || 0), 0);
+  const overallPercentage = totalTarget > 0 ? ((totalSellout / totalTarget) * 100).toFixed(1) : '—';
+  
+  const totalPromotters = visits.reduce((sum, v) => sum + (v.promotersCount || 0), 0);
+  const totalAmbassadors = visits.reduce((sum, v) => sum + (v.ambassadorsCount || 0), 0);
+  const totalStaff = visits.reduce((sum, v) => sum + (v.staffCount || 0), 0);
+  
+  const storeStats = {};
+  visits.forEach(v => {
+    if (!storeStats[v.storeName]) {
+      storeStats[v.storeName] = { count: 0, sellout: 0 };
+    }
+    storeStats[v.storeName].count++;
+    storeStats[v.storeName].sellout += v.sellout || 0;
+  });
+  
+  const topStoresHtml = Object.entries(storeStats)
+    .sort((a, b) => b[1].count - a[1].count)
+    .slice(0, 5)
+    .map(([store, data]) => `<div class="summary-row"><span class="summary-label">${store}</span><span class="summary-value blue">${data.count} visits</span></div>`)
+    .join('');
+
+  dashboardStatus.innerHTML = `
+    <h2>Dashboard</h2>
+    <p style="color: #666; margin-bottom: 2rem;">Your field activity summary</p>
+
+    <div class="dashboard-container">
+      <div class="stat-card blue">
+        <div class="stat-label">Total Visits</div>
+        <div class="stat-value">${visits.length}</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">This Week</div>
+        <div class="stat-value">${thisWeekVisits.length}</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-label">This Month</div>
+        <div class="stat-value">${thisMonthVisits.length}</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-label">Target Achieved</div>
+        <div class="stat-value">${overallPercentage}%</div>
+      </div>
+    </div>
+
+    <div class="summary-section">
+      <div class="summary-box">
+        <h3>Performance Summary</h3>
+        <div class="summary-row">
+          <span class="summary-label">Total Sell-out</span>
+          <span class="summary-value green">${totalSellout} units</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Total Target</span>
+          <span class="summary-value blue">${totalTarget} units</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Gap</span>
+          <span class="summary-value orange">${totalTarget - totalSellout} units</span>
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <h3>Participants Summary</h3>
+        <div class="summary-row">
+          <span class="summary-label">Promoters</span>
+          <span class="summary-value blue">${totalPromotters}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Ambassadors</span>
+          <span class="summary-value blue">${totalAmbassadors}</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Staff Trained</span>
+          <span class="summary-value blue">${totalStaff}</span>
+        </div>
+      </div>
+
+      <div class="summary-box">
+        <h3>Top Stores</h3>
+        ${topStoresHtml}
+      </div>
+    </div>
+
+    <div class="dashboard-buttons">
+      <button class="btn btn-primary" onclick="switchToSection('newVisit')">Add New Visit</button>
+      <button class="btn btn-secondary" onclick="switchToSection('archive')">View All Visits</button>
+    </div>
+  `;
+}
+
+// ============================================================
+// FORM HANDLERS
+// ============================================================
+
+// ============================================================
+// FASE 3: POWERPOINT REPORT GENERATION
+// ============================================================
+
+function getVisitsByPeriod(periodType, periodValue) {
+  const currentYear = new Date().getFullYear();
+  
+  if (periodType === 'weekly') {
+    const weekNumber = parseInt(periodValue);
+    return visits.filter(v => v.weekNumber === weekNumber && v.year === currentYear);
+  }
+  
+  if (periodType === 'monthly') {
+    const month = parseInt(periodValue);
+    return visits.filter(v => v.month === month && v.year === currentYear);
+  }
+  
+  if (periodType === 'quarterly') {
+    const quarter = parseInt(periodValue);
+    return visits.filter(v => v.quarter === quarter && v.year === currentYear);
+  }
+  
+  return [];
+}
+
+function calculateParticipantsMatrix(filteredVisits) {
+  const productCategories = [
+    'nubia AIR Lineup',
+    'nubia NEO Lineup',
+    'Blade V80/V70 Lineup',
+    'Blade V36/V55 Lineup'
+  ];
+  
+  const participantTypes = ['Promoter', 'Field Ambassador', 'Staff Training'];
+  
+  const matrix = {};
+  participantTypes.forEach(type => {
+    matrix[type] = {};
+    productCategories.forEach(product => {
+      matrix[type][product] = 0;
+    });
+  });
+  
+  filteredVisits.forEach(visit => {
+    const reasonMap = {
+      'Promoter': 'Promoter',
+      'Field Ambassador': 'Field Ambassador',
+      'Staff Training': 'Staff Training'
+    };
+    
+    visit.reasonForVisit.forEach(reason => {
+      const participantType = reasonMap[reason];
+      
+      if (participantType === 'Promoter' && visit.promotersCount > 0) {
+        visit.productCategories.forEach(product => {
+          if (matrix['Promoter'][product] !== undefined) {
+            matrix['Promoter'][product] += visit.promotersCount;
+          }
+        });
+      }
+      
+      if (participantType === 'Field Ambassador' && visit.ambassadorsCount > 0) {
+        visit.productCategories.forEach(product => {
+          if (matrix['Field Ambassador'][product] !== undefined) {
+            matrix['Field Ambassador'][product] += visit.ambassadorsCount;
+          }
+        });
+      }
+      
+      if (participantType === 'Staff Training' && visit.staffCount > 0) {
+        visit.productCategories.forEach(product => {
+          if (matrix['Staff Training'][product] !== undefined) {
+            matrix['Staff Training'][product] += visit.staffCount;
+          }
+        });
+      }
+    });
+  });
+  
+  return { matrix, productCategories, participantTypes };
+}
+
+function generateReport(periodType) {
+  // Check if JSZip is loaded
+  if (typeof JSZip === 'undefined') {
+    alert('Compression library is still loading. Please wait a moment and try again.');
+    return;
+  }
+  
+  let periodValue;
+  
+  if (periodType === 'weekly') {
+    periodValue = document.getElementById('weekSelect').value;
+    if (!periodValue) {
+      alert('Please select a week');
+      return;
+    }
+  } else if (periodType === 'monthly') {
+    periodValue = document.getElementById('monthSelect').value;
+    if (!periodValue) {
+      alert('Please select a month');
+      return;
+    }
+  } else if (periodType === 'quarterly') {
+    periodValue = document.getElementById('quarterSelect').value;
+    if (!periodValue) {
+      alert('Please select a quarter');
+      return;
+    }
+  }
+  
+  const filteredVisits = getVisitsByPeriod(periodType, periodValue);
+  
+  if (filteredVisits.length === 0) {
+    alert(`No visits recorded for the selected ${periodType}`);
+    return;
+  }
+  
+  try {
+    // Create PPTX file
+    createPPTXReport(periodType, periodValue, filteredVisits);
+  } catch (error) {
+    console.error('Report generation error:', error);
+    alert('Error generating report: ' + error.message);
+  }
+}
+
+function createPPTXReport(periodType, periodValue, filteredVisits) {
+  const { matrix, productCategories, participantTypes } = calculateParticipantsMatrix(filteredVisits);
+  
+  const zip = new JSZip();
+  
+  // Create minimal PPTX structure
+  zip.folder('_rels');
+  zip.folder('ppt/slides/_rels');
+  zip.folder('ppt/media');
+  zip.folder('docProps');
+  
+  // [Content_Types].xml
+  zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/ppt/presentation.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.presentation.main+xml"/>
+<Override PartName="/ppt/slides/slide1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>
+<Override PartName="/ppt/slides/slide2.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>
+<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>
+</Types>`);
+  
+  // .rels
+  zip.file('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="ppt/presentation.xml"/>
+<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
+</Relationships>`);
+  
+  // ppt/_rels/presentation.xml.rels
+  zip.file('ppt/_rels/presentation.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide1.xml"/>
+<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide2.xml"/>
+</Relationships>`);
+  
+  // Create slides
+  const monthNames = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const currentYear = new Date().getFullYear();
+  
+  let periodLabel = '';
+  if (periodType === 'weekly') {
+    periodLabel = `Week ${periodValue} ${currentYear}`;
+  } else if (periodType === 'monthly') {
+    periodLabel = `${monthNames[parseInt(periodValue)]} ${currentYear}`;
+  } else if (periodType === 'quarterly') {
+    periodLabel = `Q${periodValue} ${currentYear}`;
+  }
+  
+  // Slide 1: Cover
+  const slide1 = generateCoverSlideXML(periodLabel);
+  zip.file('ppt/slides/slide1.xml', slide1);
+  
+  // Slide 2: Summary
+  const slide2 = generateSummarySlideXML(filteredVisits, matrix, productCategories, participantTypes);
+  zip.file('ppt/slides/slide2.xml', slide2);
+  
+  // presentation.xml
+  zip.file('ppt/presentation.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<p:presentation xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+<p:sldIdLst>
+<p:sldId id="256" r:id="rId1"/>
+<p:sldId id="257" r:id="rId2"/>
+</p:sldIdLst>
+</p:presentation>`);
+  
+  // docProps/core.xml
+  zip.file('docProps/core.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/officeDocument/2006/custom-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<dc:title>ZTE Training Report</dc:title>
+<dc:creator>ZTE Report Builder</dc:creator>
+<dcterms:created xsi:type="dcterms:W3CDTF">${new Date().toISOString()}</dcterms:created>
+</cp:coreProperties>`);
+  
+  // Generate file
+  zip.generateAsync({type: 'blob'}).then(blob => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ZTE_Report_${periodType}_${periodValue}_${new Date().toISOString().split('T')[0]}.pptx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  });
+}
+
+function generateCoverSlideXML(periodLabel) {
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+<p:cSld>
+<p:bg><p:bgPr><a:solidFill><a:srgbClr val="0d1628"/></a:solidFill><a:effectLst/></p:bgPr></p:bg>
+<p:spTree>
+<p:nvGrpSpPr><p:cNvPr id="1" name="Title 1"/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
+<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="9144000" cy="6858000"/><a:chOff x="0" y="0"/><a:chExt cx="9144000" cy="6858000"/></a:xfrm></p:grpSpPr>
+<p:sp>
+<p:nvSpPr><p:cNvPr id="2" name="Title 2"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="914400" y="2743200"/><a:ext cx="7315200" cy="1371600"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
+<p:txBody><a:bodyPr/><a:lstStyle/>
+<a:p><a:r><a:rPr lang="en-US" sz="5400" b="1"><a:solidFill><a:srgbClr val="00a0d2"/></a:solidFill></a:rPr><a:t>ZTE Training Report</a:t></a:r></a:p>
+<a:p><a:r><a:rPr lang="en-US" sz="3600"><a:solidFill><a:srgbClr val="ffffff"/></a:solidFill></a:rPr><a:t>${periodLabel}</a:t></a:r></a:p>
+<a:p><a:r><a:rPr lang="en-US" sz="1400" i="1"><a:solidFill><a:srgbClr val="aaaaaa"/></a:solidFill></a:rPr><a:t>Generated: ${new Date().toLocaleDateString()}</a:t></a:r></a:p>
+</p:txBody>
+</p:sp>
+</p:spTree>
+</p:cSld>
+</p:sld>`;
+}
+
+function generateSummarySlideXML(visits, matrix, productCategories, participantTypes) {
+  const totalVisits = visits.length;
+  const totalSellout = visits.reduce((sum, v) => sum + (v.sellout || 0), 0);
+  const totalTarget = visits.reduce((sum, v) => sum + (v.target || 0), 0);
+  
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<p:sld xmlns:p="http://schemas.openxmlformats.org/presentationml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+<p:cSld>
+<p:bg><p:bgPr><a:solidFill><a:srgbClr val="ffffff"/></a:solidFill><a:effectLst/></p:bgPr></p:bg>
+<p:spTree>
+<p:nvGrpSpPr><p:cNvPr id="1" name="Summary 1"/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr>
+<p:grpSpPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="9144000" cy="6858000"/><a:chOff x="0" y="0"/><a:chExt cx="9144000" cy="6858000"/></a:xfrm></p:grpSpPr>
+<p:sp>
+<p:nvSpPr><p:cNvPr id="2" name="Summary Title"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="457200" y="274320"/><a:ext cx="8229600" cy="914400"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
+<p:txBody><a:bodyPr/><a:lstStyle/>
+<a:p><a:r><a:rPr lang="en-US" sz="4400" b="1"><a:solidFill><a:srgbClr val="0d1628"/></a:solidFill></a:rPr><a:t>Summary - Participants by Product</a:t></a:r></a:p>
+</p:txBody>
+</p:sp>
+<p:sp>
+<p:nvSpPr><p:cNvPr id="3" name="Summary Data"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr/></p:nvSpPr>
+<p:spPr><a:xfrm><a:off x="457200" y="1371600"/><a:ext cx="8229600" cy="4914400"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom><a:noFill/></p:spPr>
+<p:txBody><a:bodyPr/><a:lstStyle/>
+<a:p><a:r><a:rPr lang="en-US" sz="1800"><a:solidFill><a:srgbClr val="0d1628"/></a:solidFill></a:rPr><a:t>Total Visits: ${totalVisits} | Sell-out: ${totalSellout} units | Target: ${totalTarget} units</a:t></a:r></a:p>
+<a:p><a:r><a:rPr lang="en-US" sz="1600"><a:solidFill><a:srgbClr val="333333"/></a:solidFill></a:rPr><a:t>Participants Summary:</a:t></a:r></a:p>
+${participantTypes.map(type => {
+  const totals = productCategories.map(prod => matrix[type][prod] || 0);
+  const rowTotal = totals.reduce((a, b) => a + b, 0);
+  return `<a:p><a:r><a:rPr lang="en-US" sz="1400"><a:solidFill><a:srgbClr val="666666"/></a:solidFill></a:rPr><a:t>${type}: ${rowTotal} total | ${productCategories.map((p, i) => `${p.substring(0, 10)}: ${totals[i]}`).join(' | ')}</a:t></a:r></a:p>`;
+}).join('')}
+</p:txBody>
+</p:sp>
+</p:spTree>
+</p:cSld>
+</p:sld>`;
+}
+
+function addCoverSlide(prs, periodType, periodValue, darkColor, cyanColor, fontName) {
+  const slide = prs.addSlide();
+  
+  slide.background = { color: darkColor };
+  
+  slide.addShape(prs.ShapeType.rect, {
+    x: 0.5, y: 0.5, w: 2, h: 1.5,
+    fill: { color: cyanColor },
+    line: { color: cyanColor }
+  });
+  slide.addText('ZTE', {
+    x: 0.5, y: 0.5, w: 2, h: 1.5,
+    align: 'center', valign: 'middle',
+    fontSize: 28, bold: true, color: '#fff',
+    fontFace: fontName
+  });
+  
+  const currentYear = new Date().getFullYear();
+  const monthNames = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  
+  let periodLabel = '';
+  if (periodType === 'weekly') {
+    periodLabel = `Week ${periodValue} ${currentYear}`;
+  } else if (periodType === 'monthly') {
+    periodLabel = `${monthNames[parseInt(periodValue)]} ${currentYear}`;
+  } else if (periodType === 'quarterly') {
+    periodLabel = `Q${periodValue} ${currentYear}`;
+  }
+  
+  slide.addText(`ZTE Training Report`, {
+    x: 1, y: 2.5, w: 11.333, h: 1,
+    fontSize: 48, bold: true, color: cyanColor,
+    fontFace: fontName
+  });
+  
+  slide.addText(periodLabel, {
+    x: 1, y: 3.6, w: 11.333, h: 0.8,
+    fontSize: 32, color: '#fff',
+    fontFace: fontName
+  });
+  
+  slide.addText(`Generated: ${new Date().toLocaleDateString()}`, {
+    x: 1, y: 6.5, w: 11.333, h: 0.5,
+    fontSize: 12, color: '#aaa', italic: true,
+    fontFace: fontName
+  });
+}
+
+function addSummarySlide(prs, visits, matrix, productCategories, participantTypes, darkColor, cyanColor, fontName) {
+  const slide = prs.addSlide();
+  
+  slide.addShape(prs.ShapeType.rect, {
+    x: 0, y: 0, w: 13.333, h: 1,
+    fill: { color: darkColor }
+  });
+  slide.addText('Summary', {
+    x: 0.5, y: 0.2, w: 12.333, h: 0.6,
+    fontSize: 32, bold: true, color: cyanColor,
+    fontFace: fontName
+  });
+  
+  const totalVisits = visits.length;
+  const totalSellout = visits.reduce((sum, v) => sum + (v.sellout || 0), 0);
+  const totalTarget = visits.reduce((sum, v) => sum + (v.target || 0), 0);
+  const targetPercentage = totalTarget > 0 ? ((totalSellout / totalTarget) * 100).toFixed(1) : '—';
+  
+  const kpis = [
+    { label: 'Total Visits', value: totalVisits, color: cyanColor },
+    { label: 'Sell-out', value: `${totalSellout} units`, color: '#27ae60' },
+    { label: 'Target %', value: `${targetPercentage}%`, color: '#f39c12' }
+  ];
+  
+  kpis.forEach((kpi, idx) => {
+    const x = 0.5 + (idx * 4.2);
+    slide.addShape(prs.ShapeType.rect, {
+      x: x, y: 1.3, w: 3.8, h: 1.2,
+      fill: { color: '#f5f5f5' },
+      line: { color: kpi.color, width: 2 }
+    });
+    slide.addText(kpi.label, {
+      x: x + 0.2, y: 1.4, w: 3.4, h: 0.4,
+      fontSize: 11, bold: true, color: darkColor,
+      fontFace: fontName
+    });
+    slide.addText(kpi.value, {
+      x: x + 0.2, y: 1.85, w: 3.4, h: 0.5,
+      fontSize: 24, bold: true, color: kpi.color,
+      fontFace: fontName
+    });
+  });
+  
+  const tableData = [];
+  const headerRow = ['Participant Type', ...productCategories, 'TOTAL'];
+  tableData.push(headerRow);
+  
+  participantTypes.forEach(type => {
+    const row = [type];
+    let rowTotal = 0;
+    
+    productCategories.forEach(product => {
+      const value = matrix[type][product] || 0;
+      row.push(value);
+      rowTotal += value;
+    });
+    
+    row.push(rowTotal);
+    tableData.push(row);
+  });
+  
+  const totalRow = ['TOTAL'];
+  let grandTotal = 0;
+  productCategories.forEach(product => {
+    let colTotal = 0;
+    participantTypes.forEach(type => {
+      colTotal += matrix[type][product] || 0;
+    });
+    totalRow.push(colTotal);
+    grandTotal += colTotal;
+  });
+  totalRow.push(grandTotal);
+  tableData.push(totalRow);
+  
+  slide.addTable(tableData, {
+    x: 0.5, y: 2.8, w: 12.333, h: 4,
+    border: { pt: 1, color: darkColor },
+    fill: { color: '#fff' },
+    colW: [2.2, 1.8, 1.8, 1.8, 1.8, 1.2],
+    valign: 'center',
+    align: 'center',
+    fontSize: 10,
+    fontFace: fontName
+  });
+}
+
+function addVisitSlide(prs, visit, slideNumber, darkColor, cyanColor, fontName) {
+  const slide = prs.addSlide();
+  
+  slide.addShape(prs.ShapeType.rect, {
+    x: 0, y: 0, w: 13.333, h: 0.8,
+    fill: { color: darkColor }
+  });
+  slide.addText(`Visit #${slideNumber - 2} - ${visit.storeName} (${visit.storeLocation})`, {
+    x: 0.5, y: 0.15, w: 12.333, h: 0.5,
+    fontSize: 18, bold: true, color: cyanColor,
+    fontFace: fontName
+  });
+  
+  const infoX = 0.5;
+  const infoY = 1.1;
+  
+  slide.addText('Visit Details', {
+    x: infoX, y: infoY, w: 5.5, h: 0.4,
+    fontSize: 12, bold: true, color: darkColor,
+    fontFace: fontName
+  });
+  
+  const details = [
+    `Date: ${visit.visitDate}`,
+    `Week: ${visit.weekNumber}`,
+    `Objectives: ${visit.objectives.join(', ')}`,
+    `Reason: ${visit.reasonForVisit.join(', ')}`,
+    `Delivery: ${visit.deliveryMode.join(', ')}`
+  ];
+  
+  let detailY = infoY + 0.5;
+  details.forEach(detail => {
+    slide.addText(detail, {
+      x: infoX, y: detailY, w: 5.5, h: 0.35,
+      fontSize: 9, color: '#333',
+      fontFace: fontName
+    });
+    detailY += 0.35;
+  });
+  
+  const perfY = detailY + 0.3;
+  slide.addShape(prs.ShapeType.rect, {
+    x: infoX, y: perfY, w: 5.5, h: 1.5,
+    fill: { color: '#f0f8fc' },
+    line: { color: cyanColor, width: 1 }
+  });
+  
+  slide.addText('Performance', {
+    x: infoX + 0.2, y: perfY + 0.1, w: 5.1, h: 0.3,
+    fontSize: 11, bold: true, color: darkColor,
+    fontFace: fontName
+  });
+  
+  const perfData = [
+    { label: 'Sell-out', value: `${visit.sellout} units`, color: '#27ae60' },
+    { label: 'Target', value: `${visit.target} units`, color: '#00a0d2' },
+    { label: 'Achievement', value: `${visit.target > 0 ? ((visit.sellout / visit.target) * 100).toFixed(1) : '—'}%`, color: '#f39c12' }
+  ];
+  
+  let perfDataY = perfY + 0.45;
+  perfData.forEach(data => {
+    slide.addText(`${data.label}:`, {
+      x: infoX + 0.2, y: perfDataY, w: 2.5, h: 0.3,
+      fontSize: 9, color: '#333',
+      fontFace: fontName
+    });
+    slide.addText(data.value, {
+      x: infoX + 3, y: perfDataY, w: 2.3, h: 0.3,
+      fontSize: 9, bold: true, color: data.color,
+      fontFace: fontName
+    });
+    perfDataY += 0.3;
+  });
+  
+  const partY = perfY + 1.6;
+  slide.addShape(prs.ShapeType.rect, {
+    x: infoX, y: partY, w: 5.5, h: 1.2,
+    fill: { color: '#f5f5f5' },
+    line: { color: darkColor, width: 1 }
+  });
+  
+  slide.addText('Participants', {
+    x: infoX + 0.2, y: partY + 0.1, w: 5.1, h: 0.3,
+    fontSize: 11, bold: true, color: darkColor,
+    fontFace: fontName
+  });
+  
+  const participants = [
+    { label: 'Promoters', value: visit.promotersCount || 0 },
+    { label: 'Ambassadors', value: visit.ambassadorsCount || 0 },
+    { label: 'Staff Trained', value: visit.staffCount || 0 }
+  ];
+  
+  let partDataY = partY + 0.45;
+  participants.forEach(part => {
+    slide.addText(`${part.label}:`, {
+      x: infoX + 0.2, y: partDataY, w: 2.5, h: 0.3,
+      fontSize: 9, color: '#333',
+      fontFace: fontName
+    });
+    slide.addText(part.value, {
+      x: infoX + 3, y: partDataY, w: 2.3, h: 0.3,
+      fontSize: 9, bold: true, color: cyanColor,
+      fontFace: fontName
+    });
+    partDataY += 0.3;
+  });
+  
+  const photosX = 6.2;
+  const photosY = 1.1;
+  
+  slide.addText('Visit Photos', {
+    x: photosX, y: photosY, w: 6.6, h: 0.3,
+    fontSize: 11, bold: true, color: darkColor,
+    fontFace: fontName
+  });
+  
+  if (visit.visitPhotos && visit.visitPhotos.length > 0) {
+    const photoSize = 1.5;
+    const photoGap = 0.2;
+    let photoIndex = 0;
+    
+    for (let row = 0; row < 2 && photoIndex < visit.visitPhotos.length; row++) {
+      for (let col = 0; col < 2 && photoIndex < visit.visitPhotos.length; col++) {
+        const photoX = photosX + (col * (photoSize + photoGap));
+        const photoY = photosY + 0.4 + (row * (photoSize + photoGap));
+        
+        slide.addImage({
+          data: visit.visitPhotos[photoIndex],
+          x: photoX,
+          y: photoY,
+          w: photoSize,
+          h: photoSize
+        });
+        
+        photoIndex++;
+      }
+    }
+  } else {
+    slide.addText('No photos', {
+      x: photosX, y: photosY + 0.4, w: 6.6, h: 0.5,
+      fontSize: 10, color: '#999', italic: true,
+      fontFace: fontName
+    });
+  }
+  
+  const powerBiY = photosY + 3.5;
+  slide.addText('Power BI Screenshot', {
+    x: photosX, y: powerBiY, w: 6.6, h: 0.3,
+    fontSize: 11, bold: true, color: darkColor,
+    fontFace: fontName
+  });
+  
+  if (visit.powerBiScreenshot) {
+    slide.addImage({
+      data: visit.powerBiScreenshot,
+      x: photosX,
+      y: powerBiY + 0.4,
+      w: 6.6,
+      h: 2.5
+    });
+  } else {
+    slide.addText('No screenshot', {
+      x: photosX, y: powerBiY + 0.4, w: 6.6, h: 0.5,
+      fontSize: 10, color: '#999', italic: true,
+      fontFace: fontName
+    });
+  }
+  
+  if (visit.notes) {
+    slide.addShape(prs.ShapeType.rect, {
+      x: 0.5, y: 7, w: 12.333, h: 0.4,
+      fill: { color: '#f9f9f9' },
+      line: { color: '#ddd', width: 1 }
+    });
+    slide.addText(`Notes: ${visit.notes}`, {
+      x: 0.7, y: 7.05, w: 11.933, h: 0.3,
+      fontSize: 8, color: '#666',
+      fontFace: fontName
+    });
+  }
+}
+
+function populateReportSelectors() {
+  // Load visits from IndexedDB first
+  const tx = db.transaction('visits', 'readonly');
+  const store = tx.objectStore('visits');
+  const request = store.getAll();
+  
+  request.onsuccess = function() {
+    const loadedVisits = request.result;
+    const currentYear = new Date().getFullYear();
+    const monthNames = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    
+    const availableWeeks = new Set();
+    const availableMonths = new Set();
+    const availableQuarters = new Set();
+    
+    loadedVisits.forEach(visit => {
+      if (visit.year === currentYear) {
+        availableWeeks.add(visit.weekNumber);
+        availableMonths.add(visit.month);
+        availableQuarters.add(visit.quarter);
+      }
+    });
+    
+    // Populate week selector
+    const weekSelect = document.getElementById('weekSelect');
+    weekSelect.innerHTML = '<option value="">-- Select Week --</option>';
+    Array.from(availableWeeks).sort((a, b) => a - b).forEach(week => {
+      const option = document.createElement('option');
+      option.value = week;
+      option.textContent = `Week ${week}`;
+      weekSelect.appendChild(option);
+    });
+    
+    // Populate month selector
+    const monthSelect = document.getElementById('monthSelect');
+    monthSelect.innerHTML = '<option value="">-- Select Month --</option>';
+    Array.from(availableMonths).sort((a, b) => a - b).forEach(month => {
+      const option = document.createElement('option');
+      option.value = month;
+      option.textContent = monthNames[month];
+      monthSelect.appendChild(option);
+    });
+    
+    // Populate quarter selector
+    const quarterSelect = document.getElementById('quarterSelect');
+    quarterSelect.innerHTML = '<option value="">-- Select Quarter --</option>';
+    Array.from(availableQuarters).sort((a, b) => a - b).forEach(quarter => {
+      const option = document.createElement('option');
+      option.value = quarter;
+      option.textContent = `Q${quarter}`;
+      quarterSelect.appendChild(option);
+    });
+  };
+}
+
+// Update switchToSection to populate selectors when going to reports
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('visitDate').valueAsDate = new Date();
+  document.getElementById('weekDisplay').textContent = `Week: ${getWeekNumber(new Date())}`;
+  
+  document.getElementById('visitDate').addEventListener('change', function() {
+    const date = new Date(this.value);
+    document.getElementById('weekDisplay').textContent = `Week: ${getWeekNumber(date)}`;
+  });
+  
+  document.getElementById('sellout').addEventListener('input', calculateTargetPercentage);
+  document.getElementById('target').addEventListener('input', calculateTargetPercentage);
+  
+  document.getElementById('visitPhotos').addEventListener('change', function(e) {
+    handlePhotoPreview(e, 'visitPhotosPreview');
+  });
+  
+  document.getElementById('powerBiPhoto').addEventListener('change', function(e) {
+    handlePhotoPreview(e, 'powerBiPhotoPreview');
+  });
+});
+
+function calculateTargetPercentage() {
+  const sellout = parseFloat(document.getElementById('sellout').value) || 0;
+  const target = parseFloat(document.getElementById('target').value) || 0;
+  const targetField = document.getElementById('targetPercentage');
+  
+  if (target === 0) {
+    targetField.value = '—';
+  } else {
+    const percentage = ((sellout / target) * 100).toFixed(1);
+    targetField.value = `${percentage}%`;
+  }
+}
+
+function handlePhotoPreview(event, previewContainerId) {
+  const container = document.getElementById(previewContainerId);
+  const files = Array.from(event.target.files);
+  
+  files.forEach((file) => {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const photoItem = document.createElement('div');
+      photoItem.className = 'photo-item';
+      photoItem.innerHTML = `
+        <img src="${e.target.result}" alt="Photo">
+        <button type="button" class="delete-btn" onclick="this.parentElement.remove()">×</button>
+      `;
+      container.appendChild(photoItem);
+    };
+    reader.readAsDataURL(file);
+  });
+  
+  event.target.value = '';
+}
+
+function switchToSection(sectionId) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(sectionId).classList.add('active');
+
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  
+  const navItemIndex = { 'dashboard': 0, 'newVisit': 1, 'archive': 2, 'reports': 3 };
+  
+  if (navItemIndex[sectionId] !== undefined) {
+    document.querySelectorAll('.nav-item')[navItemIndex[sectionId]].classList.add('active');
+  }
+
+  if (sectionId === 'reports') {
+    populateReportSelectors();
+  }
+  
+  if (sectionId === 'archive') {
+    renderArchive();
+  }
+  
+  if (sectionId === 'newVisit') {
+    // Reset form
+    document.getElementById('visitForm').reset();
+    document.querySelectorAll('.photos-preview').forEach(el => el.innerHTML = '');
+    document.getElementById('visitPhotos').style.display = 'block';
+    document.getElementById('powerBiPhoto').style.display = 'block';
+    document.querySelector('.form-container h2').textContent = 'New Visit';
+    document.querySelector('#visitForm button[type="submit"]').textContent = 'Save Visit';
+    delete document.querySelector('#visitForm button[type="submit"]').dataset.editingVisitId;
+    
+    // Reset participants count
+    document.getElementById('promotersCount').value = '0';
+    document.getElementById('ambassadorsCount').value = '0';
+    document.getElementById('staffCount').value = '0';
+  }
+}
+
+document.getElementById('visitForm').removeEventListener('submit', saveVisit);
+document.getElementById('visitForm').addEventListener('submit', async function(e) {
+  const submitBtn = document.querySelector('#visitForm button[type="submit"]');
+  
+  if (submitBtn.dataset.editingVisitId) {
+    e.preventDefault();
+    const visitId = submitBtn.dataset.editingVisitId;
+    const visit = visits.find(v => v.id === visitId);
+    
+    const updatedData = {
+      ...visit,
+      storeName: document.getElementById('storeName').value,
+      storeLocation: document.getElementById('storeLocation').value,
+      visitDate: document.getElementById('visitDate').value,
+      objectives: Array.from(document.querySelectorAll('input[name="objective"]:checked')).map(el => el.value),
+      contents: Array.from(document.querySelectorAll('input[name="content"]:checked')).map(el => el.value),
+      productCategories: Array.from(document.querySelectorAll('input[name="productCategory"]:checked')).map(el => el.value),
+      reasonForVisit: Array.from(document.querySelectorAll('input[name="reasonForVisit"]:checked')).map(el => el.value),
+      deliveryMode: Array.from(document.querySelectorAll('input[name="deliveryMode"]:checked')).map(el => el.value),
+      promotersCount: parseInt(document.getElementById('promotersCount').value) || 0,
+      ambassadorsCount: parseInt(document.getElementById('ambassadorsCount').value) || 0,
+      staffCount: parseInt(document.getElementById('staffCount').value) || 0,
+      sellout: parseInt(document.getElementById('sellout').value) || 0,
+      stock: parseInt(document.getElementById('stock').value) || 0,
+      target: parseInt(document.getElementById('target').value) || 0,
+      notes: document.getElementById('notes').value
+    };
+    
+    await updateVisit(visitId, updatedData);
+    
+    delete submitBtn.dataset.editingVisitId;
+    submitBtn.textContent = 'Save Visit';
+    document.getElementById('visitPhotos').style.display = 'block';
+    document.getElementById('powerBiPhoto').style.display = 'block';
+    document.querySelector('.form-container h2').textContent = 'New Visit';
+  } else {
+    await saveVisit.call(this, e);
+  }
+});
+
+// ============================================================
+// APP INITIALIZATION
+// ============================================================
+
+async function initApp() {
+  try {
+    console.log('Starting app initialization...');
+
+    console.log('Step 1: Initializing IndexedDB');
+    await initIndexedDB();
+
+    console.log('Step 2: Loading visits from local DB');
+    await loadVisitsFromDB();
+
+    console.log('Step 3: Initializing Google Identity Services');
+    await waitForGoogleLibrary();
+    await initGoogleIdentityServices();
+
+    updateSyncStatus();
+    renderDashboard();
+
+    if (isOnline && isGoogleAuthorized) {
+      console.log('Step 4: Performing auto-sync');
+      await performAutoSync();
+    }
+
+    console.log('App initialization complete');
+  } catch (error) {
+    console.error('App initialization error:', error);
+    updateSyncStatus();
+    renderDashboard();
+  }
+}
+
+window.addEventListener('DOMContentLoaded', initApp);
+</script>
+
+</body>
+</html>
