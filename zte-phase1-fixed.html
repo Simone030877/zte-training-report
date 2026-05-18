@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZTE Training Report Builder</title>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Montserrat, sans-serif;
+      background: #f5f5f5;
+      color: #1a1a1a;
+      line-height: 1.6;
+    }
+
+    .header {
+      background: #0d1628;
+      color: #fff;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+
+    .header-right {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .sync-badge {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.2rem;
+      background: rgba(255,255,255,0.1);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .sync-badge.online {
+      color: #27ae60;
+    }
+
+    .sync-badge.offline {
+      color: #e74c3c;
+    }
+
+    .sync-badge.syncing {
+      color: #f39c12;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .sync-badge.online .dot {
+      background: #27ae60;
+    }
+
+    .sync-badge.offline .dot {
+      background: #e74c3c;
+    }
+
+    .sync-badge.syncing .dot {
+      background: #f39c12;
+    }
+
+    .btn {
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: #00a0d2;
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #0084ad;
+    }
+
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: #0d1628;
+      border: 1px solid #ddd;
+    }
+
+    .btn-secondary:hover {
+      background: #f9f9f9;
+    }
+
+    .btn-secondary:disabled {
+      background: #eee;
+      cursor: not-allowed;
+    }
+
+    .nav {
+      background: #fff;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      gap: 0;
+      padding: 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      overflow-x: auto;
+    }
+
+    .nav-item {
+      flex: 1;
+      min-width: 120px;
+      padding: 1rem;
+      text-align: center;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      font-weight: 500;
+      color: #666;
+      white-space: nowrap;
+    }
+
+    .nav-item.active {
+      border-bottom-color: #00a0d2;
+      color: #00a0d2;
+      background: #f0f8fc;
+    }
+
+    .nav-item:hover {
+      background: #f9f9f9;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+      animation: fadeIn 0.3s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    .status-box {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .status-box h2 {
+      margin-bottom: 1rem;
+      color: #00a0d2;
+    }
+
+    .status-box p {
+      color: #666;
+      margin-bottom: 1rem;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #00a0d2;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .info-msg {
+      background: #f0f8fc;
+      border-left: 4px solid #00a0d2;
+      padding: 1rem;
+      border-radius: 4px;
+      margin-bottom: 1rem;
+      color: #0d1628;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .header {
+        flex-direction: column;
+      }
+
+      .header h1 {
+        width: 100%;
+        text-align: center;
+      }
+
+      .header-right {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .nav {
+        flex-direction: column;
+      }
+
+      .nav-item {
+        border-bottom: none;
+        border-left: 3px solid transparent;
+      }
+
+      .nav-item.active {
+        border-left-color: #00a0d2;
+        border-bottom: none;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>ZTE Training Report Builder</h1>
+  <div class="header-right">
+    <div class="sync-badge offline" id="syncBadge">
+      <span class="dot"></span>
+      <span id="syncText">Offline</span>
+    </div>
+    <button class="btn btn-secondary" id="authBtn" onclick="handleGoogleAuth()">Authorize Google Drive</button>
+    <button class="btn btn-secondary" id="syncBtn" onclick="manualSync()" style="display:none;">Sync Now</button>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="nav-item active" onclick="switchSection('dashboard')">Dashboard</div>
+  <div class="nav-item" onclick="switchSection('newVisit')">New Visit</div>
+  <div class="nav-item" onclick="switchSection('archive')">Archive</div>
+  <div class="nav-item" onclick="switchSection('reports')">Generate Report</div>
+</div>
+
+<div class="container">
+
+  <!-- DASHBOARD SECTION -->
+  <div class="section active" id="dashboard">
+    <div class="info-msg">
+      <strong>Welcome to ZTE Training Report Builder</strong><br>
+      All your data is stored locally and synchronized with Google Drive. Work offline anytime.
+    </div>
+    <div class="status-box" id="dashboardStatus">
+      <h2>Loading Dashboard...</h2>
+      <p><span class="spinner"></span>Initializing application</p>
+    </div>
+  </div>
+
+  <!-- NEW VISIT SECTION -->
+  <div class="section" id="newVisit">
+    <div class="status-box">
+      <h2>New Visit Form</h2>
+      <p>Coming in Phase 2...</p>
+    </div>
+  </div>
+
+  <!-- ARCHIVE SECTION -->
+  <div class="section" id="archive">
+    <div class="status-box">
+      <h2>Visit Archive</h2>
+      <p>Coming in Phase 2...</p>
+    </div>
+  </div>
+
+  <!-- REPORTS SECTION -->
+  <div class="section" id="reports">
+    <div class="status-box">
+      <h2>Generate Reports</h2>
+      <p>Coming in Phase 2...</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+
+const CONFIG = {
+  googleClientId: '866353469559-js28mr2r99rmbf8k1va8qpu4r0mr77b4.apps.googleusercontent.com',
+  googleApiKey: '', // Not needed for OAuth
+  googleScopes: 'https://www.googleapis.com/auth/drive',
+  dbName: 'ZTEReportDBv3',
+  dbVersion: 1
+};
+
+let db = null;
+let googleAuth = null;
+let isOnline = navigator.onLine;
+let isSyncing = false;
+let visits = [];
+
+// ============================================================
+// ONLINE/OFFLINE MONITORING
+// ============================================================
+
+window.addEventListener('online', () => {
+  isOnline = true;
+  updateSyncStatus();
+  console.log('App is online');
+});
+
+window.addEventListener('offline', () => {
+  isOnline = false;
+  updateSyncStatus();
+  console.log('App is offline');
+});
+
+// ============================================================
+// INDEXEDDB INITIALIZATION
+// ============================================================
+
+async function initIndexedDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(CONFIG.dbName, CONFIG.dbVersion);
+    
+    request.onerror = () => {
+      console.error('IndexedDB error:', request.error);
+      reject(request.error);
+    };
+    
+    request.onsuccess = () => {
+      db = request.result;
+      console.log('IndexedDB initialized successfully');
+      resolve(db);
+    };
+    
+    request.onupgradeneeded = (e) => {
+      const database = e.target.result;
+      
+      // Visits store
+      if (!database.objectStoreNames.contains('visits')) {
+        const visitStore = database.createObjectStore('visits', { keyPath: 'id' });
+        visitStore.createIndex('date', 'date', { unique: false });
+        visitStore.createIndex('weekNumber', 'weekNumber', { unique: false });
+        visitStore.createIndex('storeName', 'storeName', { unique: false });
+        console.log('Created visits object store');
+      }
+      
+      // Sync metadata store
+      if (!database.objectStoreNames.contains('syncMetadata')) {
+        database.createObjectStore('syncMetadata', { keyPath: 'key' });
+        console.log('Created syncMetadata object store');
+      }
+    };
+  });
+}
+
+async function loadVisitsFromDB() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('visits', 'readonly');
+    const store = tx.objectStore('visits');
+    const request = store.getAll();
+    
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      visits = request.result;
+      console.log(`Loaded ${visits.length} visits from IndexedDB`);
+      resolve(visits);
+    };
+  });
+}
+
+async function saveVisitsToDB(visitsArray) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('visits', 'readwrite');
+    const store = tx.objectStore('visits');
+    
+    visitsArray.forEach(visit => {
+      store.put(visit);
+    });
+    
+    tx.onerror = () => reject(tx.error);
+    tx.oncomplete = () => {
+      console.log(`Saved ${visitsArray.length} visits to IndexedDB`);
+      resolve();
+    };
+  });
+}
+
+async function saveSyncMetadata(key, value) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('syncMetadata', 'readwrite');
+    const store = tx.objectStore('syncMetadata');
+    const request = store.put({ key, value, timestamp: new Date().toISOString() });
+    
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      console.log(`Saved sync metadata: ${key}`);
+      resolve();
+    };
+  });
+}
+
+async function getSyncMetadata(key) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction('syncMetadata', 'readonly');
+    const store = tx.objectStore('syncMetadata');
+    const request = store.get(key);
+    
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      resolve(request.result ? request.result.value : null);
+    };
+  });
+}
+
+// ============================================================
+// GOOGLE DRIVE OAUTH 2.0
+// ============================================================
+
+function initGoogleAuth() {
+  return new Promise((resolve, reject) => {
+    gapi.load('auth2', () => {
+      gapi.auth2.init({
+        client_id: CONFIG.googleClientId,
+        scope: CONFIG.googleScopes
+      }).then((auth) => {
+        googleAuth = auth;
+        console.log('Google Auth2 initialized');
+        
+        // Check if user is already signed in
+        if (auth.isSignedIn.get()) {
+          console.log('User already signed in');
+          updateSyncStatus();
+          performAutoSync();
+          resolve(auth);
+        } else {
+          console.log('User not signed in');
+          updateSyncStatus();
+          resolve(auth);
+        }
+      }).catch((error) => {
+        console.error('Google Auth2 init error:', error);
+        reject(error);
+      });
+    });
+  });
+}
+
+async function handleGoogleAuth() {
+  try {
+    if (!googleAuth) {
+      console.error('Google Auth not initialized');
+      return;
+    }
+    
+    const user = await googleAuth.signIn();
+    console.log('User signed in:', user.getBasicProfile().getEmail());
+    
+    updateSyncStatus();
+    await performAutoSync();
+    
+    alert('Authorization successful! Your data will now sync with Google Drive.');
+  } catch (error) {
+    console.error('Sign in error:', error);
+    alert('Authorization failed. Please try again.');
+  }
+}
+
+async function manualSync() {
+  if (!isOnline) {
+    alert('You are offline. Sync will happen when you reconnect.');
+    return;
+  }
+  
+  if (!googleAuth || !googleAuth.isSignedIn.get()) {
+    alert('Please authorize Google Drive first');
+    return;
+  }
+  
+  await performAutoSync();
+  alert('Sync complete!');
+}
+
+async function performAutoSync() {
+  if (!isOnline || !googleAuth || !googleAuth.isSignedIn.get()) {
+    console.log('Cannot sync: offline or not authenticated');
+    return;
+  }
+  
+  isSyncing = true;
+  updateSyncStatus();
+  
+  try {
+    console.log('Starting auto-sync...');
+    
+    // TODO: Implement actual Google Drive sync in Phase 2
+    // For now, just log the intention
+    console.log('Auto-sync placeholder: will sync visits with Google Drive in Phase 2');
+    
+    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulated delay
+    
+    isSyncing = false;
+    updateSyncStatus();
+    console.log('Auto-sync completed');
+  } catch (error) {
+    console.error('Sync error:', error);
+    isSyncing = false;
+    updateSyncStatus();
+  }
+}
+
+// ============================================================
+// UI STATUS MANAGEMENT
+// ============================================================
+
+function updateSyncStatus() {
+  const badge = document.getElementById('syncBadge');
+  const text = document.getElementById('syncText');
+  const authBtn = document.getElementById('authBtn');
+  const syncBtn = document.getElementById('syncBtn');
+  
+  badge.classList.remove('online', 'offline', 'syncing');
+  
+  if (isSyncing) {
+    badge.classList.add('syncing');
+    text.textContent = 'Syncing...';
+    authBtn.disabled = true;
+    syncBtn.disabled = true;
+  } else if (isOnline) {
+    if (googleAuth && googleAuth.isSignedIn.get()) {
+      badge.classList.add('online');
+      text.textContent = 'Online - Authorized';
+      authBtn.textContent = 'Authorized ✓';
+      authBtn.disabled = true;
+      syncBtn.style.display = 'inline-block';
+      syncBtn.disabled = false;
+    } else {
+      badge.classList.add('online');
+      text.textContent = 'Online';
+      authBtn.textContent = 'Authorize Google Drive';
+      authBtn.disabled = false;
+      syncBtn.style.display = 'none';
+    }
+  } else {
+    badge.classList.add('offline');
+    text.textContent = 'Offline';
+    authBtn.disabled = true;
+    syncBtn.style.display = 'none';
+  }
+}
+
+function switchSection(sectionId) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(sectionId).classList.add('active');
+  
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+function renderDashboard() {
+  const dashboardStatus = document.getElementById('dashboardStatus');
+  
+  if (visits.length === 0) {
+    dashboardStatus.innerHTML = `
+      <h2>Welcome!</h2>
+      <p>You have no visits recorded yet.</p>
+      <p style="margin-top: 1rem;">
+        <button class="btn btn-primary" onclick="switchSection('newVisit'); document.querySelector('.nav-item:nth-child(2)').click();">
+          Start by Creating a New Visit
+        </button>
+      </p>
+    `;
+  } else {
+    const totalVisits = visits.length;
+    const thisWeek = visits.filter(v => {
+      const visitDate = new Date(v.date);
+      const today = new Date();
+      const weekNum = getWeekNumber(visitDate);
+      const currentWeek = getWeekNumber(today);
+      return weekNum === currentWeek && visitDate.getFullYear() === today.getFullYear();
+    }).length;
+    
+    dashboardStatus.innerHTML = `
+      <h2>Dashboard</h2>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem;">
+        <div style="background: #f0f8fc; padding: 1rem; border-radius: 8px;">
+          <p style="color: #666; font-size: 0.875rem;">This Week's Visits</p>
+          <p style="font-size: 2rem; font-weight: 700; color: #00a0d2;">${thisWeek}</p>
+        </div>
+        <div style="background: #f0f8fc; padding: 1rem; border-radius: 8px;">
+          <p style="color: #666; font-size: 0.875rem;">Total Visits</p>
+          <p style="font-size: 2rem; font-weight: 700; color: #00a0d2;">${totalVisits}</p>
+        </div>
+      </div>
+    `;
+  }
+}
+
+function getWeekNumber(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+}
+
+// ============================================================
+// APP INITIALIZATION
+// ============================================================
+
+async function initApp() {
+  try {
+    console.log('Starting app initialization...');
+    
+    // Step 1: Initialize IndexedDB
+    console.log('Step 1: Initializing IndexedDB');
+    await initIndexedDB();
+    
+    // Step 2: Load existing visits from local DB
+    console.log('Step 2: Loading visits from local DB');
+    await loadVisitsFromDB();
+    
+    // Step 3: Initialize Google Auth
+    console.log('Step 3: Initializing Google Auth');
+    await initGoogleAuth();
+    
+    // Step 4: Update UI status
+    updateSyncStatus();
+    
+    // Step 5: Render dashboard
+    renderDashboard();
+    
+    // Step 6: Auto-sync if online and authorized
+    if (isOnline && googleAuth.isSignedIn.get()) {
+      console.log('Step 6: Performing auto-sync');
+      await performAutoSync();
+    }
+    
+    console.log('App initialization complete');
+  } catch (error) {
+    console.error('App initialization error:', error);
+    document.getElementById('dashboardStatus').innerHTML = `
+      <h2>Initialization Error</h2>
+      <p style="color: #e74c3c;">${error.message}</p>
+      <p style="margin-top: 1rem; font-size: 0.875rem;">Check the browser console for details.</p>
+    `;
+  }
+}
+
+window.addEventListener('DOMContentLoaded', initApp);
+</script>
+
+</body>
+</html>
