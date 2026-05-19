@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZTE Training Report Builder - COMPLETE</title>
+  <title>ZTE Training Report Builder - FIXED</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/gh/Stuk/jszip@v3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@v3.12.0/dist/pptxgen.bundle.js"></script>
@@ -733,8 +733,14 @@ async function generatePPTX() {
         (v.contents || []).forEach(c => topicsCounts[c] = (topicsCounts[c] || 0) + 1);
     });
 
-    const reasonsData = Object.entries(reasonsCounts).map(([label, val]) => ({ name: label, values: [val] }));
-    const topicsData = Object.entries(topicsCounts).map(([label, val]) => ({ name: label, values: [val] }));
+    // IL FIX CRITICO: Convertiamo le mappe in una singola serie strutturata correttamente per PptxGenJS
+    const reasonsLabels = Object.keys(reasonsCounts);
+    const reasonsValues = Object.values(reasonsCounts);
+    const reasonsChartData = reasonsLabels.length > 0 ? [{ name: 'Visits', labels: reasonsLabels, values: reasonsValues }] : [];
+
+    const topicsLabels = Object.keys(topicsCounts);
+    const topicsValues = Object.values(topicsCounts);
+    const topicsChartData = topicsLabels.length > 0 ? [{ name: 'Topics', labels: topicsLabels, values: topicsValues }] : [];
 
     // Slide 1: Cover
     let slide = pres.addSlide();
@@ -771,11 +777,11 @@ async function generatePPTX() {
     });
 
     // 3. Grafico Barre (Reasons Why) - Basso Sinistra
-    if (reasonsData.length > 0) {
+    if (reasonsChartData.length > 0) {
       slide.addText("Reasons for Visits", { x: 0.5, y: 3.8, w: 4.5, h: 0.3, fontSize: 14, color: colors.orange, bold: true });
-      slide.addChart(pres.ChartType.bar, reasonsData, {
+      slide.addChart(pres.ChartType.bar, reasonsChartData, {
         x: 0.5, y: 4.2, w: 4.5, h: 2.8,
-        barDir: 'bar', // barre orizzontali per testi lunghi
+        barDir: 'bar', // barre orizzontali per gestire i testi lunghi
         showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 9,
         valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 9,
         chartColors: ['00A0D2']
@@ -783,9 +789,9 @@ async function generatePPTX() {
     }
 
     // 4. Grafico Barre (Training Topics) - Basso Destra
-    if (topicsData.length > 0) {
+    if (topicsChartData.length > 0) {
       slide.addText("Training Topics Covered", { x: 5.2, y: 3.8, w: 4.3, h: 0.3, fontSize: 14, color: colors.orange, bold: true });
-      slide.addChart(pres.ChartType.bar, topicsData, {
+      slide.addChart(pres.ChartType.bar, topicsChartData, {
         x: 5.2, y: 4.2, w: 4.3, h: 2.8,
         barDir: 'bar',
         showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 9,
@@ -861,7 +867,6 @@ async function generatePPTX() {
               visit.visitPhotos.slice(0, 4).forEach((imgData, idx) => {
                   let cleanImg = imgData.includes("base64,") ? imgData.split("base64,")[1] : imgData;
                   let pos = grid[idx];
-                  // IL FIX: sizing type contain impedisce le risate dovute alle foto schiacciate!
                   slide.addImage({ data: "base64," + cleanImg, x: pos.x, y: pos.y, w: pos.w, h: pos.h, sizing: { type: 'contain', w: pos.w, h: pos.h } });
               });
           }
