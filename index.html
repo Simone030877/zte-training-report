@@ -379,7 +379,6 @@ function blobToBase64(blob) {
   });
 }
 
-// Preview Logic for images
 document.getElementById('visitPhotos').addEventListener('change', async function() {
   const preview = document.getElementById('visitPhotosPreview');
   for(let file of this.files) {
@@ -602,7 +601,7 @@ function updateReportSelectors() {
   });
 }
 
-function generateReport() { /* Lasciato intatto per focus su bug PPTX */ }
+function generateReport() { }
 
 function switchToSection(sectionId) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -620,7 +619,7 @@ async function initApp() {
   renderDashboard();
 }
 
-// --- FUNZIONE PPTX GENERATE COMPLETA E CORRETTA ---
+// --- GENERAZIONE REPORT PPTX AGGIORNATA CON MONTSERRAT E ZONE SICURE ---
 async function generatePPTX() {
   const reportType = document.getElementById('reportType').value;
   const reportPeriod = document.getElementById('reportPeriod').value;
@@ -639,84 +638,88 @@ async function generatePPTX() {
 
   try {
     const pres = new PptxGenJS();
-    // Layout standard 16:9
     pres.layout = 'LAYOUT_16x9';
+    
+    // Configurazione Temi Globale e Font Preferito
+    const FONT_NAME = 'Montserrat';
     const colors = { dark: '0D1628', cyan: '00A0D2', orange: 'F39C12', white: 'FFFFFF', subBg: '1E293B', grayBorder: '334155' };
     let periodName = reportType === 'weekly' ? `Week ${reportPeriod}` : reportType === 'monthly' ? `Month ${reportPeriod}` : `Q${reportPeriod}`;
 
-    // --- AGGREGAZIONE GLOBALE DATI PER IL SUMMARY ---
+    // --- AGGREGAZIONE DATI ---
     const totalPromoters = filteredVisits.reduce((sum, v) => sum + (v.promotersCount || 0), 0);
     const totalAmbassadors = filteredVisits.reduce((sum, v) => sum + (v.ambassadorsCount || 0), 0);
     const totalStaff = filteredVisits.reduce((sum, v) => sum + (v.staffCount || 0), 0);
     const totalTrained = totalPromoters + totalAmbassadors + totalStaff;
 
-    const reasonsCounts = {}, topicsCounts = {}, objectivesCounts = {}, productsCounts = {}, modesCounts = {};
+    const reasonsCounts = {}, qualitativeCounts = {};
     filteredVisits.forEach(v => {
         (v.reasonForVisit || []).forEach(r => reasonsCounts[r] = (reasonsCounts[r] || 0) + 1);
-        (v.contents || []).forEach(c => topicsCounts[c] = (topicsCounts[c] || 0) + 1);
-        (v.objectives || []).forEach(o => objectivesCounts[o] = (objectivesCounts[o] || 0) + 1);
-        (v.productCategories || []).forEach(p => productsCounts[p] = (productsCounts[p] || 0) + 1);
-        (v.deliveryMode || []).forEach(m => modesCounts[m] = (modesCounts[m] || 0) + 1);
+        
+        // Uniamo tutti i parametri qualitativi in un unico set per il grafico orizzontale a barre
+        (v.objectives || []).forEach(o => qualitativeCounts[`Obj: ${o}`] = (qualitativeCounts[`Obj: ${o}`] || 0) + 1);
+        (v.contents || []).forEach(c => qualitativeCounts[`Topic: ${c}`] = (qualitativeCounts[`Topic: ${c}`] || 0) + 1);
+        (v.productCategories || []).forEach(p => qualitativeCounts[`Prod: ${p}`] = (qualitativeCounts[`Prod: ${p}`] || 0) + 1);
+        (v.deliveryMode || []).forEach(m => qualitativeCounts[`Mode: ${m}`] = (qualitativeCounts[`Mode: ${m}`] || 0) + 1);
     });
 
     const formatForChart = (map) => {
       const keys = Object.keys(map);
-      return keys.length > 0 ? [{ name: 'Count', labels: keys, values: Object.values(map) }] : null;
+      return keys.length > 0 ? [{ name: 'Occurrences', labels: keys, values: Object.values(map) }] : null;
     };
 
     const reasonsData = formatForChart(reasonsCounts);
-    const topicsData = formatForChart(topicsCounts);
+    const qualitativeData = formatForChart(qualitativeCounts);
 
     // --- SLIDE 1: COVER ---
     let slide1 = pres.addSlide();
     slide1.background = { color: colors.dark };
-    slide1.addText("ZTE TRAINING REPORT", { x: 0.5, y: 2.2, w: 12.3, h: 0.8, fontSize: 40, bold: true, color: colors.cyan, align: 'center' });
-    slide1.addText(`${periodName.toUpperCase()} - ${reportYear}`, { x: 0.5, y: 3.2, w: 12.3, h: 0.5, fontSize: 22, color: colors.white, align: 'center' });
+    slide1.addText("ZTE TRAINING REPORT", { x: 0.5, y: 2.2, w: 12.3, h: 0.8, fontSize: 40, bold: true, color: colors.cyan, align: 'center', fontFace: FONT_NAME });
+    slide1.addText(`${periodName.toUpperCase()} - ${reportYear}`, { x: 0.5, y: 3.2, w: 12.3, h: 0.5, fontSize: 22, color: colors.white, align: 'center', fontFace: FONT_NAME });
 
-    // --- SLIDE 2: EXECUTIVE SUMMARY (DATI ACCORPATI + GRAFICO CONTROLLATO) ---
+    // --- SLIDE 2: EXECUTIVE SUMMARY (TABELLE PICCOLE E CENTRATE A SINISTRA + GRAFICI DISTANZIATI) ---
     let slide2 = pres.addSlide();
     slide2.background = { color: colors.dark };
-    slide2.addText("EXECUTIVE RECAP SUMMARY", { x: 0.5, y: 0.4, w: 12.3, h: 0.5, fontSize: 24, bold: true, color: colors.cyan });
+    slide2.addText("EXECUTIVE RECAP SUMMARY", { x: 0.5, y: 0.4, w: 12.3, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: FONT_NAME });
 
-    // Tabella KPI Principali a sinistra (Corretto slide.addTable!)
+    // Tabella KPI Principali (Resa più piccola per evitare invasioni a destra)
     slide2.addTable([
-      [{text: "Global Metrics", options: {bold: true, fill: colors.cyan, color: colors.white}}, {text: "Totals", options: {bold: true, fill: colors.cyan, color: colors.white, align:'center'}}],
+      [{text: "Global Metrics Summary", options: {bold: true, fill: colors.cyan, color: colors.white}}, {text: "Totals", options: {bold: true, fill: colors.cyan, color: colors.white, align:'center'}}],
       ["Total Field Store Visits", filteredVisits.length.toString()],
       ["Total People Trained (Headcount)", totalTrained.toString()],
-      ["• Total Brand Promoters Trained", totalPromoters.toString()],
-      ["• Total Field Ambassadors Trained", totalAmbassadors.toString()],
-      ["• Total Store Staff Members Trained", totalStaff.toString()]
-    ], { x: 0.5, y: 1.2, w: 6.0, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 11, colW: [4.2, 1.8], margin: 6 });
+      ["• Brand Promoters Trained", totalPromoters.toString()],
+      ["• Field Ambassadors Trained", totalAmbassadors.toString()],
+      ["• Store Staff Trained", totalStaff.toString()]
+    ], { x: 0.5, y: 1.2, w: 4.8, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 10, fontFace: FONT_NAME, colW: [3.4, 1.4], margin: 4 });
 
-    // Tabella checklist qualitative accorpate (Richiesta: Objectives, Contents, Products, Delivery)
-    const joinMap = (map) => Object.entries(map).map(([k,v]) => `${k} (${v})`).join(', ') || "None";
-    slide2.addTable([
-      [{text: "Qualitative Parameter Checklist Summary", options: {bold: true, fill: colors.subBg, color: colors.orange, colspan: 2}}],
-      ["Strategic Objectives", joinMap(objectivesCounts)],
-      ["Core Training Contents", joinMap(topicsCounts)],
-      ["Product Categories Focus", joinMap(productsCounts)],
-      ["Deployment Delivery Modes", joinMap(modesCounts)]
-    ], { x: 0.5, y: 4.1, w: 6.0, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 9, colW: [2.0, 4.0], margin: 5 });
-
-    // Grafico Torta/Ciambella Partecipanti a destra (Alzato e rimpicciolito per evitare overlapping)
+    // Spazio Grafico Torta Distribuzione Partecipanti (Centrato in alto a destra)
     if (totalTrained > 0) {
-      slide2.addText("Participants Distribution", { x: 7.2, y: 1.1, w: 5.5, h: 0.3, fontSize: 13, color: colors.orange, bold: true, align: 'center' });
+      slide2.addText("Participants Distribution", { x: 6.0, y: 1.0, w: 6.8, h: 0.3, fontSize: 12, color: colors.orange, bold: true, align: 'center', fontFace: FONT_NAME });
       slide2.addChart(pres.ChartType.doughnut, [
         { name: 'People', labels: ['Promoters', 'Ambassadors', 'Staff'], values: [totalPromoters, totalAmbassadors, totalStaff] }
       ], {
-        x: 7.2, y: 1.5, w: 5.5, h: 2.2,
-        showLegend: true, legendPos: 'r', legendColor: colors.white, legendFontSize: 10,
-        showLabel: true, dataLabelColor: colors.white, chartColors: ['00A0D2', 'F39C12', '27AE60'], holeSize: 65
+        x: 6.0, y: 1.3, w: 6.8, h: 2.1,
+        showLegend: true, legendPos: 'r', legendColor: colors.white, legendFontSize: 9, legendFontFace: FONT_NAME,
+        showLabel: true, dataLabelColor: colors.white, chartColors: ['00A0D2', 'F39C12', '27AE60'], holeSize: 60
       });
     }
 
-    // Grafico Bar delle motivazioni visite in basso a destra (Ridotto per safe zone)
+    // Grafico 2: Primary Reasons (Barre Orizzontali - Posizionato in basso a sinistra)
     if (reasonsData) {
-      slide2.addText("Primary Reasons for Store Visits", { x: 7.2, y: 4.1, w: 5.5, h: 0.3, fontSize: 13, color: colors.cyan, bold: true, align: 'center' });
+      slide2.addText("Primary Reasons for Store Visits", { x: 0.5, y: 4.0, w: 5.5, h: 0.3, fontSize: 12, color: colors.cyan, bold: true, fontFace: FONT_NAME });
       slide2.addChart(pres.ChartType.bar, reasonsData, {
-        x: 7.2, y: 4.5, w: 5.5, h: 2.3,
-        barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 9,
-        valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 9, chartColors: ['F39C12']
+        x: 0.5, y: 4.4, w: 5.5, h: 2.3,
+        barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, dataLabelFontFace: FONT_NAME,
+        valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8, catAxisLabelFontFace: FONT_NAME, chartColors: ['00A0D2']
+      });
+    }
+
+    // Grafico 3: Nuovo grafico Qualitativo Checklist (Barre Orizzontali - Posizionato in basso a destra)
+    if (qualitativeData) {
+      slide2.addText("Qualitative Parameters Distribution (Focus Metrics)", { x: 6.5, y: 4.0, w: 6.3, h: 0.3, fontSize: 12, color: colors.orange, bold: true, fontFace: FONT_NAME });
+      slide2.addChart(pres.ChartType.bar, qualitativeData, {
+        x: 6.5, y: 4.4, w: 6.3, h: 2.3,
+        barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, dataLabelFontFace: FONT_NAME,
+        valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 7, catAxisLabelFontFace: FONT_NAME, chartColors: ['F39C12']
       });
     }
 
@@ -725,12 +728,12 @@ async function generatePPTX() {
       let slideV = pres.addSlide();
       slideV.background = { color: colors.dark };
       
-      // Header Visita
-      slideV.addText(visit.storeName.toUpperCase(), { x: 0.5, y: 0.4, w: 8.0, h: 0.5, fontSize: 24, bold: true, color: colors.cyan });
-      slideV.addText(`📍 Location: ${visit.storeLocation}    |    📅 Date: ${visit.visitDate} (Week ${visit.weekNumber})`, { x: 0.5, y: 0.9, w: 12.3, h: 0.4, fontSize: 12, color: colors.white });
+      slideV.addText(visit.storeName.toUpperCase(), { x: 0.5, y: 0.4, w: 8.0, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: FONT_NAME });
+      slideV.addText(`📍 Location: ${visit.storeLocation}    |    📅 Date: ${visit.visitDate} (Week ${visit.weekNumber})`, { x: 0.5, y: 0.9, w: 12.3, h: 0.4, fontSize: 12, color: colors.white, fontFace: FONT_NAME });
       
-      // KPI numerici della visita (Tabella Sinistra)
       let achPerc = visit.target > 0 ? ((visit.sellout / visit.target) * 100).toFixed(1) + "%" : "—";
+      
+      // Tabella Metrics più compatta a sinistra
       slideV.addTable([
         [{text: "Performance Metrics", options: {bold: true, fill: colors.subBg, color: colors.cyan}}, {text: "Value", options: {bold: true, fill: colors.subBg, color: colors.cyan}}],
         ["Sell-out Volume", `${visit.sellout} units`],
@@ -739,38 +742,35 @@ async function generatePPTX() {
         ["Promoters Trained", visit.promotersCount.toString()],
         ["Ambassadors Trained", visit.ambassadorsCount.toString()],
         ["In-Store Staff Trained", visit.staffCount.toString()]
-      ], { x: 0.5, y: 1.6, w: 5.8, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 11, colW: [3.4, 2.4], margin: 6 });
+      ], { x: 0.5, y: 1.6, w: 5.4, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 10, fontFace: FONT_NAME, colW: [3.2, 2.2], margin: 4 });
 
-      // Contesto Checklist Visita (Tabella Destra)
+      // Tabella Focus più compatta a destra
       slideV.addTable([
         [{text: "Operational Focus", options: {bold: true, fill: colors.subBg, color: colors.orange}}, {text: "Applied Criteria", options: {bold: true, fill: colors.subBg, color: colors.orange}}],
         ["Objectives", (visit.objectives || []).join(", ") || "—"],
         ["Contents", (visit.contents || []).join(", ") || "—"],
-        ["Products Categories Focus", (visit.productCategories || []).join(", ") || "—"],
+        ["Product Focus", (visit.productCategories || []).join(", ") || "—"],
         ["Delivery Mode", (visit.deliveryMode || []).join(", ") || "—"]
-      ], { x: 6.7, y: 1.6, w: 6.1, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 10, colW: [2.2, 3.9], margin: 6 });
+      ], { x: 6.4, y: 1.6, w: 6.1, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 9, fontFace: FONT_NAME, colW: [2.0, 4.1], margin: 4 });
       
-      // Note in basso ad altezza di sicurezza
       if(visit.notes) {
-          slideV.addText("Field Observer Notes:", { x: 0.5, y: 5.3, w: 12.3, h: 0.3, fontSize: 13, bold: true, color: colors.orange });
-          slideV.addText(visit.notes, { x: 0.5, y: 5.7, w: 12.3, h: 1.1, fontSize: 11, color: colors.white, fill: colors.subBg, margin: 6 });
+          slideV.addText("Field Observer Notes:", { x: 0.5, y: 5.3, w: 12.3, h: 0.3, fontSize: 13, bold: true, color: colors.orange, fontFace: FONT_NAME });
+          slideV.addText(visit.notes, { x: 0.5, y: 5.7, w: 12.3, h: 1.1, fontSize: 11, color: colors.white, fill: colors.subBg, margin: 6, fontFace: FONT_NAME });
       }
 
-      // --- SLIDE MEDIA/VISUALS PER LA VISITA ---
+      // --- SLIDE IMMAGINI ---
       if ((visit.visitPhotos && visit.visitPhotos.length > 0) || visit.powerBiScreenshot) {
           let slideM = pres.addSlide();
           slideM.background = { color: colors.dark };
-          slideM.addText(`${visit.storeName.toUpperCase()} - ATTACHED VISUALS`, { x: 0.5, y: 0.4, w: 12.3, h: 0.5, fontSize: 20, bold: true, color: colors.cyan });
+          slideM.addText(`${visit.storeName.toUpperCase()} - ATTACHED VISUALS`, { x: 0.5, y: 0.4, w: 12.3, h: 0.5, fontSize: 20, bold: true, color: colors.cyan, fontFace: FONT_NAME });
 
-          // Logica di isolamento stringhe base64 corrotte o malformate
           const cleanB64 = (str) => {
             if(!str) return null;
             return str.includes("base64,") ? str.split("base64,")[1].trim() : str.trim();
           };
 
-          // Layout ad area divisa (50% Power BI a sinistra, 50% Griglia Foto Visita a destra)
           if(visit.powerBiScreenshot) {
-              slideM.addText("Power BI Sales Dashboard Trend", { x: 0.5, y: 1.1, w: 5.8, h: 0.3, fontSize: 13, bold: true, color: colors.orange });
+              slideM.addText("Power BI Sales Dashboard Trend", { x: 0.5, y: 1.1, w: 5.8, h: 0.3, fontSize: 13, bold: true, color: colors.orange, fontFace: FONT_NAME });
               let biData = cleanB64(visit.powerBiScreenshot);
               if(biData) {
                 slideM.addImage({ data: "base64," + biData, x: 0.5, y: 1.5, w: 5.8, h: 5.0, sizing: { type: 'contain', w: 5.8, h: 5.0 } });
@@ -780,9 +780,8 @@ async function generatePPTX() {
           if(visit.visitPhotos && visit.visitPhotos.length > 0) {
               let photoStartX = visit.powerBiScreenshot ? 6.7 : 0.5;
               let photoAreaW = visit.powerBiScreenshot ? 6.1 : 12.3;
-              slideM.addText("In-Store Execution Photos", { x: photoStartX, y: 1.1, w: photoAreaW, h: 0.3, fontSize: 13, bold: true, color: colors.orange });
+              slideM.addText("In-Store Execution Photos", { x: photoStartX, y: 1.1, w: photoAreaW, h: 0.3, fontSize: 13, bold: true, color: colors.orange, fontFace: FONT_NAME });
 
-              // Coordinate griglie matematicamente perfette per evitare sovrapposizioni
               let photoGrid = visit.powerBiScreenshot ? [
                   { x: 6.7, y: 1.5, w: 2.9, h: 2.3 }, { x: 9.8, y: 1.5, w: 2.9, h: 2.3 },
                   { x: 6.7, y: 4.1, w: 2.9, h: 2.3 }, { x: 9.8, y: 4.1, w: 2.9, h: 2.3 }
