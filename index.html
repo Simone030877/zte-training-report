@@ -200,7 +200,7 @@
             <input type="number" id="promotersCount" min="0" step="1" value="0">
           </div>
           <div class="form-col">
-            <label for="ambassadorsCount">Ambassadors Trained</label>
+            <label pour="ambassadorsCount">Ambassadors Trained</label>
             <input type="number" id="ambassadorsCount" min="0" step="1" value="0">
           </div>
           <div class="form-col">
@@ -750,17 +750,23 @@ async function generatePPTX() {
     slide.addText(visit.storeName.toUpperCase(), { x: 0.5, y: 0.5, w: 9, h: 0.5, fontSize: 24, bold: true, color: colors.cyan });
     slide.addText(`Location: ${visit.storeLocation} | Date: ${visit.visitDate}`, { x: 0.5, y: 1.1, w: 9, h: 0.4, fontSize: 14, color: colors.white });
     
-    slide.addText("Performance:", { x: 0.5, y: 2, w: 4, h: 0.4, fontSize: 18, bold: true, color: colors.orange });
-    slide.addText(`Sell-out: ${visit.sellout} units\nTarget: ${visit.target} units`, { x: 0.5, y: 2.5, w: 4, h: 1, fontSize: 16, color: colors.white });
+    slide.addText("Performance:", { x: 0.5, y: 1.8, w: 4, h: 0.4, fontSize: 18, bold: true, color: colors.orange });
+    slide.addText(`Sell-out: ${visit.sellout} units\nTarget: ${visit.target} units`, { x: 0.5, y: 2.3, w: 4, h: 1, fontSize: 16, color: colors.white });
     
-    if(visit.powerBiScreenshot) {
-        slide.addText("Power BI Trend:", { x: 5, y: 2, w: 4, h: 0.4, fontSize: 18, bold: true, color: colors.orange });
-        slide.addImage({ data: visit.powerBiScreenshot, x: 5, y: 2.5, w: 4.5, h: 2.5 });
+    // Inserimento Power BI con fix delle dimensioni e pulizia stringa base64
+    if(visit.powerBiScreenshot && visit.powerBiScreenshot.includes("base64,")) {
+        try {
+            slide.addText("Power BI Trend:", { x: 5, y: 1.8, w: 4, h: 0.4, fontSize: 18, bold: true, color: colors.orange });
+            let cleanBi = visit.powerBiScreenshot.split("base64,")[1];
+            slide.addImage({ data: "base64," + cleanBi, x: 5, y: 2.3, w: 4.5, h: 2.5 });
+        } catch(e) {
+            console.error("Error processing PowerBI image for PPTX", e);
+        }
     }
 
     if(visit.notes) {
         slide.addText("Notes:", { x: 0.5, y: 4.5, w: 9, h: 0.4, fontSize: 18, bold: true, color: colors.orange });
-        slide.addText(visit.notes, { x: 0.5, y: 5, w: 9, h: 1.5, fontSize: 12, color: colors.white });
+        slide.addText(visit.notes, { x: 0.5, y: 5.0, w: 9, h: 1.5, fontSize: 12, color: colors.white });
     }
 
     // Photo Slide (if any)
@@ -769,12 +775,23 @@ async function generatePPTX() {
         slide.background = { color: colors.dark };
         slide.addText(`${visit.storeName} - Photos`, { x: 0.5, y: 0.5, w: 9, h: 0.5, fontSize: 20, bold: true, color: colors.cyan });
         
-        let xPos = 0.5;
-        let yPos = 1.2;
+        let positions = [
+            { x: 0.5, y: 1.3, w: 4.2, h: 2.4 },
+            { x: 5.0, y: 1.3, w: 4.2, h: 2.4 },
+            { x: 0.5, y: 4.1, w: 4.2, h: 2.4 },
+            { x: 5.0, y: 4.1, w: 4.2, h: 2.4 }
+        ];
+
         visit.visitPhotos.slice(0, 4).forEach((imgData, idx) => {
-            slide.addImage({ data: imgData, x: xPos, y: yPos, w: 4.2, h: 2.6 });
-            xPos += 4.5;
-            if (xPos > 5) { xPos = 0.5; yPos += 2.8; }
+            if(imgData && imgData.includes("base64,")) {
+                try {
+                    let cleanImg = imgData.split("base64,")[1];
+                    let pos = positions[idx];
+                    slide.addImage({ data: "base64," + cleanImg, x: pos.x, y: pos.y, w: pos.w, h: pos.h });
+                } catch(e) {
+                    console.error("Error processing visit image for PPTX", e);
+                }
+            }
         });
     }
   });
@@ -789,5 +806,3 @@ window.addEventListener('DOMContentLoaded', initApp);
 
 </body>
 </html>
-
-Your slide deck on ZTE Training Report is ready! Feel free to take a look and let me know if you'd like to make any edits.
