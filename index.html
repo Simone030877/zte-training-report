@@ -755,16 +755,23 @@ async function generatePPTX() {
       return;
     }
     
-    const blob = await response.blob();
+    const data = await response.json();
+    const binaryString = atob(data.pptx);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation' });
+    
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `ZTE_Report_${reportType}_${reportPeriod}_${reportYear}.pptx`;
+    link.download = data.filename;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-    alert('PPTX generated successfully!');
+    alert('PPTX generated and downloaded successfully!');
   } catch (error) {
     console.error('Error:', error);
     alert('Error generating PPTX: ' + error.message);
