@@ -37,6 +37,7 @@
     .form-container { background: #fff; border-radius: 8px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
     .form-container h2 { margin-bottom: 2rem; color: #0d1628; font-size: 1.8rem; }
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
     .form-col { display: flex; flex-direction: column; }
     .form-col.full-width { grid-column: 1 / -1; }
     label { font-weight: 600; margin-bottom: 0.5rem; color: #0d1628; font-size: 0.95rem; }
@@ -200,7 +201,7 @@
             <input type="number" id="promotersCount" min="0" step="1" value="0">
           </div>
           <div class="form-col">
-            <label pour="ambassadorsCount">Ambassadors Trained</label>
+            <label for="ambassadorsCount">Ambassadors Trained</label>
             <input type="number" id="ambassadorsCount" min="0" step="1" value="0">
           </div>
           <div class="form-col">
@@ -734,7 +735,7 @@ async function generatePPTX() {
   slide.addText("REPORT SUMMARY", { x: 0.5, y: 0.5, w: 9, h: 0.5, fontSize: 28, bold: true, color: colors.cyan });
   
   const totalSellout = filteredVisits.reduce((sum, v) => sum + (v.sellout || 0), 0);
-  pres.addTable([
+  slide.addTable([
     [{text: "Kpi", options: {bold: true, fill: colors.cyan, color: colors.white}}, {text: "Value", options: {bold: true, fill: colors.cyan, color: colors.white}}],
     ["Total Visits", filteredVisits.length.toString()],
     ["Total Sell-out", totalSellout.toString()],
@@ -753,7 +754,7 @@ async function generatePPTX() {
     slide.addText("Performance:", { x: 0.5, y: 1.8, w: 4, h: 0.4, fontSize: 18, bold: true, color: colors.orange });
     slide.addText(`Sell-out: ${visit.sellout} units\nTarget: ${visit.target} units`, { x: 0.5, y: 2.3, w: 4, h: 1, fontSize: 16, color: colors.white });
     
-    // Inserimento Power BI con fix delle dimensioni e pulizia stringa base64
+    // Inserimento Power BI
     if(visit.powerBiScreenshot && visit.powerBiScreenshot.includes("base64,")) {
         try {
             slide.addText("Power BI Trend:", { x: 5, y: 1.8, w: 4, h: 0.4, fontSize: 18, bold: true, color: colors.orange });
