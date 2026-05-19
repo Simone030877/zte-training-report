@@ -15,7 +15,6 @@ export default async function handler(req, res) {
     const colors = { dark: '#0d1628', cyan: '#00c8ff', orange: '#f39c12', green: '#27ae60', white: '#ffffff', text: '#cccccc' };
     const font = 'Montserrat';
 
-    // KPI calculations
     const totalPromotars = visits.reduce((sum, v) => sum + (v.promotersCount || 0), 0);
     const totalAmbassadors = visits.reduce((sum, v) => sum + (v.ambassadorsCount || 0), 0);
     const totalStaff = visits.reduce((sum, v) => sum + (v.staffCount || 0), 0);
@@ -41,7 +40,7 @@ export default async function handler(req, res) {
     slide.addText(periodName + ' · ' + reportYear, { x: 0.5, y: 3, w: 9, h: 0.5, fontSize: 32, color: colors.white, fontFace: font, align: 'center' });
     slide.addText('Trainer: Simone Stasiano', { x: 0.5, y: 4, w: 9, h: 0.4, fontSize: 16, color: colors.text, fontFace: font, align: 'center' });
 
-    // SLIDE 2: OVERVIEW / SUMMARY
+    // SLIDE 2: OVERVIEW
     slide = pres.addSlide();
     slide.background = { color: colors.dark };
     slide.addText('OVERVIEW', { x: 0.5, y: 0.4, w: 9, h: 0.5, fontSize: 28, bold: true, color: colors.cyan, fontFace: font });
@@ -72,14 +71,12 @@ export default async function handler(req, res) {
 
     // SLIDE 3+: PER OGNI VISITA
     visits.forEach((visit, idx) => {
-      // VISIT DETAIL SLIDE
       slide = pres.addSlide();
       slide.background = { color: colors.dark };
 
       slide.addText(`VISIT ${idx + 1} - ${visit.storeName}`, { x: 0.5, y: 0.4, w: 9, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: font });
       slide.addText(visit.visitDate, { x: 0.5, y: 1, w: 9, h: 0.3, fontSize: 12, color: colors.text, fontFace: font });
 
-      // LEFT COLUMN: DETAILS
       slide.addText('DETAILS', { x: 0.5, y: 1.5, w: 4.2, h: 0.35, fontSize: 12, bold: true, color: colors.cyan, fontFace: font });
       let detailY = 2;
       const details = [
@@ -96,7 +93,6 @@ export default async function handler(req, res) {
         detailY += 0.3;
       });
 
-      // RIGHT COLUMN: PERFORMANCE
       slide.addText('PERFORMANCE', { x: 5.3, y: 1.5, w: 4.2, h: 0.35, fontSize: 12, bold: true, color: colors.cyan, fontFace: font });
       let perfY = 2;
       const perfData = [
@@ -110,13 +106,11 @@ export default async function handler(req, res) {
         perfY += 0.3;
       });
 
-      // NOTES
       if (visit.notes) {
         slide.addText('NOTES', { x: 0.5, y: 5, w: 9, h: 0.3, fontSize: 11, bold: true, color: colors.cyan, fontFace: font });
         slide.addText(visit.notes, { x: 0.5, y: 5.35, w: 9, h: 1.5, fontSize: 9, color: colors.text, fontFace: font, wrap: true });
       }
 
-      // PHOTO SLIDE
       if (visit.visitPhotos && visit.visitPhotos.length > 0) {
         slide = pres.addSlide();
         slide.background = { color: colors.dark };
@@ -139,11 +133,13 @@ export default async function handler(req, res) {
       }
     });
 
-    // Generate PPTX buffer and send
+    // Convert to buffer, then to base64
     const buffer = await pres.write({ outputType: 'arraybuffer' });
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.presentationml.presentation');
-    res.setHeader('Content-Disposition', `attachment; filename="ZTE_Report_${reportType}_${reportPeriod}_${reportYear}.pptx"`);
-    res.send(Buffer.from(buffer));
+    const base64 = Buffer.from(buffer).toString('base64');
+    const filename = `ZTE_Report_${reportType}_${reportPeriod}_${reportYear}.pptx`;
+
+    // Return base64 as JSON
+    res.status(200).json({ pptx: base64, filename: filename });
 
   } catch (error) {
     console.error('PPTX generation error:', error);
