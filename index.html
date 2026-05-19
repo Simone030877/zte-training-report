@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZTE Training Report Builder - STABLE</title>
+  <title>ZTE - LFM Training on Field professional tools</title>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/gh/Stuk/jszip@v3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@v3.12.0/dist/pptxgen.bundle.js"></script>
@@ -77,7 +77,7 @@
 <body>
 
 <div class="header">
-  <h1>ZTE Training Report Builder</h1>
+  <h1>ZTE - LFM Training on Field professional tools</h1>
   <div class="header-right">
     <div class="sync-badge offline" id="syncBadge">
       <span class="dot"></span>
@@ -138,7 +138,7 @@
           <div class="form-col full-width">
             <label>Objectives *</label>
             <div class="checkbox-group">
-              <label><input type="checkbox" name="objective" value="Focus on flagship"> Focus on flagship</label>
+              <label><input type="checkbox" name="objective" value="Focus on flagship"> focus su top di gamma</label>
               <label><input type="checkbox" name="objective" value="Increase sales"> Increase sales</label>
               <label><input type="checkbox" name="objective" value="Brand awareness"> Brand awareness</label>
             </div>
@@ -175,7 +175,7 @@
               <label><input type="checkbox" name="reasonForVisit" value="Promoter"> Promoter</label>
               <label><input type="checkbox" name="reasonForVisit" value="Field Ambassador"> Field Ambassador</label>
               <label><input type="checkbox" name="reasonForVisit" value="Staff Training"> Staff Training</label>
-              <label><input type="checkbox" name="reasonForVisit" value="Display & Visual Merchandising Check"> Display & Visual Merchandising Check</label>
+              <label><input type="checkbox" name="reasonForVisit" value="Display & Visual Merchandising Check"> Display Check</label>
               <label><input type="checkbox" name="reasonForVisit" value="Schedule Training Room"> Schedule Training Room</label>
             </div>
           </div>
@@ -210,11 +210,11 @@
         <div class="form-row">
           <div class="form-col">
             <label for="sellout">Sell-out (units)</label>
-            <input type="number" id="sellout" min="0" step="1">
+            <input type="number" id="sellout" min="0" step="1" value="0">
           </div>
           <div class="form-col">
             <label for="target">Target (units)</label>
-            <input type="number" id="target" min="0" step="1">
+            <input type="number" id="target" min="0" step="1" value="0">
           </div>
         </div>
 
@@ -288,7 +288,6 @@
         </div>
       </div>
       <div class="report-actions">
-        <button class="btn btn-primary" onclick="generateReport()">Generate HTML Report</button>
         <button class="btn btn-primary" id="pptxBtn" onclick="generatePPTX()" style="background:#f39c12">Generate PPTX Report</button>
         <button class="btn btn-secondary" onclick="switchToSection('dashboard')">Cancel</button>
       </div>
@@ -351,7 +350,8 @@ document.getElementById('visitDate').addEventListener('change', function() {
   }
 });
 
-function compressImage(file, maxWidth = 1000) {
+// COMPRESSORE IMMAGINI POTENZIATO: Riduce peso a 800px max e qualità 0.3 per evitare crash di memoria
+function compressImage(file, maxWidth = 800) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -361,8 +361,9 @@ function compressImage(file, maxWidth = 1000) {
         let width = img.width, height = img.height;
         if (width > maxWidth) { height = (height * maxWidth) / width; width = maxWidth; }
         canvas.width = width; canvas.height = height;
-        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.4);
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.3);
       };
       img.src = e.target.result;
     };
@@ -382,7 +383,7 @@ function blobToBase64(blob) {
 document.getElementById('visitPhotos').addEventListener('change', async function() {
   const preview = document.getElementById('visitPhotosPreview');
   for(let file of this.files) {
-    const compBlob = await compressImage(file, 1000);
+    const compBlob = await compressImage(file, 800);
     const b64 = await blobToBase64(compBlob);
     const div = document.createElement('div');
     div.className = 'photo-item';
@@ -396,7 +397,7 @@ document.getElementById('powerBiPhoto').addEventListener('change', async functio
   const preview = document.getElementById('powerBiPhotoPreview');
   preview.innerHTML = '';
   if(this.files[0]) {
-    const compBlob = await compressImage(this.files[0], 1200);
+    const compBlob = await compressImage(this.files[0], 1000);
     const b64 = await blobToBase64(compBlob);
     const div = document.createElement('div');
     div.className = 'photo-item';
@@ -417,7 +418,7 @@ async function saveVisit(e) {
   const reasonForVisit = Array.from(document.querySelectorAll('input[name="reasonForVisit"]:checked')).map(el => el.value);
   const deliveryMode = Array.from(document.querySelectorAll('input[name="deliveryMode"]:checked')).map(el => el.value);
   
-  if (!storeName || !storeLocation || !visitDate || objectives.length === 0 || contents.length === 0 || productCategories.length === 0 || reasonForVisit.length === 0 || deliveryMode.length === 0) { alert('Fill all required fields'); return; }
+  if (!storeName || !storeLocation || !visitDate) { alert('Fill all required fields'); return; }
   
   try {
     const submitBtn = document.querySelector('#visitForm button[type="submit"]');
@@ -510,10 +511,10 @@ async function openEditModal(visitId) {
   document.getElementById('storeLocation').value = visit.storeLocation;
   document.getElementById('visitDate').value = visit.visitDate;
   
-  document.querySelectorAll('input[name="objective"]').forEach(el => el.checked = visit.objectives.includes(el.value));
+  document.querySelectorAll('input[name="objective"]').forEach(el => el.checked = visit.objectives?.includes(el.value));
   document.querySelectorAll('input[name="contents"]').forEach(el => el.checked = visit.contents?.includes(el.value));
   document.querySelectorAll('input[name="productCategories"]').forEach(el => el.checked = visit.productCategories?.includes(el.value));
-  document.querySelectorAll('input[name="reasonForVisit"]').forEach(el => el.checked = visit.reasonForVisit.includes(el.value));
+  document.querySelectorAll('input[name="reasonForVisit"]').forEach(el => el.checked = visit.reasonForVisit?.includes(el.value));
   document.querySelectorAll('input[name="deliveryMode"]').forEach(el => el.checked = visit.deliveryMode?.includes(el.value));
   
   document.getElementById('promotersCount').value = visit.promotersCount;
@@ -601,8 +602,6 @@ function updateReportSelectors() {
   });
 }
 
-function generateReport() { }
-
 function switchToSection(sectionId) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById(sectionId).classList.add('active');
@@ -619,7 +618,7 @@ async function initApp() {
   renderDashboard();
 }
 
-// --- GENERAZIONE REPORT PPTX AGGIORNATA CON MONTSERRAT E ZONE SICURE ---
+// --- GENERATORE DI REPORT PPTX BLINDATO E CORRETTO AL 100% ---
 async function generatePPTX() {
   const reportType = document.getElementById('reportType').value;
   const reportPeriod = document.getElementById('reportPeriod').value;
@@ -630,22 +629,29 @@ async function generatePPTX() {
   if (reportType === 'weekly') filteredVisits = filteredVisits.filter(v => v.weekNumber === parseInt(reportPeriod));
   else if (reportType === 'monthly') filteredVisits = filteredVisits.filter(v => v.month === parseInt(reportPeriod));
   else if (reportType === 'quarterly') filteredVisits = filteredVisits.filter(v => v.quarter === parseInt(reportPeriod));
-  if (filteredVisits.length === 0) { alert('No visits found'); return; }
+  if (filteredVisits.length === 0) { alert('No visits found for the selected criteria.'); return; }
 
   const pptxBtn = document.getElementById('pptxBtn');
-  pptxBtn.textContent = "Generating...";
+  pptxBtn.textContent = "Generating Report...";
   pptxBtn.disabled = true;
 
   try {
     const pres = new PptxGenJS();
     pres.layout = 'LAYOUT_16x9';
     
-    // Configurazione Temi Globale e Font Preferito
+    // Configurazione Costanti Design e Tipografia Globale
     const FONT_NAME = 'Montserrat';
     const colors = { dark: '0D1628', cyan: '00A0D2', orange: 'F39C12', white: 'FFFFFF', subBg: '1E293B', grayBorder: '334155' };
     let periodName = reportType === 'weekly' ? `Week ${reportPeriod}` : reportType === 'monthly' ? `Month ${reportPeriod}` : `Q${reportPeriod}`;
 
-    // --- AGGREGAZIONE DATI ---
+    // Funzione interna per ripulire e accorciare i testi delle categorie nei grafici (Evita rotture di layout delle label)
+    const cleanLabel = (str) => {
+      if(!str) return "";
+      let s = str.replace("Focus on flagship", "Top Focus").replace("Display & Visual Merchandising Check", "Display Check");
+      return s.length > 15 ? s.substring(0, 14) + "..." : s;
+    };
+
+    // --- AGGREGAZIONE E STATISTICHE COMPLESSE ---
     const totalPromoters = filteredVisits.reduce((sum, v) => sum + (v.promotersCount || 0), 0);
     const totalAmbassadors = filteredVisits.reduce((sum, v) => sum + (v.ambassadorsCount || 0), 0);
     const totalStaff = filteredVisits.reduce((sum, v) => sum + (v.staffCount || 0), 0);
@@ -653,13 +659,11 @@ async function generatePPTX() {
 
     const reasonsCounts = {}, qualitativeCounts = {};
     filteredVisits.forEach(v => {
-        (v.reasonForVisit || []).forEach(r => reasonsCounts[r] = (reasonsCounts[r] || 0) + 1);
-        
-        // Uniamo tutti i parametri qualitativi in un unico set per il grafico orizzontale a barre
-        (v.objectives || []).forEach(o => qualitativeCounts[`Obj: ${o}`] = (qualitativeCounts[`Obj: ${o}`] || 0) + 1);
-        (v.contents || []).forEach(c => qualitativeCounts[`Topic: ${c}`] = (qualitativeCounts[`Topic: ${c}`] || 0) + 1);
-        (v.productCategories || []).forEach(p => qualitativeCounts[`Prod: ${p}`] = (qualitativeCounts[`Prod: ${p}`] || 0) + 1);
-        (v.deliveryMode || []).forEach(m => qualitativeCounts[`Mode: ${m}`] = (qualitativeCounts[`Mode: ${m}`] || 0) + 1);
+        (v.reasonForVisit || []).forEach(r => { let k = cleanLabel(r); reasonsCounts[k] = (reasonsCounts[k] || 0) + 1; });
+        (v.objectives || []).forEach(o => { let k = "Obj: " + cleanLabel(o); qualitativeCounts[k] = (qualitativeCounts[k] || 0) + 1; });
+        (v.contents || []).forEach(c => { let k = "Topic: " + cleanLabel(c); qualitativeCounts[k] = (qualitativeCounts[k] || 0) + 1; });
+        (v.productCategories || []).forEach(p => { let k = "Prod: " + cleanLabel(p); qualitativeCounts[k] = (qualitativeCounts[k] || 0) + 1; });
+        (v.deliveryMode || []).forEach(m => { let k = "Mode: " + cleanLabel(m); qualitativeCounts[k] = (qualitativeCounts[k] || 0) + 1; });
     });
 
     const formatForChart = (map) => {
@@ -670,18 +674,19 @@ async function generatePPTX() {
     const reasonsData = formatForChart(reasonsCounts);
     const qualitativeData = formatForChart(qualitativeCounts);
 
-    // --- SLIDE 1: COVER ---
+    // --- SLIDE 1: COPERTINA ISTITUZIONALE ---
     let slide1 = pres.addSlide();
     slide1.background = { color: colors.dark };
-    slide1.addText("ZTE TRAINING REPORT", { x: 0.5, y: 2.2, w: 12.3, h: 0.8, fontSize: 40, bold: true, color: colors.cyan, align: 'center', fontFace: FONT_NAME });
-    slide1.addText(`${periodName.toUpperCase()} - ${reportYear}`, { x: 0.5, y: 3.2, w: 12.3, h: 0.5, fontSize: 22, color: colors.white, align: 'center', fontFace: FONT_NAME });
+    slide1.addText("ZTE TRAINING REPORT", { x: 0.5, y: 2.2, w: 12.3, h: 0.8, fontSize: 38, bold: true, color: colors.cyan, align: 'center', fontFace: FONT_NAME });
+    slide1.addText(`${periodName.toUpperCase()} - ${reportYear}`, { x: 0.5, y: 3.2, w: 12.3, h: 0.5, fontSize: 20, color: colors.white, align: 'center', fontFace: FONT_NAME });
+    slide1.addText("ZTE - LFM Training on Field professional tools", { x: 0.5, y: 6.5, w: 12.3, h: 0.4, fontSize: 10, color: colors.cyan, align: 'center', fontFace: FONT_NAME });
 
-    // --- SLIDE 2: EXECUTIVE SUMMARY (TABELLE PICCOLE E CENTRATE A SINISTRA + GRAFICI DISTANZIATI) ---
+    // --- SLIDE 2: EXECUTIVE SUMMARY (RE-LAYOUT INTEGRALE SPAZIATO AL MILLIMETRO) ---
     let slide2 = pres.addSlide();
     slide2.background = { color: colors.dark };
-    slide2.addText("EXECUTIVE RECAP SUMMARY", { x: 0.5, y: 0.4, w: 12.3, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: FONT_NAME });
+    slide2.addText("EXECUTIVE RECAP SUMMARY", { x: 0.5, y: 0.3, w: 12.3, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: FONT_NAME });
 
-    // Tabella KPI Principali (Resa più piccola per evitare invasioni a destra)
+    // Tabella KPI Generali compatta a Sinistra
     slide2.addTable([
       [{text: "Global Metrics Summary", options: {bold: true, fill: colors.cyan, color: colors.white}}, {text: "Totals", options: {bold: true, fill: colors.cyan, color: colors.white, align:'center'}}],
       ["Total Field Store Visits", filteredVisits.length.toString()],
@@ -689,106 +694,123 @@ async function generatePPTX() {
       ["• Brand Promoters Trained", totalPromoters.toString()],
       ["• Field Ambassadors Trained", totalAmbassadors.toString()],
       ["• Store Staff Trained", totalStaff.toString()]
-    ], { x: 0.5, y: 1.2, w: 4.8, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 10, fontFace: FONT_NAME, colW: [3.4, 1.4], margin: 4 });
+    ], { x: 0.6, y: 1.1, w: 4.4, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 10, fontFace: FONT_NAME, colW: [3.1, 1.3], margin: 4 });
 
-    // Spazio Grafico Torta Distribuzione Partecipanti (Centrato in alto a destra)
+    // Grafico 1: Torta Headcount Partecipanti (Posizionato stabilmente in Alto a Destra)
     if (totalTrained > 0) {
-      slide2.addText("Participants Distribution", { x: 6.0, y: 1.0, w: 6.8, h: 0.3, fontSize: 12, color: colors.orange, bold: true, align: 'center', fontFace: FONT_NAME });
+      slide2.addText("Participants Distribution", { x: 5.6, y: 0.9, w: 7.1, h: 0.3, fontSize: 11, color: colors.orange, bold: true, align: 'center', fontFace: FONT_NAME });
       slide2.addChart(pres.ChartType.doughnut, [
         { name: 'People', labels: ['Promoters', 'Ambassadors', 'Staff'], values: [totalPromoters, totalAmbassadors, totalStaff] }
       ], {
-        x: 6.0, y: 1.3, w: 6.8, h: 2.1,
+        x: 5.6, y: 1.2, w: 7.1, h: 2.2,
         showLegend: true, legendPos: 'r', legendColor: colors.white, legendFontSize: 9, legendFontFace: FONT_NAME,
         showLabel: true, dataLabelColor: colors.white, chartColors: ['00A0D2', 'F39C12', '27AE60'], holeSize: 60
       });
+    } else {
+      slide2.addText("No Headcount Data Available", { x: 5.6, y: 1.5, w: 7.1, h: 1.0, fontSize: 11, color: colors.white, align: 'center', fontFace: FONT_NAME, fill: colors.subBg });
     }
 
-    // Grafico 2: Primary Reasons (Barre Orizzontali - Posizionato in basso a sinistra)
+    // Grafico 2: Primary Reasons (Barre Orizzontali - Zona Basso a Sinistra)
     if (reasonsData) {
-      slide2.addText("Primary Reasons for Store Visits", { x: 0.5, y: 4.0, w: 5.5, h: 0.3, fontSize: 12, color: colors.cyan, bold: true, fontFace: FONT_NAME });
+      slide2.addText("Primary Reasons for Store Visits", { x: 0.6, y: 3.9, w: 5.4, h: 0.3, fontSize: 11, color: colors.cyan, bold: true, fontFace: FONT_NAME });
       slide2.addChart(pres.ChartType.bar, reasonsData, {
-        x: 0.5, y: 4.4, w: 5.5, h: 2.3,
+        x: 0.6, y: 4.3, w: 5.4, h: 2.4,
         barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, dataLabelFontFace: FONT_NAME,
         valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8, catAxisLabelFontFace: FONT_NAME, chartColors: ['00A0D2']
       });
+    } else {
+      slide2.addText("No Reasons Recorded", { x: 0.6, y: 4.3, w: 5.4, h: 2.4, fontSize: 11, color: colors.white, align: 'center', fontFace: FONT_NAME, fill: colors.subBg });
     }
 
-    // Grafico 3: Nuovo grafico Qualitativo Checklist (Barre Orizzontali - Posizionato in basso a destra)
+    // Grafico 3: Qualitative Checklist Unificato (Barre Orizzontali - Zona Basso a Destra)
     if (qualitativeData) {
-      slide2.addText("Qualitative Parameters Distribution (Focus Metrics)", { x: 6.5, y: 4.0, w: 6.3, h: 0.3, fontSize: 12, color: colors.orange, bold: true, fontFace: FONT_NAME });
+      slide2.addText("Qualitative Parameters Distribution (Focus Metrics)", { x: 6.6, y: 3.9, w: 6.1, h: 0.3, fontSize: 11, color: colors.orange, bold: true, fontFace: FONT_NAME });
       slide2.addChart(pres.ChartType.bar, qualitativeData, {
-        x: 6.5, y: 4.4, w: 6.3, h: 2.3,
+        x: 6.6, y: 4.3, w: 6.1, h: 2.4,
         barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, dataLabelFontFace: FONT_NAME,
-        valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 7, catAxisLabelFontFace: FONT_NAME, chartColors: ['F39C12']
+        valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8, catAxisLabelFontFace: FONT_NAME, chartColors: ['F39C12']
       });
+    } else {
+      slide2.addText("No Qualitative Metrics Recorded", { x: 6.6, y: 4.3, w: 6.1, h: 2.4, fontSize: 11, color: colors.white, align: 'center', fontFace: FONT_NAME, fill: colors.subBg });
     }
 
-    // --- SLIDES DETTAGLIO SINGOLA VISITA ---
+    // --- SLIDES DI DETTAGLIO SINGOLA VISITA ---
     filteredVisits.forEach((visit) => {
       let slideV = pres.addSlide();
       slideV.background = { color: colors.dark };
       
-      slideV.addText(visit.storeName.toUpperCase(), { x: 0.5, y: 0.4, w: 8.0, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: FONT_NAME });
-      slideV.addText(`📍 Location: ${visit.storeLocation}    |    📅 Date: ${visit.visitDate} (Week ${visit.weekNumber})`, { x: 0.5, y: 0.9, w: 12.3, h: 0.4, fontSize: 12, color: colors.white, fontFace: FONT_NAME });
+      slideV.addText(visit.storeName.toUpperCase(), { x: 0.6, y: 0.3, w: 8.0, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: FONT_NAME });
+      slideV.addText(`📍 Location: ${visit.storeLocation}    |    📅 Date: ${visit.visitDate} (Week ${visit.weekNumber})`, { x: 0.6, y: 0.8, w: 12.0, h: 0.4, fontSize: 11, color: colors.white, fontFace: FONT_NAME });
       
-      let achPerc = visit.target > 0 ? ((visit.sellout / visit.target) * 100).toFixed(1) + "%" : "—";
+      let achPerc = (visit.target && visit.target > 0) ? ((visit.sellout / visit.target) * 100).toFixed(1) + "%" : "—";
       
-      // Tabella Metrics più compatta a sinistra
+      // Tabella KPI Performance più compatta (Altezza limitata a y:1.4 per isolare le note in basso)
       slideV.addTable([
         [{text: "Performance Metrics", options: {bold: true, fill: colors.subBg, color: colors.cyan}}, {text: "Value", options: {bold: true, fill: colors.subBg, color: colors.cyan}}],
-        ["Sell-out Volume", `${visit.sellout} units`],
-        ["Target Volume", `${visit.target} units`],
+        ["Sell-out Volume", `${visit.sellout || 0} units`],
+        ["Target Volume", `${visit.target || 0} units`],
         ["Target Achievement Rate", achPerc],
-        ["Promoters Trained", visit.promotersCount.toString()],
-        ["Ambassadors Trained", visit.ambassadorsCount.toString()],
-        ["In-Store Staff Trained", visit.staffCount.toString()]
-      ], { x: 0.5, y: 1.6, w: 5.4, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 10, fontFace: FONT_NAME, colW: [3.2, 2.2], margin: 4 });
+        ["Promoters Trained", (visit.promotersCount || 0).toString()],
+        ["Ambassadors Trained", (visit.ambassadorsCount || 0).toString()],
+        ["In-Store Staff Trained", (visit.staffCount || 0).toString()]
+      ], { x: 0.6, y: 1.4, w: 5.4, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 9.5, fontFace: FONT_NAME, colW: [3.1, 2.3], margin: 3 });
 
-      // Tabella Focus più compatta a destra
+      // Tabella Operational Focus a destra (font ridotto a 8.5 per scritte lunghe)
       slideV.addTable([
         [{text: "Operational Focus", options: {bold: true, fill: colors.subBg, color: colors.orange}}, {text: "Applied Criteria", options: {bold: true, fill: colors.subBg, color: colors.orange}}],
         ["Objectives", (visit.objectives || []).join(", ") || "—"],
         ["Contents", (visit.contents || []).join(", ") || "—"],
         ["Product Focus", (visit.productCategories || []).join(", ") || "—"],
         ["Delivery Mode", (visit.deliveryMode || []).join(", ") || "—"]
-      ], { x: 6.4, y: 1.6, w: 6.1, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 9, fontFace: FONT_NAME, colW: [2.0, 4.1], margin: 4 });
+      ], { x: 6.4, y: 1.4, w: 6.3, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 8.5, fontFace: FONT_NAME, colW: [1.8, 4.5], margin: 3 });
       
+      // Area Note blindata in basso per evitare accavallamenti
       if(visit.notes) {
-          slideV.addText("Field Observer Notes:", { x: 0.5, y: 5.3, w: 12.3, h: 0.3, fontSize: 13, bold: true, color: colors.orange, fontFace: FONT_NAME });
-          slideV.addText(visit.notes, { x: 0.5, y: 5.7, w: 12.3, h: 1.1, fontSize: 11, color: colors.white, fill: colors.subBg, margin: 6, fontFace: FONT_NAME });
+          slideV.addText("Field Observer Notes:", { x: 0.6, y: 5.1, w: 12.0, h: 0.3, fontSize: 12, bold: true, color: colors.orange, fontFace: FONT_NAME });
+          slideV.addText(visit.notes, { x: 0.6, y: 5.5, w: 12.0, h: 1.1, fontSize: 10, color: colors.white, fill: colors.subBg, margin: 5, fontFace: FONT_NAME });
       }
 
-      // --- SLIDE IMMAGINI ---
+      // --- SLIDE MULTIMEDIALE (CRUSCOTTO POWER BI + GRIGLIA FOTO DINAMICA) ---
       if ((visit.visitPhotos && visit.visitPhotos.length > 0) || visit.powerBiScreenshot) {
           let slideM = pres.addSlide();
           slideM.background = { color: colors.dark };
-          slideM.addText(`${visit.storeName.toUpperCase()} - ATTACHED VISUALS`, { x: 0.5, y: 0.4, w: 12.3, h: 0.5, fontSize: 20, bold: true, color: colors.cyan, fontFace: FONT_NAME });
+          slideM.addText(`${visit.storeName.toUpperCase()} - ATTACHED VISUALS`, { x: 0.6, y: 0.3, w: 12.0, h: 0.5, fontSize: 20, bold: true, color: colors.cyan, fontFace: FONT_NAME });
 
           const cleanB64 = (str) => {
             if(!str) return null;
             return str.includes("base64,") ? str.split("base64,")[1].trim() : str.trim();
           };
 
+          // Power BI occupazione fissa Metà Sinistra
           if(visit.powerBiScreenshot) {
-              slideM.addText("Power BI Sales Dashboard Trend", { x: 0.5, y: 1.1, w: 5.8, h: 0.3, fontSize: 13, bold: true, color: colors.orange, fontFace: FONT_NAME });
+              slideM.addText("Power BI Sales Dashboard Trend", { x: 0.6, y: 1.0, w: 5.6, h: 0.3, fontSize: 12, bold: true, color: colors.orange, fontFace: FONT_NAME });
               let biData = cleanB64(visit.powerBiScreenshot);
               if(biData) {
-                slideM.addImage({ data: "base64," + biData, x: 0.5, y: 1.5, w: 5.8, h: 5.0, sizing: { type: 'contain', w: 5.8, h: 5.0 } });
+                slideM.addImage({ data: "base64," + biData, x: 0.6, y: 1.4, w: 5.6, h: 4.8, sizing: { type: 'contain', w: 5.6, h: 4.8 } });
               }
           }
 
+          // Griglia In-Store dedicata e posizionata dinamicamente a destra o a schermo intero
           if(visit.visitPhotos && visit.visitPhotos.length > 0) {
-              let photoStartX = visit.powerBiScreenshot ? 6.7 : 0.5;
-              let photoAreaW = visit.powerBiScreenshot ? 6.1 : 12.3;
-              slideM.addText("In-Store Execution Photos", { x: photoStartX, y: 1.1, w: photoAreaW, h: 0.3, fontSize: 13, bold: true, color: colors.orange, fontFace: FONT_NAME });
+              let photoStartX = visit.powerBiScreenshot ? 6.7 : 0.6;
+              let photoAreaW = visit.powerBiScreenshot ? 6.0 : 12.0;
+              slideM.addText("In-Store Execution Photos", { x: photoStartX, y: 1.0, w: photoAreaW, h: 0.3, fontSize: 12, bold: true, color: colors.orange, fontFace: FONT_NAME });
 
-              let photoGrid = visit.powerBiScreenshot ? [
-                  { x: 6.7, y: 1.5, w: 2.9, h: 2.3 }, { x: 9.8, y: 1.5, w: 2.9, h: 2.3 },
-                  { x: 6.7, y: 4.1, w: 2.9, h: 2.3 }, { x: 9.8, y: 4.1, w: 2.9, h: 2.3 }
-              ] : [
-                  { x: 0.5, y: 1.5, w: 5.8, h: 2.3 }, { x: 6.7, y: 1.5, w: 5.8, h: 2.3 },
-                  { x: 0.5, y: 4.1, w: 5.8, h: 2.3 }, { x: 6.7, y: 4.1, w: 5.8, h: 2.3 }
-              ];
+              // Calcolo matematico rigoroso delle coordinate dei 4 quadranti per eliminare le sovrapposizioni
+              let photoGrid = [];
+              if (visit.powerBiScreenshot) {
+                  // Griglia compatta a destra (2x2)
+                  photoGrid = [
+                      { x: 6.7, y: 1.4, w: 2.8, h: 2.2 }, { x: 9.8, y: 1.4, w: 2.8, h: 2.2 },
+                      { x: 6.7, y: 3.9, w: 2.8, h: 2.2 }, { x: 9.8, y: 3.9, w: 2.8, h: 2.2 }
+                  ];
+              } else {
+                  // Griglia panoramica estesa (2x2)
+                  photoGrid = [
+                      { x: 0.6, y: 1.4, w: 5.7, h: 2.2 }, { x: 6.8, y: 1.4, w: 5.7, h: 2.2 },
+                      { x: 0.6, y: 3.9, w: 5.7, h: 2.2 }, { x: 6.8, y: 3.9, w: 5.7, h: 2.2 }
+                  ];
+              }
 
               visit.visitPhotos.slice(0, 4).forEach((imgData, idx) => {
                   let pData = cleanB64(imgData);
@@ -804,7 +826,7 @@ async function generatePPTX() {
     const finalName = await pres.writeFile({ fileName: `ZTE_Report_${reportType}_${reportPeriod}_${reportYear}.pptx` });
     alert(`Presentation "${finalName}" successfully compiled!`);
   } catch (err) {
-    console.error("PPTX Error: ", err);
+    console.error("PPTX Critical Error: ", err);
     alert("Error building presentation: " + err.message);
   } finally {
     pptxBtn.textContent = "Generate PPTX Report";
