@@ -200,7 +200,7 @@
             <input type="number" id="promotersCount" min="0" step="1" value="0">
           </div>
           <div class="form-col">
-            <label HAROLD for="ambassadorsCount">Ambassadors Trained</label>
+            <label for="ambassadorsCount">Ambassadors Trained</label>
             <input type="number" id="ambassadorsCount" min="0" step="1" value="0">
           </div>
           <div class="form-col">
@@ -271,11 +271,6 @@
   <div class="section" id="reports">
     <div class="reports-container">
       <h2>Generate Report</h2>
-      
-      <div class="report-info">
-        <strong>Select period to generate report.</strong>
-      </div>
-
       <div class="report-selectors">
         <div class="selector-group">
           <label for="reportType">Report Type *</label>
@@ -295,7 +290,6 @@
           <select id="reportYear"><option value="">-- Select --</option></select>
         </div>
       </div>
-
       <div class="report-actions">
         <button class="btn btn-primary" onclick="generateReport()">Generate HTML Report</button>
         <button class="btn btn-primary" id="pptxBtn" onclick="generatePPTX()" style="background:#f39c12">Generate PPTX Report</button>
@@ -673,7 +667,7 @@ function generateReport() {
   const totalVisits = filteredVisits.length;
   const uniqueStores = new Set(filteredVisits.map(v => v.storeName)).size;
   const onlineSessions = filteredVisits.filter(v => v.deliveryMode && v.deliveryMode.includes('Online Session')).length;
-  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ZTE Report - ${periodName} ${reportYear}</title><style>body{font-family:Montserrat,sans-serif;background:#f5f5f5;padding:2rem}*{margin:0;padding:0;box-sizing:border-box}.page{background:#fff;padding:3rem;max-width:900px;margin:0 auto 2rem;border-top:6px solid #0d1628}.header{border-bottom:3px solid #00a0d2;padding-bottom:1rem;margin-bottom:2rem;text-align:center}.header h1{color:#0d1628;font-size:2rem;margin:0}.header p{color:#666;margin:0.5rem 0 0 0}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:2rem}.summary-card{background:#f0f8fc;padding:1rem;border-radius:6px;border-left:4px solid #00a0d2}.summary-card .label{color:#666;font-size:0.9rem}.summary-card .value{font-size:1.8rem;font-weight:700;color:#00a0d2;margin-top:0.5rem}.visit-item{border:1px solid #ddd;padding:1.5rem;margin-bottom:1rem;border-radius:6px}.visit-item h3{color:#0d1628;margin:0 0 1rem 0}.visit-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem}.visit-details .label{color:#666;font-size:0.85rem;margin-bottom:0.3rem}.visit-details .value{font-weight:600;color:#0d1628}.notes{background:#f9f9f9;padding:1rem;border-radius:6px;margin-top:1rem}.photos{margin-top:1rem}.photos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:1rem;margin-top:0.5rem}.photo{width:100%;aspect-ratio:1;background:#f0f0f0;border-radius:4px;overflow:hidden}.photo img{width:100%;height:100%;object-fit:cover}@media print{body{background:none;padding:0}.page{padding:1.5rem;margin:0;box-shadow:none}.visit-item{page-break-inside:avoid;page-break-after:always}}@media(max-width:768px){.page{padding:1rem}.header h1{font-size:1.5rem}}</style></head><body><div class="page"><div class="header"><h1>ZTE Training Report</h1><p>${periodName} ${reportYear}</p></div><div class="summary"><div class="summary-card"><div class="label">Total Trained</div><div class="value">${totalTrainedPeople}</div></div><div class="summary-card"><div class="label">Promoters</div><div class="value">${totalPromotars}</div></div><div class="summary-card"><div class="label">Ambassadors</div><div class="value">${totalAmbassadors}</div></div><div class="summary-card"><div class="label">Store Staff</div><div class="value">${totalStaff}</div></div><div class="summary-card"><div class="label">Total Visits</div><div class="value">${totalVisits}</div></div><div class="summary-card"><div class="label">Unique Stores</div><div class="value">${uniqueStores}</div></div><div class="summary-card"><div class="label">Online Sessions</div><div class="value">${onlineSessions}</div></div></div><h2 style="color:#0d1628;border-bottom:2px solid #ddd;padding-bottom:0.5rem;page-break-before:always;margin-top:0">Visit Details</h2>${filteredVisits.map(visit => `<div class="visit-item"><h3>${visit.storeName}</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0;background:#f9f9f9;padding:1.5rem;border-radius:6px"><div style="text-align:center"><div style="color:#999;font-size:0.85rem;margin-bottom:0.5rem;text-transform:uppercase;font-weight:600;letter-spacing:0.5px">Sell-out</div><div style="font-size:2.5rem;font-weight:700;color:#00a0d2">${visit.sellout}</div><div style="color:#999;font-size:0.9rem;margin-top:0.3rem">units</div></div><div style="text-align:center"><div style="color:#999;font-size:0.85rem;margin-bottom:0.5rem;text-transform:uppercase;font-weight:600;letter-spacing:0.5px">Target</div><div style="font-size:2.5rem;font-weight:700;color:#f39c12">${visit.target}</div><div style="color:#999;font-size:0.9rem;margin-top:0.3rem">units</div></div><div style="text-align:center"><div style="color:#999;font-size:0.85rem;margin-bottom:0.5rem;text-transform:uppercase;font-weight:600;letter-spacing:0.5px">Achievement</div><div style="font-size:2.5rem;font-weight:700;color:#27ae60">${visit.target > 0 ? ((visit.sellout / visit.target) * 100).toFixed(1) : '—'}%</div><div style="color:#999;font-size:0.9rem;margin-top:0.3rem">achieved</div></div></div><div class="visit-details"><div><div class="label">Location</div><div class="value">${visit.storeLocation}</div></div><div><div class="label">Date</div><div class="value">${visit.visitDate}</div></div><div><div class="label">Promoters</div><div class="value">${visit.promotersCount}</div></div><div><div class="label">Ambassadors</div><div class="value">${visit.ambassadorsCount}</div></div><div><div class="label">Staff</div><div class="value">${visit.staffCount}</div></div></div>${visit.notes ? `<div class="notes"><div style="font-weight:600;margin-bottom:0.5rem">Notes</div><div>${visit.notes}</div></div>` : ''}${visit.visitPhotos && visit.visitPhotos.length > 0 ? `<div class="photos"><div style="font-weight:600;margin-bottom:0.5rem">Visit Photos</div><div class="photos-grid">${visit.visitPhotos.map(photo => `<div class="photo"><img src="${photo}"></div>`).join('')}</div></div>` : ''}${visit.powerBiScreenshot ? `<div class="photos" style="margin-top:1rem"><div style="font-weight:600;margin-bottom:0.5rem">Power BI Screenshot</div><div style="background:#f9f9f9;padding:1rem;border-radius:6px;border:1px solid #ddd"><img src="${visit.powerBiScreenshot}" style="width:100%;height:auto;display:block;border-radius:4px;max-height:400px"></div></div>` : ''}</div>`).join('')}</div></body></html>`;
+  let html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>ZTE Report - ${periodName} ${reportYear}</title><style>body{font-family:Montserrat,sans-serif;background:#f5f5f5;padding:2rem}*{margin:0;padding:0;box-sizing:border-box}.page{background:#fff;padding:3rem;max-width:900px;margin:0 auto 2rem;border-top:6px solid #0d1628}.header{border-bottom:3px solid #00a0d2;padding-bottom:1rem;margin-bottom:2rem;text-align:center}.header h1{color:#0d1628;font-size:2rem;margin:0}.header p{color:#666;margin:0.5rem 0 0 0}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:2rem}.summary-card{background:#f0f8fc;padding:1rem;border-radius:6px;border-left:4px solid #00a0d2}.summary-card .label{color:#666;font-size:0.9rem}.summary-card .value{font-size:1.8rem;font-weight:700;color:#00a0d2;margin-top:0.5rem}.visit-item{border:1px solid #ddd;padding:1.5rem;margin-bottom:1rem;border-radius:6px}.visit-item h3{color:#0d1628;margin:0 0 1rem 0}.visit-details{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem}.visit-details .label{color:#666;font-size:0.85rem;margin-bottom:0.3rem}.visit-details .value{font-weight:600;color:#0d1628}.notes{background:#f9f9f9;padding:1rem;border-radius:6px;margin-top:1rem}.photos{margin-top:1rem}.photos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:1rem;margin-top:0.5rem}.photo{width:100%;aspect-ratio:1;background:#f0f0f0;border-radius:4px;overflow:hidden}.photo img{width:100%;height:100%;object-fit:cover}@media print{body{background:none;padding:0}.page{padding:1.5rem;margin:0;box-shadow:none}.visit-item{page-break-inside:avoid;page-break-after:always}}@media(max-width:768px){.page{padding:1rem}.header h1{font-size:1.5rem}}</style></head><body><div class="page"><div class="header"><h1>ZTE Training Report</h1><p>${periodName} ${reportYear}</p></div><div class="summary"><div class="summary-card"><div class="label">Total Trained</div><div class="value">${totalTrainedPeople}</div></div><div class="summary-card"><div class="label">Promoters</div><div class="value">${totalPromotars}</div></div><div class="summary-card"><div class="label">Ambassadors</div><div class="value">${totalAmbassadors}</div></div><div class="summary-card"><div class="label">Store Staff</div><div class="value">${totalStaff}</div></div><div class="summary-card"><div class="label">Total Visits</div><div class="value">${totalVisits}</div></div><div class="summary-card"><div class="label">Unique Stores</div><div class="value">${uniqueStores}</div></div><div class="summary-card"><div class="label">Online Sessions</div><div class="value">${onlineSessions}</div></div></div><div style="background:#f0f8fc;padding:1.5rem;border-radius:6px;margin-bottom:2rem"><h3 style="margin-top:0;color:#0d1628">Participants Trained</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem"><div><div style="color:#666;font-size:0.9rem">Promoters</div><div style="font-size:1.5rem;font-weight:700;color:#00a0d2">${totalPromotars}</div></div><div><div style="color:#666;font-size:0.9rem">Ambassadors</div><div style="font-size:1.5rem;font-weight:700;color:#00a0d2">${totalAmbassadors}</div></div><div><div style="color:#666;font-size:0.9rem">Staff</div><div style="font-size:1.5rem;font-weight:700;color:#00a0d2">${totalStaff}</div></div></div></div><h2 style="color:#0d1628;border-bottom:2px solid #ddd;padding-bottom:0.5rem;page-break-before:always;margin-top:0">Visit Details</h2>${filteredVisits.map(visit => `<div class="visit-item"><h3>${visit.storeName}</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0;background:#f9f9f9;padding:1.5rem;border-radius:6px"><div style="text-align:center"><div style="color:#999;font-size:0.85rem;margin-bottom:0.5rem;text-transform:uppercase;font-weight:600;letter-spacing:0.5px">Sell-out</div><div style="font-size:2.5rem;font-weight:700;color:#00a0d2">${visit.sellout}</div><div style="color:#999;font-size:0.9rem;margin-top:0.3rem">units</div></div><div style="text-align:center"><div style="color:#999;font-size:0.85rem;margin-bottom:0.5rem;text-transform:uppercase;font-weight:600;letter-spacing:0.5px">Target</div><div style="font-size:2.5rem;font-weight:700;color:#f39c12">${visit.target}</div><div style="color:#999;font-size:0.9rem;margin-top:0.3rem">units</div></div><div style="text-align:center"><div style="color:#999;font-size:0.85rem;margin-bottom:0.5rem;text-transform:uppercase;font-weight:600;letter-spacing:0.5px">Achievement</div><div style="font-size:2.5rem;font-weight:700;color:#27ae60">${visit.target > 0 ? ((visit.sellout / visit.target) * 100).toFixed(1) : '—'}%</div><div style="color:#999;font-size:0.9rem;margin-top:0.3rem">achieved</div></div></div><div class="visit-details"><div><div class="label">Location</div><div class="value">${visit.storeLocation}</div></div><div><div class="label">Date</div><div class="value">${visit.visitDate}</div></div><div><div class="label">Promoters</div><div class="value">${visit.promotersCount}</div></div><div><div class="label">Ambassadors</div><div class="value">${visit.ambassadorsCount}</div></div><div><div class="label">Staff</div><div class="value">${visit.staffCount}</div></div></div>${visit.notes ? `<div class="notes"><div style="font-weight:600;margin-bottom:0.5rem">Notes</div><div>${visit.notes}</div></div>` : ''}${visit.visitPhotos && visit.visitPhotos.length > 0 ? `<div class="photos"><div style="font-weight:600;margin-bottom:0.5rem">Visit Photos</div><div class="photos-grid">${visit.visitPhotos.map(photo => `<div class="photo"><img src="${photo}"></div>`).join('')}</div></div>` : ''}${visit.powerBiScreenshot ? `<div class="photos" style="margin-top:1rem"><div style="font-weight:600;margin-bottom:0.5rem">Power BI Screenshot</div><div style="background:#f9f9f9;padding:1rem;border-radius:6px;border:1px solid #ddd"><img src="${visit.powerBiScreenshot}" style="width:100%;height:auto;display:block;border-radius:4px;max-height:400px"></div></div>` : ''}</div>`).join('')}</div></body></html>`;
   const blob = new Blob([html], { type: 'text/html' });
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -727,158 +721,148 @@ async function generatePPTX() {
     
     let periodName = reportType === 'weekly' ? `Week ${reportPeriod}` : reportType === 'monthly' ? `Month ${reportPeriod}` : `Q${reportPeriod}`;
 
+    // --- AGGREGAZIONE DATI PER SUMMARY SLIDE ---
+    const totalPromoters = filteredVisits.reduce((sum, v) => sum + (v.promotersCount || 0), 0);
+    const totalAmbassadors = filteredVisits.reduce((sum, v) => sum + (v.ambassadorsCount || 0), 0);
+    const totalStaff = filteredVisits.reduce((sum, v) => sum + (v.staffCount || 0), 0);
+
+    const reasonsCounts = {};
+    const topicsCounts = {};
+    filteredVisits.forEach(v => {
+        (v.reasonForVisit || []).forEach(r => reasonsCounts[r] = (reasonsCounts[r] || 0) + 1);
+        (v.contents || []).forEach(c => topicsCounts[c] = (topicsCounts[c] || 0) + 1);
+    });
+
+    const reasonsData = Object.entries(reasonsCounts).map(([label, val]) => ({ name: label, values: [val] }));
+    const topicsData = Object.entries(topicsCounts).map(([label, val]) => ({ name: label, values: [val] }));
+
     // Slide 1: Cover
     let slide = pres.addSlide();
     slide.background = { color: colors.dark };
     slide.addText("ZTE TRAINING REPORT", { x: 0.5, y: 2, w: 9, h: 1, fontSize: 44, bold: true, color: colors.cyan, align: 'center' });
     slide.addText(`${periodName} - ${reportYear}`, { x: 0.5, y: 3.2, w: 9, h: 0.5, fontSize: 24, color: colors.white, align: 'center' });
 
-    // Slide 2: Summary (CON GRAFICO DEI PARTECIPANTI E SENZA SELL OUT)
+    // Slide 2: Summary potenziata con 3 grafici
     slide = pres.addSlide();
     slide.background = { color: colors.dark };
-    slide.addText("REPORT SUMMARY", { x: 0.5, y: 0.5, w: 9, h: 0.5, fontSize: 28, bold: true, color: colors.cyan });
+    slide.addText("REPORT SUMMARY", { x: 0.5, y: 0.4, w: 9, h: 0.5, fontSize: 26, bold: true, color: colors.cyan });
     
-    const totalPromoters = filteredVisits.reduce((sum, v) => sum + (v.promotersCount || 0), 0);
-    const totalAmbassadors = filteredVisits.reduce((sum, v) => sum + (v.ambassadorsCount || 0), 0);
-    const totalStaff = filteredVisits.reduce((sum, v) => sum + (v.staffCount || 0), 0);
+    // 1. Grafico Ciambella (Partecipanti) - Alto Destra
+    if (totalPromoters > 0 || totalAmbassadors > 0 || totalStaff > 0) {
+      slide.addText("Participants Split", { x: 5.5, y: 0.9, w: 4, h: 0.3, fontSize: 14, color: colors.orange, bold: true });
+      slide.addChart(pres.ChartType.doughnut, [
+        { name: 'People', labels: ['Promoters', 'Ambassadors', 'Staff'], values: [totalPromoters, totalAmbassadors, totalStaff] }
+      ], {
+        x: 5.5, y: 1.3, w: 4, h: 2.5,
+        showLegend: true, legendPos: 'r', legendColor: colors.white, legendFontSize: 10,
+        dataLabelColor: colors.white, showLabel: true,
+        chartColors: ['00A0D2', 'F39C12', '27AE60'], holeSize: 70
+      });
+    }
 
+    // 2. Tabella KPI - Alto Sinistra
     slide.addTable([
-      [{text: "KPI Key Metrics", options: {bold: true, fill: colors.cyan, color: colors.white, align: 'center'}}, {text: "VALUE", options: {bold: true, fill: colors.cyan, color: colors.white, align: 'center'}}],
+      [{text: "Activity Recap", options: {bold: true, fill: colors.cyan, color: colors.white, align: 'center'}}, {text: "Count", options: {bold: true, fill: colors.cyan, color: colors.white, align: 'center'}}],
       ["Total Store Visits", filteredVisits.length.toString()],
-      ["Promoters Trained", totalPromoters.toString()],
-      ["Ambassadors Trained", totalAmbassadors.toString()],
-      ["Store Staff Trained", totalStaff.toString()]
+      ["Total Participants", (totalPromoters + totalAmbassadors + totalStaff).toString()]
     ], { 
-      x: 0.5, y: 1.6, w: 4.8, 
-      border: {pt: 1, color: "334155"}, 
-      color: colors.white,
-      fontSize: 13,
-      colW: [3.2, 1.6],
-      margin: 10
+      x: 0.5, y: 1.3, w: 4.5, 
+      border: {pt: 1, color: "334155"}, color: colors.white, fontSize: 13, colW: [3, 1.5], margin: 8
     });
 
-    // Inserimento Grafico a Torta per la Formazione
-    if (totalPromoters > 0 || totalAmbassadors > 0 || totalStaff > 0) {
-      let chartData = [
-        { name: 'Promoters', labels: ['Promoters', 'Ambassadors', 'Staff'], values: [totalPromoters, totalAmbassadors, totalStaff] }
-      ];
-      slide.addChart(pres.ChartType.pie, chartData, {
-        x: 5.6, y: 1.4, w: 4.0, h: 3.2,
-        showLegend: true,
-        legendPos: 'b',
-        legendColor: colors.white,
-        dataLabelColor: colors.white,
-        showLabel: true,
-        chartColors: ['00A0D2', 'F39C12', '27AE60']
+    // 3. Grafico Barre (Reasons Why) - Basso Sinistra
+    if (reasonsData.length > 0) {
+      slide.addText("Reasons for Visits", { x: 0.5, y: 3.8, w: 4.5, h: 0.3, fontSize: 14, color: colors.orange, bold: true });
+      slide.addChart(pres.ChartType.bar, reasonsData, {
+        x: 0.5, y: 4.2, w: 4.5, h: 2.8,
+        barDir: 'bar', // barre orizzontali per testi lunghi
+        showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 9,
+        valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 9,
+        chartColors: ['00A0D2']
+      });
+    }
+
+    // 4. Grafico Barre (Training Topics) - Basso Destra
+    if (topicsData.length > 0) {
+      slide.addText("Training Topics Covered", { x: 5.2, y: 3.8, w: 4.3, h: 0.3, fontSize: 14, color: colors.orange, bold: true });
+      slide.addChart(pres.ChartType.bar, topicsData, {
+        x: 5.2, y: 4.2, w: 4.3, h: 2.8,
+        barDir: 'bar',
+        showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 9,
+        valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 9,
+        chartColors: ['27AE60']
       });
     }
 
     // Slides per singola visita
     filteredVisits.forEach((visit) => {
-      // Slide Principale di Dettaglio
       slide = pres.addSlide();
       slide.background = { color: colors.dark };
-      slide.addText(visit.storeName.toUpperCase(), { x: 0.5, y: 0.5, w: 9, h: 0.5, fontSize: 24, bold: true, color: colors.cyan });
-      slide.addText(`📍 Location: ${visit.storeLocation}   |   📅 Date: ${visit.visitDate} (W${visit.weekNumber})`, { x: 0.5, y: 1.0, w: 9, h: 0.4, fontSize: 13, color: colors.white });
+      slide.addText(visit.storeName.toUpperCase(), { x: 0.5, y: 0.4, w: 9, h: 0.5, fontSize: 24, bold: true, color: colors.cyan });
+      slide.addText(`📍 ${visit.storeLocation}   |   📅 ${visit.visitDate}`, { x: 0.5, y: 0.9, w: 9, h: 0.4, fontSize: 13, color: colors.white });
       
-      // Box Performance via Tabella Stilizzata
-      slide.addText("Visit Performance & Training:", { x: 0.5, y: 1.6, w: 4, h: 0.3, fontSize: 16, bold: true, color: colors.orange });
-      
+      slide.addText("Performance & Training:", { x: 0.5, y: 1.5, w: 4, h: 0.3, fontSize: 16, bold: true, color: colors.orange });
       let achPerc = visit.target > 0 ? ((visit.sellout / visit.target) * 100).toFixed(1) + "%" : "—";
-      
       slide.addTable([
         [{text: "Metric", options: {bold: true, fill: "1E293B"}}, {text: "Result", options: {bold: true, fill: "1E293B"}}],
         ["Sell-out", `${visit.sellout} units`],
         ["Target", `${visit.target} units`],
         ["Achievement", achPerc],
-        ["Promoters Trained", visit.promotersCount.toString()],
-        ["Ambassadors Trained", visit.ambassadorsCount.toString()],
-        ["Staff Trained", visit.staffCount.toString()]
+        ["Promoters", visit.promotersCount.toString()],
+        ["Ambassadors", visit.ambassadorsCount.toString()],
+        ["Staff", visit.staffCount.toString()]
       ], {
-        x: 0.5, y: 2.1, w: 4.2,
-        border: {pt: 1, color: "334155"},
-        color: colors.white,
-        fontSize: 11,
-        colW: [2.4, 1.8],
-        margin: 6
+        x: 0.5, y: 1.9, w: 4.2, border: {pt: 1, color: "334155"}, color: colors.white, fontSize: 11, colW: [2.2, 2.0], margin: 5
       });
 
-      // NUOVO BOX: INFO E CONTENUTI DELL'ATTIVITÀ DI TRAINING
-      slide.addText("Training Context & Setup:", { x: 5.1, y: 1.6, w: 4.5, h: 0.3, fontSize: 16, bold: true, color: colors.cyan });
-      
-      let reasonStr = (visit.reasonForVisit && visit.reasonForVisit.length > 0) ? visit.reasonForVisit.join(", ") : "—";
-      let contentStr = (visit.contents && visit.contents.length > 0) ? visit.contents.join(", ") : "—";
-      let categoriesStr = (visit.productCategories && visit.productCategories.length > 0) ? visit.productCategories.join(", ") : "—";
-      let modeStr = (visit.deliveryMode && visit.deliveryMode.length > 0) ? visit.deliveryMode.join(", ") : "—";
-
+      slide.addText("Activity Context:", { x: 5.1, y: 1.5, w: 4.5, h: 0.3, fontSize: 16, bold: true, color: colors.cyan });
       slide.addTable([
-        [{text: "Activity Field", options: {bold: true, fill: "1E293B"}}, {text: "Details", options: {bold: true, fill: "1E293B"}}],
-        ["Reason for Visit", reasonStr],
-        ["Mode", modeStr],
-        ["Contents", contentStr],
-        ["Focus Products", categoriesStr]
+        [{text: "Field", options: {bold: true, fill: "1E293B"}}, {text: "Details", options: {bold: true, fill: "1E293B"}}],
+        ["Reasons", (visit.reasonForVisit || []).join(", ")],
+        ["Contents", (visit.contents || []).join(", ")],
+        ["Focus", (visit.productCategories || []).join(", ")],
+        ["Mode", (visit.deliveryMode || []).join(", ")]
       ], {
-        x: 5.1, y: 2.1, w: 4.4,
-        border: {pt: 1, color: "334155"},
-        color: colors.white,
-        fontSize: 10,
-        colW: [1.6, 2.8],
-        margin: 6
+        x: 5.1, y: 1.9, w: 4.4, border: {pt: 1, color: "334155"}, color: colors.white, fontSize: 10, colW: [1.6, 2.8], margin: 5
       });
       
-      // Inserimento Note a fondo slide se presenti
       if(visit.notes) {
-          slide.addText("Observations & Notes:", { x: 0.5, y: 5.1, w: 9, h: 0.3, fontSize: 14, bold: true, color: colors.orange });
-          slide.addText(visit.notes, { x: 0.5, y: 5.5, w: 9, h: 1.0, fontSize: 11, color: colors.white, fill: "1E293B", margin: 6 });
+          slide.addText("Notes:", { x: 0.5, y: 5.2, w: 9, h: 0.3, fontSize: 14, bold: true, color: colors.orange });
+          slide.addText(visit.notes, { x: 0.5, y: 5.6, w: 9, h: 1.0, fontSize: 11, color: colors.white, fill: "1E293B", margin: 6 });
       }
 
-      // Nuova slide per gli Allegati Visivi (Foto Negozio + Power BI Screenshot)
-      let orariFoto = (visit.visitPhotos && visit.visitPhotos.length > 0);
-      let orariBi = !!visit.powerBiScreenshot;
-
-      if (orariFoto || orariBi) {
+      // Slide Allegati Visivi con griglia fissa e proporzionata
+      if ((visit.visitPhotos && visit.visitPhotos.length > 0) || visit.powerBiScreenshot) {
           slide = pres.addSlide();
           slide.background = { color: colors.dark };
-          slide.addText(`${visit.storeName.toUpperCase()} - Media Report & Visuals`, { x: 0.5, y: 0.5, w: 9, h: 0.5, fontSize: 20, bold: true, color: colors.cyan });
+          slide.addText(`${visit.storeName.toUpperCase()} - VISUALS`, { x: 0.5, y: 0.4, w: 9, h: 0.5, fontSize: 22, bold: true, color: colors.cyan });
 
-          // Se c'è lo screenshot di Power BI, lo mettiamo a sinistra fissato bene
-          if(orariBi && visit.powerBiScreenshot.includes("base64,")) {
-              try {
-                  slide.addText("Power BI Trend Dashboard", { x: 0.5, y: 1.2, w: 4.2, h: 0.3, fontSize: 14, bold: true, color: colors.orange });
-                  let cleanBi = visit.powerBiScreenshot.split("base64,")[1];
-                  slide.addImage({ data: "base64," + cleanBi, x: 0.5, y: 1.6, w: 4.2, h: 4.8, sizing: { type: 'contain', w: 4.2, h: 4.8 } });
-              } catch(e) { console.error(e); }
+          // Screenshot Power BI
+          if(visit.powerBiScreenshot) {
+              slide.addText("Power BI Trend", { x: 0.5, y: 1.1, w: 4.2, h: 0.3, fontSize: 14, bold: true, color: colors.orange });
+              let cleanBi = visit.powerBiScreenshot.includes("base64,") ? visit.powerBiScreenshot.split("base64,")[1] : visit.powerBiScreenshot;
+              slide.addImage({ data: "base64," + cleanBi, x: 0.5, y: 1.5, w: 4.3, h: 5.0, sizing: { type: 'contain', w: 4.3, h: 5.0 } });
           }
 
-          // Le foto della visita le piazziamo sul lato destro o riempiamo gli spazi
-          if(orariFoto) {
-              let photoStartX = orariBi ? 5.1 : 0.5;
-              let photoWidth = orariBi ? 4.4 : 9.0;
-              
-              slide.addText("Visit & Display Photos", { x: photoStartX, y: 1.2, w: photoWidth, h: 0.3, fontSize: 14, bold: true, color: colors.orange });
+          // Foto visite
+          if(visit.visitPhotos && visit.visitPhotos.length > 0) {
+              let photoStartX = visit.powerBiScreenshot ? 5.1 : 0.5;
+              let photoAreaW = visit.powerBiScreenshot ? 4.4 : 9.0;
+              slide.addText("Store Photos", { x: photoStartX, y: 1.1, w: photoAreaW, h: 0.3, fontSize: 14, bold: true, color: colors.orange });
 
-              // Griglia flessibile a seconda se c'è o meno Power BI
-              let positions = orariBi ? [
-                  { x: 5.1, y: 1.6, w: 2.1, h: 2.3 },
-                  { x: 7.4, y: 1.6, w: 2.1, h: 2.3 },
-                  { x: 5.1, y: 4.1, w: 2.1, h: 2.3 },
-                  { x: 7.4, y: 4.1, w: 2.1, h: 2.3 }
+              let grid = visit.powerBiScreenshot ? [
+                  { x: 5.1, y: 1.5, w: 2.1, h: 2.4 }, { x: 7.4, y: 1.5, w: 2.1, h: 2.4 },
+                  { x: 5.1, y: 4.1, w: 2.1, h: 2.4 }, { x: 7.4, y: 4.1, w: 2.1, h: 2.4 }
               ] : [
-                  { x: 0.5, y: 1.6, w: 4.2, h: 2.3 },
-                  { x: 5.1, y: 1.6, w: 4.2, h: 2.3 },
-                  { x: 0.5, y: 4.1, w: 4.2, h: 2.3 },
-                  { x: 5.1, y: 4.1, w: 4.2, h: 2.3 }
+                  { x: 0.5, y: 1.5, w: 4.3, h: 2.4 }, { x: 5.0, y: 1.5, w: 4.3, h: 2.4 },
+                  { x: 0.5, y: 4.1, w: 4.3, h: 2.4 }, { x: 5.0, y: 4.1, w: 4.3, h: 2.4 }
               ];
 
               visit.visitPhotos.slice(0, 4).forEach((imgData, idx) => {
-                  if(imgData && imgData.includes("base64,")) {
-                      try {
-                          let cleanImg = imgData.split("base64,")[1];
-                          let pos = positions[idx];
-                          // 'contain' garantisce che l'immagine rimanga proporzionata e non venga stirata!
-                          slide.addImage({ data: "base64," + cleanImg, x: pos.x, y: pos.y, w: pos.w, h: pos.h, sizing: { type: 'contain', w: pos.w, h: pos.h } });
-                      } catch(e) { console.error(e); }
-                  }
+                  let cleanImg = imgData.includes("base64,") ? imgData.split("base64,")[1] : imgData;
+                  let pos = grid[idx];
+                  // IL FIX: sizing type contain impedisce le risate dovute alle foto schiacciate!
+                  slide.addImage({ data: "base64," + cleanImg, x: pos.x, y: pos.y, w: pos.w, h: pos.h, sizing: { type: 'contain', w: pos.w, h: pos.h } });
               });
           }
       }
@@ -888,13 +872,24 @@ async function generatePPTX() {
     alert(`Report ${name} generated successfully!`);
   } catch (err) {
     console.error(err);
-    alert("Error generating report: " + err.message);
+    alert("Error: " + err.message);
   } finally {
     pptxBtn.textContent = "Generate PPTX Report";
     pptxBtn.disabled = false;
   }
 }
 
+function switchToSection(sectionId) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(sectionId).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  const navItemIndex = { 'dashboard': 0, 'newVisit': 1, 'archive': 2, 'reports': 3 };
+  if (navItemIndex[sectionId] !== undefined) document.querySelectorAll('.nav-item')[navItemIndex[sectionId]].classList.add('active');
+  if (sectionId === 'archive') renderArchive();
+  if (sectionId === 'reports') updateReportSelectors();
+}
+
+document.getElementById('visitForm').addEventListener('submit', saveVisit);
 window.addEventListener('DOMContentLoaded', initApp);
 </script>
 
