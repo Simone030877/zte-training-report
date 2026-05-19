@@ -367,7 +367,7 @@ function compressImage(file, maxWidth = 1280) {
         if (width > maxWidth) { height = (height * maxWidth) / width; width = maxWidth; }
         canvas.width = width; canvas.height = height;
         canvas.getContext('2d').drawImage(img, 0, 0, width, height);
-        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.9);
+        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.35);
       };
       img.src = e.target.result;
     };
