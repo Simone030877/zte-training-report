@@ -350,20 +350,53 @@ document.getElementById('visitDate').addEventListener('change', function() {
   }
 });
 
-// COMPRESSORE IMMAGINI POTENZIATO: Riduce peso a 800px max e qualità 0.3 per evitare crash di memoria
-function compressImage(file, maxWidth = 800) {
+// COMPRESSORE IMMAGINI INTELLIGENTE CON GESTIONE GEOMETRIA CORRETTA (COVER CROP PER FOTO, CONTAIN PER POWER BI)
+function compressImage(file, targetWidth = 800, targetHeight = 600, mode = 'cover') {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        let width = img.width, height = img.height;
-        if (width > maxWidth) { height = (height * maxWidth) / width; width = maxWidth; }
-        canvas.width = width; canvas.height = height;
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
         const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.3);
+        
+        if (mode === 'cover') {
+          // Ritaglio geometrico perfetto al centro (Evita stiramento delle foto in-store)
+          const imgRatio = img.width / img.height;
+          const targetRatio = targetWidth / targetHeight;
+          let sx = 0, sy = 0, sw = img.width, sh = img.height;
+          
+          if (imgRatio > targetRatio) {
+            sw = img.height * targetRatio;
+            sx = (img.width - sw) / 2;
+          } else {
+            sh = img.width / targetRatio;
+            sy = (img.height - sh) / 2;
+          }
+          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
+        } else {
+          // Metodo 'contain' per Power BI (Non taglia numeri o bordi, aggiunge padding istituzionale scuro)
+          ctx.fillStyle = '#0D1628';
+          ctx.fillRect(0, 0, targetWidth, targetHeight);
+          
+          const imgRatio = img.width / img.height;
+          const targetRatio = targetWidth / targetHeight;
+          let dw = targetWidth, dh = targetHeight;
+          let dx = 0, dy = 0;
+          
+          if (imgRatio > targetRatio) {
+            dh = targetWidth / imgRatio;
+            dy = (targetHeight - dh) / 2;
+          } else {
+            dw = targetHeight * imgRatio;
+            dx = (targetWidth - dw) / 2;
+          }
+          ctx.drawImage(img, 0, 0, img.width, img.height, dx, dy, dw, dh);
+        }
+        
+        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.4);
       };
       img.src = e.target.result;
     };
@@ -383,7 +416,7 @@ function blobToBase64(blob) {
 document.getElementById('visitPhotos').addEventListener('change', async function() {
   const preview = document.getElementById('visitPhotosPreview');
   for(let file of this.files) {
-    const compBlob = await compressImage(file, 800);
+    const compBlob = await compressImage(file, 800, 600, 'cover');
     const b64 = await blobToBase64(compBlob);
     const div = document.createElement('div');
     div.className = 'photo-item';
@@ -397,7 +430,7 @@ document.getElementById('powerBiPhoto').addEventListener('change', async functio
   const preview = document.getElementById('powerBiPhotoPreview');
   preview.innerHTML = '';
   if(this.files[0]) {
-    const compBlob = await compressImage(this.files[0], 1000);
+    const compBlob = await compressImage(this.files[0], 800, 600, 'contain');
     const b64 = await blobToBase64(compBlob);
     const div = document.createElement('div');
     div.className = 'photo-item';
@@ -618,7 +651,7 @@ async function initApp() {
   renderDashboard();
 }
 
-// --- GENERATORE DI REPORT PPTX BLINDATO E CORRETTO AL 100% ---
+// --- GENERATORE DI REPORT PPTX TOTALMENTE RIVISTO, SPAZIATO E DIVERSIFICATO NEI COLORI ---
 async function generatePPTX() {
   const reportType = document.getElementById('reportType').value;
   const reportPeriod = document.getElementById('reportPeriod').value;
@@ -637,33 +670,32 @@ async function generatePPTX() {
 
   try {
     const pres = new PptxGenJS();
-    pres.layout = 'LAYOUT_16x9';
+    pres.layout = 'LAYOUT_16x9'; // Definisce 13.33 x 7.5 pollici di area di lavoro
     
-    // Configurazione Costanti Design e Tipografia Globale
     const FONT_NAME = 'Montserrat';
     const colors = { dark: '0D1628', cyan: '00A0D2', orange: 'F39C12', white: 'FFFFFF', subBg: '1E293B', grayBorder: '334155' };
     let periodName = reportType === 'weekly' ? `Week ${reportPeriod}` : reportType === 'monthly' ? `Month ${reportPeriod}` : `Q${reportPeriod}`;
 
-    // Funzione interna per ripulire e accorciare i testi delle categorie nei grafici
     const cleanLabel = (str) => {
       if(!str) return "";
       let s = str.replace("Focus on flagship", "Top Focus").replace("Display & Visual Merchandising Check", "Display Check");
-      return s.length > 15 ? s.substring(0, 14) + "..." : s;
+      return s.length > 20 ? s.substring(0, 19) + "..." : s;
     };
 
-    // --- AGGREGAZIONE E STATISTICHE COMPLESSE ---
+    // --- AGGREGAZIONE DATI KPI & CHECKLIST SEPARATE ---
     const totalPromoters = filteredVisits.reduce((sum, v) => sum + (v.promotersCount || 0), 0);
     const totalAmbassadors = filteredVisits.reduce((sum, v) => sum + (v.ambassadorsCount || 0), 0);
     const totalStaff = filteredVisits.reduce((sum, v) => sum + (v.staffCount || 0), 0);
     const totalTrained = totalPromoters + totalAmbassadors + totalStaff;
 
-    const reasonsCounts = {}, qualitativeCounts = {};
+    const reasonsCounts = {}, objectiveCounts = {}, contentCounts = {}, productCounts = {}, modeCounts = {};
+    
     filteredVisits.forEach(v => {
         (v.reasonForVisit || []).forEach(r => { let k = cleanLabel(r); reasonsCounts[k] = (reasonsCounts[k] || 0) + 1; });
-        (v.objectives || []).forEach(o => { let k = "Obj: " + cleanLabel(o); qualitativeCounts[k] = (qualitativeCounts[k] || 0) + 1; });
-        (v.contents || []).forEach(c => { let k = "Topic: " + cleanLabel(c); qualitativeCounts[k] = (qualitativeCounts[k] || 0) + 1; });
-        (v.productCategories || []).forEach(p => { let k = "Prod: " + cleanLabel(p); qualitativeCounts[k] = (qualitativeCounts[k] || 0) + 1; });
-        (v.deliveryMode || []).forEach(m => { let k = "Mode: " + cleanLabel(m); qualitativeCounts[k] = (qualitativeCounts[k] || 0) + 1; });
+        (v.objectives || []).forEach(o => { let k = cleanLabel(o); objectiveCounts[k] = (objectiveCounts[k] || 0) + 1; });
+        (v.contents || []).forEach(c => { let k = cleanLabel(c); contentCounts[k] = (contentCounts[k] || 0) + 1; });
+        (v.productCategories || []).forEach(p => { let k = cleanLabel(p); productCounts[k] = (productCounts[k] || 0) + 1; });
+        (v.deliveryMode || []).forEach(m => { let k = cleanLabel(m); modeCounts[k] = (modeCounts[k] || 0) + 1; });
     });
 
     const formatForChart = (map) => {
@@ -671,22 +703,19 @@ async function generatePPTX() {
       return keys.length > 0 ? [{ name: 'Occurrences', labels: keys, values: Object.values(map) }] : null;
     };
 
-    const reasonsData = formatForChart(reasonsCounts);
-    const qualitativeData = formatForChart(qualitativeCounts);
-
-    // --- SLIDE 1: COPERTINA ISTITUZIONALE ---
+    // --- SLIDE 1: COPERTINA ---
     let slide1 = pres.addSlide();
     slide1.background = { color: colors.dark };
     slide1.addText("ZTE TRAINING REPORT", { x: 0.5, y: 2.2, w: 12.3, h: 0.8, fontSize: 38, bold: true, color: colors.cyan, align: 'center', fontFace: FONT_NAME });
     slide1.addText(`${periodName.toUpperCase()} - ${reportYear}`, { x: 0.5, y: 3.2, w: 12.3, h: 0.5, fontSize: 20, color: colors.white, align: 'center', fontFace: FONT_NAME });
     slide1.addText("ZTE - LFM Training on Field professional tools", { x: 0.5, y: 6.5, w: 12.3, h: 0.4, fontSize: 10, color: colors.cyan, align: 'center', fontFace: FONT_NAME });
 
-    // --- SLIDE 2: EXECUTIVE SUMMARY ---
+    // --- SLIDE 2: EXECUTIVE SUMMARY - METRICHE QUANTITATIVE ---
     let slide2 = pres.addSlide();
     slide2.background = { color: colors.dark };
-    slide2.addText("EXECUTIVE RECAP SUMMARY", { x: 0.5, y: 0.3, w: 12.3, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: FONT_NAME });
+    slide2.addText("EXECUTIVE RECAP - QUANTITATIVE METRICS", { x: 0.5, y: 0.3, w: 12.3, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: FONT_NAME });
 
-    // Tabella KPI Generali compatta a Sinistra
+    // Tabella KPI Generali (Sinistra)
     slide2.addTable([
       [{text: "Global Metrics Summary", options: {bold: true, fill: colors.cyan, color: colors.white}}, {text: "Totals", options: {bold: true, fill: colors.cyan, color: colors.white, align:'center'}}],
       ["Total Field Store Visits", filteredVisits.length.toString()],
@@ -694,47 +723,62 @@ async function generatePPTX() {
       ["• Brand Promoters Trained", totalPromoters.toString()],
       ["• Field Ambassadors Trained", totalAmbassadors.toString()],
       ["• Store Staff Trained", totalStaff.toString()]
-    ], { x: 0.6, y: 1.1, w: 4.4, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 10, fontFace: FONT_NAME, colW: [3.1, 1.3], margin: 4 });
+    ], { x: 0.6, y: 1.2, w: 4.5, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 10, fontFace: FONT_NAME, colW: [3.1, 1.4], margin: 5 });
 
-    // Grafico 1: Torta Headcount Partecipanti
+    // Grafico Ciambella Headcount (Destra)
     if (totalTrained > 0) {
-      slide2.addText("Participants Distribution", { x: 5.6, y: 0.9, w: 7.1, h: 0.3, fontSize: 11, color: colors.orange, bold: true, align: 'center', fontFace: FONT_NAME });
       slide2.addChart(pres.ChartType.doughnut, [
         { name: 'People', labels: ['Promoters', 'Ambassadors', 'Staff'], values: [totalPromoters, totalAmbassadors, totalStaff] }
       ], {
-        x: 5.6, y: 1.2, w: 7.1, h: 2.2,
+        x: 5.5, y: 1.2, w: 7.2, h: 2.8,
         showLegend: true, legendPos: 'r', legendColor: colors.white, legendFontSize: 9, legendFontFace: FONT_NAME,
         showLabel: true, dataLabelColor: colors.white, chartColors: ['00A0D2', 'F39C12', '27AE60'], holeSize: 60
       });
-    } else {
-      slide2.addText("No Headcount Data Available", { x: 5.6, y: 1.5, w: 7.1, h: 1.0, fontSize: 11, color: colors.white, align: 'center', fontFace: FONT_NAME, fill: colors.subBg });
     }
 
-    // Grafico 2: Primary Reasons (Barre Orizzontali)
+    // Grafico Orizzontale Ragione delle Visite (Basso - Largo a piena pagina)
+    const reasonsData = formatForChart(reasonsCounts);
     if (reasonsData) {
-      slide2.addText("Primary Reasons for Store Visits", { x: 0.6, y: 3.9, w: 5.4, h: 0.3, fontSize: 11, color: colors.cyan, bold: true, fontFace: FONT_NAME });
+      slide2.addText("Primary Reasons for Store Visits", { x: 0.6, y: 4.1, w: 12.1, h: 0.3, fontSize: 11, color: colors.orange, bold: true, fontFace: FONT_NAME });
       slide2.addChart(pres.ChartType.bar, reasonsData, {
-        x: 0.6, y: 4.3, w: 5.4, h: 2.4,
-        barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, dataLabelFontFace: FONT_NAME,
-        valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8, catAxisLabelFontFace: FONT_NAME, chartColors: ['00A0D2']
+        x: 0.6, y: 4.4, w: 12.1, h: 2.6,
+        barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8.5,
+        valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8.5, catAxisLabelFontFace: FONT_NAME, 
+        chartColors: ['00A0D2', 'F39C12', '27AE60', 'E74C3C', '9B59B6'] // Palette colori differenziata
       });
-    } else {
-      slide2.addText("No Reasons Recorded", { x: 0.6, y: 4.3, w: 5.4, h: 2.4, fontSize: 11, color: colors.white, align: 'center', fontFace: FONT_NAME, fill: colors.subBg });
     }
 
-    // Grafico 3: Qualitative Checklist Unificato
-    if (qualitativeData) {
-      slide2.addText("Qualitative Parameters Distribution (Focus Metrics)", { x: 6.6, y: 3.9, w: 6.1, h: 0.3, fontSize: 11, color: colors.orange, bold: true, fontFace: FONT_NAME });
-      slide2.addChart(pres.ChartType.bar, qualitativeData, {
-        x: 6.6, y: 4.3, w: 6.1, h: 2.4,
-        barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, dataLabelFontFace: FONT_NAME,
-        valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8, catAxisLabelFontFace: FONT_NAME, chartColors: ['F39C12']
-      });
-    } else {
-      slide2.addText("No Qualitative Metrics Recorded", { x: 6.6, y: 4.3, w: 6.1, h: 2.4, fontSize: 11, color: colors.white, align: 'center', fontFace: FONT_NAME, fill: colors.subBg });
+    // --- SLIDE 3: EXECUTIVE SUMMARY - STRUTTURA OPERATIVA & PARAMETRI QUALITATIVI ---
+    let slide3 = pres.addSlide();
+    slide3.background = { color: colors.dark };
+    slide3.addText("EXECUTIVE RECAP - OPERATIONAL FOCUS", { x: 0.5, y: 0.3, w: 12.3, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: FONT_NAME });
+
+    // 4 Grafici indipendenti per assecondare la richiesta di spazio e colori differenziati per categoria
+    const objData = formatForChart(objectiveCounts);
+    if(objData) {
+      slide3.addText("Training Objectives Distribution", { x: 0.6, y: 1.0, w: 5.7, h: 0.3, fontSize: 11, color: colors.cyan, bold: true, fontFace: FONT_NAME });
+      slide3.addChart(pres.ChartType.bar, objData, { x: 0.6, y: 1.3, w: 5.7, h: 2.4, barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8, chartColors: ['00A0D2'] });
+    }
+    
+    const contentData = formatForChart(contentCounts);
+    if(contentData) {
+      slide3.addText("Covered Educational Contents", { x: 6.9, y: 1.0, w: 5.7, h: 0.3, fontSize: 11, color: colors.orange, bold: true, fontFace: FONT_NAME });
+      slide3.addChart(pres.ChartType.bar, contentData, { x: 6.9, y: 1.3, w: 5.7, h: 2.4, barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8, chartColors: ['F39C12'] });
     }
 
-    // --- SLIDES DI DETTAGLIO SINGOLA VISITA ---
+    const productData = formatForChart(productCounts);
+    if(productData) {
+      slide3.addText("Product Categories Core Focus", { x: 0.6, y: 4.1, w: 5.7, h: 0.3, fontSize: 11, color: '27AE60', bold: true, fontFace: FONT_NAME });
+      slide3.addChart(pres.ChartType.bar, productData, { x: 0.6, y: 4.4, w: 5.7, h: 2.4, barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8, chartColors: ['27AE60'] });
+    }
+
+    const modeData = formatForChart(modeCounts);
+    if(modeData) {
+      slide3.addText("Delivery Lesson Modes", { x: 6.9, y: 4.1, w: 5.7, h: 0.3, fontSize: 11, color: '9B59B6', bold: true, fontFace: FONT_NAME });
+      slide3.addChart(pres.ChartType.bar, modeData, { x: 6.9, y: 4.4, w: 5.7, h: 2.4, barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8, chartColors: ['9B59B6'] });
+    }
+
+    // --- SLIDES DI DETTAGLIO PER OGNI SINGOLA VISITA ---
     filteredVisits.forEach((visit) => {
       let slideV = pres.addSlide();
       slideV.background = { color: colors.dark };
@@ -744,7 +788,7 @@ async function generatePPTX() {
       
       let achPerc = (visit.target && visit.target > 0) ? ((visit.sellout / visit.target) * 100).toFixed(1) + "%" : "—";
       
-      // Tabella KPI Performance
+      // Tabella Numerica Performance
       slideV.addTable([
         [{text: "Performance Metrics", options: {bold: true, fill: colors.subBg, color: colors.cyan}}, {text: "Value", options: {bold: true, fill: colors.subBg, color: colors.cyan}}],
         ["Sell-out Volume", `${visit.sellout || 0} units`],
@@ -753,24 +797,23 @@ async function generatePPTX() {
         ["Promoters Trained", (visit.promotersCount || 0).toString()],
         ["Ambassadors Trained", (visit.ambassadorsCount || 0).toString()],
         ["In-Store Staff Trained", (visit.staffCount || 0).toString()]
-      ], { x: 0.6, y: 1.4, w: 5.4, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 9.5, fontFace: FONT_NAME, colW: [3.1, 2.3], margin: 3 });
+      ], { x: 0.6, y: 1.4, w: 5.4, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 9.5, fontFace: FONT_NAME, colW: [3.1, 2.3], margin: 4 });
 
-      // Tabella Operational Focus a destra (font ridotto e colW per evitare crash layout)
+      // Tabella Focus Operativo Speculare
       slideV.addTable([
         [{text: "Operational Focus", options: {bold: true, fill: colors.subBg, color: colors.orange}}, {text: "Applied Criteria", options: {bold: true, fill: colors.subBg, color: colors.orange}}],
         ["Objectives", (visit.objectives || []).join(", ") || "—"],
         ["Contents", (visit.contents || []).join(", ") || "—"],
         ["Product Focus", (visit.productCategories || []).join(", ") || "—"],
         ["Delivery Mode", (visit.deliveryMode || []).join(", ") || "—"]
-      ], { x: 6.4, y: 1.4, w: 6.3, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 8.5, fontFace: FONT_NAME, colW: [1.8, 4.5], margin: 3 });
+      ], { x: 6.4, y: 1.4, w: 6.3, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 8.5, fontFace: FONT_NAME, colW: [1.8, 4.5], margin: 4 });
       
-      // Area Note
       if(visit.notes) {
-          slideV.addText("Field Observer Notes:", { x: 0.6, y: 5.1, w: 12.0, h: 0.3, fontSize: 12, bold: true, color: colors.orange, fontFace: FONT_NAME });
-          slideV.addText(visit.notes, { x: 0.6, y: 5.5, w: 12.0, h: 1.1, fontSize: 10, color: colors.white, fill: colors.subBg, margin: 5, fontFace: FONT_NAME });
+          slideV.addText("Field Observer Notes:", { x: 0.6, y: 5.2, w: 12.0, h: 0.3, fontSize: 11, bold: true, color: colors.orange, fontFace: FONT_NAME });
+          slideV.addText(visit.notes, { x: 0.6, y: 5.5, w: 12.0, h: 1.2, fontSize: 9.5, color: colors.white, fill: colors.subBg, margin: 6, fontFace: FONT_NAME });
       }
 
-      // --- SLIDE MULTIMEDIALE (CRUSCOTTO POWER BI + GRIGLIA FOTO DINAMICA) ---
+      // --- SLIDE ALLEGATI MULTIMEDIALI (COMPLETAMENTE ALLINEATI IN RATIO 4:3) ---
       if ((visit.visitPhotos && visit.visitPhotos.length > 0) || visit.powerBiScreenshot) {
           let slideM = pres.addSlide();
           slideM.background = { color: colors.dark };
@@ -781,34 +824,33 @@ async function generatePPTX() {
             return str.includes("base64,") ? str.split("base64,")[1].trim() : str.trim();
           };
 
-          // Power BI occupazione fissa Metà Sinistra
+          // Box Power BI (Rapporto geometrico 4:3 pulito a sinistra)
           if(visit.powerBiScreenshot) {
-              slideM.addText("Power BI Sales Dashboard Trend", { x: 0.6, y: 1.0, w: 5.6, h: 0.3, fontSize: 12, bold: true, color: colors.orange, fontFace: FONT_NAME });
+              slideM.addText("Power BI Sales Dashboard Trend", { x: 0.6, y: 1.1, w: 5.6, h: 0.3, fontSize: 12, bold: true, color: colors.orange, fontFace: FONT_NAME });
               let biData = cleanB64(visit.powerBiScreenshot);
               if(biData) {
-                slideM.addImage({ data: "base64," + biData, x: 0.6, y: 1.4, w: 5.6, h: 4.8, sizing: { type: 'contain', w: 5.6, h: 4.8 } });
+                slideM.addImage({ data: "base64," + biData, x: 0.6, y: 1.5, w: 5.6, h: 4.2 });
               }
           }
 
-          // Griglia In-Store dedicata e posizionata dinamicamente
+          // Griglia Foto In-Store (Proporzioni e posizionamento calibrato al millimetro)
           if(visit.visitPhotos && visit.visitPhotos.length > 0) {
-              let photoStartX = visit.powerBiScreenshot ? 6.7 : 0.6;
-              let photoAreaW = visit.powerBiScreenshot ? 6.0 : 12.0;
-              slideM.addText("In-Store Execution Photos", { x: photoStartX, y: 1.0, w: photoAreaW, h: 0.3, fontSize: 12, bold: true, color: colors.orange, fontFace: FONT_NAME });
+              let photoStartX = visit.powerBiScreenshot ? 6.6 : 3.1;
+              let photoAreaW = visit.powerBiScreenshot ? 6.1 : 7.0;
+              slideM.addText("In-Store Execution Photos", { x: photoStartX, y: 1.1, w: photoAreaW, h: 0.3, fontSize: 12, bold: true, color: colors.orange, fontFace: FONT_NAME });
 
-              // Calcolo matematico rigoroso delle coordinate dei 4 quadranti
               let photoGrid = [];
               if (visit.powerBiScreenshot) {
-                  // Griglia compatta a destra (2x2)
+                  // Con Power BI presente: Griglia 2x2 sul lato destro (Rapporto perfetto 4:3)
                   photoGrid = [
-                      { x: 6.7, y: 1.4, w: 2.8, h: 2.2 }, { x: 9.8, y: 1.4, w: 2.8, h: 2.2 },
-                      { x: 6.7, y: 3.9, w: 2.8, h: 2.2 }, { x: 9.8, y: 3.9, w: 2.8, h: 2.2 }
+                      { x: 6.6, y: 1.5, w: 2.7, h: 2.025 }, { x: 9.6, y: 1.5, w: 2.7, h: 2.025 },
+                      { x: 6.6, y: 3.675, w: 2.7, h: 2.025 }, { x: 9.6, y: 3.675, w: 2.7, h: 2.025 }
                   ];
               } else {
-                  // Griglia panoramica estesa (2x2)
+                  // Senza Power BI: Griglia 2x2 centrata, grande ed elegante (Rapporto perfetto 4:3)
                   photoGrid = [
-                      { x: 0.6, y: 1.4, w: 5.7, h: 2.2 }, { x: 6.8, y: 1.4, w: 5.7, h: 2.2 },
-                      { x: 0.6, y: 3.9, w: 5.7, h: 2.2 }, { x: 6.8, y: 3.9, w: 5.7, h: 2.2 }
+                      { x: 3.1, y: 1.4, w: 3.4, h: 2.55 }, { x: 6.8, y: 1.4, w: 3.4, h: 2.55 },
+                      { x: 3.1, y: 4.2, w: 3.4, h: 2.55 }, { x: 6.8, y: 4.2, w: 3.4, h: 2.55 }
                   ];
               }
 
@@ -816,7 +858,7 @@ async function generatePPTX() {
                   let pData = cleanB64(imgData);
                   if(pData) {
                     let pos = photoGrid[idx];
-                    slideM.addImage({ data: "base64," + pData, x: pos.x, y: pos.y, w: pos.w, h: pos.h, sizing: { type: 'contain', w: pos.w, h: pos.h } });
+                    slideM.addImage({ data: "base64," + pData, x: pos.x, y: pos.y, w: pos.w, h: pos.h });
                   }
               });
           }
