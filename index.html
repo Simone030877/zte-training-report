@@ -644,7 +644,7 @@ async function generatePPTX() {
     const colors = { dark: '0D1628', cyan: '00A0D2', orange: 'F39C12', white: 'FFFFFF', subBg: '1E293B', grayBorder: '334155' };
     let periodName = reportType === 'weekly' ? `Week ${reportPeriod}` : reportType === 'monthly' ? `Month ${reportPeriod}` : `Q${reportPeriod}`;
 
-    // Funzione interna per ripulire e accorciare i testi delle categorie nei grafici (Evita rotture di layout delle label)
+    // Funzione interna per ripulire e accorciare i testi delle categorie nei grafici
     const cleanLabel = (str) => {
       if(!str) return "";
       let s = str.replace("Focus on flagship", "Top Focus").replace("Display & Visual Merchandising Check", "Display Check");
@@ -681,7 +681,7 @@ async function generatePPTX() {
     slide1.addText(`${periodName.toUpperCase()} - ${reportYear}`, { x: 0.5, y: 3.2, w: 12.3, h: 0.5, fontSize: 20, color: colors.white, align: 'center', fontFace: FONT_NAME });
     slide1.addText("ZTE - LFM Training on Field professional tools", { x: 0.5, y: 6.5, w: 12.3, h: 0.4, fontSize: 10, color: colors.cyan, align: 'center', fontFace: FONT_NAME });
 
-    // --- SLIDE 2: EXECUTIVE SUMMARY (RE-LAYOUT INTEGRALE SPAZIATO AL MILLIMETRO) ---
+    // --- SLIDE 2: EXECUTIVE SUMMARY ---
     let slide2 = pres.addSlide();
     slide2.background = { color: colors.dark };
     slide2.addText("EXECUTIVE RECAP SUMMARY", { x: 0.5, y: 0.3, w: 12.3, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: FONT_NAME });
@@ -696,7 +696,7 @@ async function generatePPTX() {
       ["• Store Staff Trained", totalStaff.toString()]
     ], { x: 0.6, y: 1.1, w: 4.4, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 10, fontFace: FONT_NAME, colW: [3.1, 1.3], margin: 4 });
 
-    // Grafico 1: Torta Headcount Partecipanti (Posizionato stabilmente in Alto a Destra)
+    // Grafico 1: Torta Headcount Partecipanti
     if (totalTrained > 0) {
       slide2.addText("Participants Distribution", { x: 5.6, y: 0.9, w: 7.1, h: 0.3, fontSize: 11, color: colors.orange, bold: true, align: 'center', fontFace: FONT_NAME });
       slide2.addChart(pres.ChartType.doughnut, [
@@ -710,7 +710,7 @@ async function generatePPTX() {
       slide2.addText("No Headcount Data Available", { x: 5.6, y: 1.5, w: 7.1, h: 1.0, fontSize: 11, color: colors.white, align: 'center', fontFace: FONT_NAME, fill: colors.subBg });
     }
 
-    // Grafico 2: Primary Reasons (Barre Orizzontali - Zona Basso a Sinistra)
+    // Grafico 2: Primary Reasons (Barre Orizzontali)
     if (reasonsData) {
       slide2.addText("Primary Reasons for Store Visits", { x: 0.6, y: 3.9, w: 5.4, h: 0.3, fontSize: 11, color: colors.cyan, bold: true, fontFace: FONT_NAME });
       slide2.addChart(pres.ChartType.bar, reasonsData, {
@@ -722,7 +722,7 @@ async function generatePPTX() {
       slide2.addText("No Reasons Recorded", { x: 0.6, y: 4.3, w: 5.4, h: 2.4, fontSize: 11, color: colors.white, align: 'center', fontFace: FONT_NAME, fill: colors.subBg });
     }
 
-    // Grafico 3: Qualitative Checklist Unificato (Barre Orizzontali - Zona Basso a Destra)
+    // Grafico 3: Qualitative Checklist Unificato
     if (qualitativeData) {
       slide2.addText("Qualitative Parameters Distribution (Focus Metrics)", { x: 6.6, y: 3.9, w: 6.1, h: 0.3, fontSize: 11, color: colors.orange, bold: true, fontFace: FONT_NAME });
       slide2.addChart(pres.ChartType.bar, qualitativeData, {
@@ -744,7 +744,7 @@ async function generatePPTX() {
       
       let achPerc = (visit.target && visit.target > 0) ? ((visit.sellout / visit.target) * 100).toFixed(1) + "%" : "—";
       
-      // Tabella KPI Performance più compatta (Altezza limitata a y:1.4 per isolare le note in basso)
+      // Tabella KPI Performance
       slideV.addTable([
         [{text: "Performance Metrics", options: {bold: true, fill: colors.subBg, color: colors.cyan}}, {text: "Value", options: {bold: true, fill: colors.subBg, color: colors.cyan}}],
         ["Sell-out Volume", `${visit.sellout || 0} units`],
@@ -755,7 +755,7 @@ async function generatePPTX() {
         ["In-Store Staff Trained", (visit.staffCount || 0).toString()]
       ], { x: 0.6, y: 1.4, w: 5.4, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 9.5, fontFace: FONT_NAME, colW: [3.1, 2.3], margin: 3 });
 
-      // Tabella Operational Focus a destra (font ridotto a 8.5 per scritte lunghe)
+      // Tabella Operational Focus a destra (font ridotto e colW per evitare crash layout)
       slideV.addTable([
         [{text: "Operational Focus", options: {bold: true, fill: colors.subBg, color: colors.orange}}, {text: "Applied Criteria", options: {bold: true, fill: colors.subBg, color: colors.orange}}],
         ["Objectives", (visit.objectives || []).join(", ") || "—"],
@@ -764,7 +764,7 @@ async function generatePPTX() {
         ["Delivery Mode", (visit.deliveryMode || []).join(", ") || "—"]
       ], { x: 6.4, y: 1.4, w: 6.3, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 8.5, fontFace: FONT_NAME, colW: [1.8, 4.5], margin: 3 });
       
-      // Area Note blindata in basso per evitare accavallamenti
+      // Area Note
       if(visit.notes) {
           slideV.addText("Field Observer Notes:", { x: 0.6, y: 5.1, w: 12.0, h: 0.3, fontSize: 12, bold: true, color: colors.orange, fontFace: FONT_NAME });
           slideV.addText(visit.notes, { x: 0.6, y: 5.5, w: 12.0, h: 1.1, fontSize: 10, color: colors.white, fill: colors.subBg, margin: 5, fontFace: FONT_NAME });
@@ -790,13 +790,13 @@ async function generatePPTX() {
               }
           }
 
-          // Griglia In-Store dedicata e posizionata dinamicamente a destra o a schermo intero
+          // Griglia In-Store dedicata e posizionata dinamicamente
           if(visit.visitPhotos && visit.visitPhotos.length > 0) {
               let photoStartX = visit.powerBiScreenshot ? 6.7 : 0.6;
               let photoAreaW = visit.powerBiScreenshot ? 6.0 : 12.0;
               slideM.addText("In-Store Execution Photos", { x: photoStartX, y: 1.0, w: photoAreaW, h: 0.3, fontSize: 12, bold: true, color: colors.orange, fontFace: FONT_NAME });
 
-              // Calcolo matematico rigoroso delle coordinate dei 4 quadranti per eliminare le sovrapposizioni
+              // Calcolo matematico rigoroso delle coordinate dei 4 quadranti
               let photoGrid = [];
               if (visit.powerBiScreenshot) {
                   // Griglia compatta a destra (2x2)
