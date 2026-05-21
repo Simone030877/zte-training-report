@@ -350,53 +350,19 @@ document.getElementById('visitDate').addEventListener('change', function() {
   }
 });
 
-// COMPRESSORE IMMAGINI INTELLIGENTE CON GESTIONE GEOMETRIA CORRETTA (COVER CROP PER FOTO, CONTAIN PER POWER BI)
-function compressImage(file, targetWidth = 800, targetHeight = 600, mode = 'cover') {
+function compressImage(file, maxWidth = 800) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
+        let width = img.width, height = img.height;
+        if (width > maxWidth) { height = (height * maxWidth) / width; width = maxWidth; }
+        canvas.width = width; canvas.height = height;
         const ctx = canvas.getContext('2d');
-        
-        if (mode === 'cover') {
-          // Ritaglio geometrico perfetto al centro (Evita stiramento delle foto in-store)
-          const imgRatio = img.width / img.height;
-          const targetRatio = targetWidth / targetHeight;
-          let sx = 0, sy = 0, sw = img.width, sh = img.height;
-          
-          if (imgRatio > targetRatio) {
-            sw = img.height * targetRatio;
-            sx = (img.width - sw) / 2;
-          } else {
-            sh = img.width / targetRatio;
-            sy = (img.height - sh) / 2;
-          }
-          ctx.drawImage(img, sx, sy, sw, sh, 0, 0, targetWidth, targetHeight);
-        } else {
-          // Metodo 'contain' per Power BI (Non taglia numeri o bordi, aggiunge padding istituzionale scuro)
-          ctx.fillStyle = '#0D1628';
-          ctx.fillRect(0, 0, targetWidth, targetHeight);
-          
-          const imgRatio = img.width / img.height;
-          const targetRatio = targetWidth / targetHeight;
-          let dw = targetWidth, dh = targetHeight;
-          let dx = 0, dy = 0;
-          
-          if (imgRatio > targetRatio) {
-            dh = targetWidth / imgRatio;
-            dy = (targetHeight - dh) / 2;
-          } else {
-            dw = targetHeight * imgRatio;
-            dx = (targetWidth - dw) / 2;
-          }
-          ctx.drawImage(img, 0, 0, img.width, img.height, dx, dy, dw, dh);
-        }
-        
-        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.4);
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.3);
       };
       img.src = e.target.result;
     };
@@ -416,7 +382,7 @@ function blobToBase64(blob) {
 document.getElementById('visitPhotos').addEventListener('change', async function() {
   const preview = document.getElementById('visitPhotosPreview');
   for(let file of this.files) {
-    const compBlob = await compressImage(file, 800, 600, 'cover');
+    const compBlob = await compressImage(file, 800);
     const b64 = await blobToBase64(compBlob);
     const div = document.createElement('div');
     div.className = 'photo-item';
@@ -430,7 +396,7 @@ document.getElementById('powerBiPhoto').addEventListener('change', async functio
   const preview = document.getElementById('powerBiPhotoPreview');
   preview.innerHTML = '';
   if(this.files[0]) {
-    const compBlob = await compressImage(this.files[0], 800, 600, 'contain');
+    const compBlob = await compressImage(this.files[0], 1000);
     const b64 = await blobToBase64(compBlob);
     const div = document.createElement('div');
     div.className = 'photo-item';
@@ -651,17 +617,19 @@ async function initApp() {
   renderDashboard();
 }
 
-// --- GENERATORE DI REPORT PPTX TOTALMENTE RIVISTO, SPAZIATO E DIVERSIFICATO NEI COLORI ---
+// --- GENERATORE DI REPORT PPTX BLINDATO CON LOGICA GRANULARITA' ---
 async function generatePPTX() {
   const reportType = document.getElementById('reportType').value;
   const reportPeriod = document.getElementById('reportPeriod').value;
   const reportYear = parseInt(document.getElementById('reportYear').value);
+  
   if (!reportType || !reportPeriod || !reportYear) { alert('Select all fields'); return; }
   
   let filteredVisits = visits.filter(v => v.year === reportYear);
   if (reportType === 'weekly') filteredVisits = filteredVisits.filter(v => v.weekNumber === parseInt(reportPeriod));
   else if (reportType === 'monthly') filteredVisits = filteredVisits.filter(v => v.month === parseInt(reportPeriod));
   else if (reportType === 'quarterly') filteredVisits = filteredVisits.filter(v => v.quarter === parseInt(reportPeriod));
+  
   if (filteredVisits.length === 0) { alert('No visits found for the selected criteria.'); return; }
 
   const pptxBtn = document.getElementById('pptxBtn');
@@ -670,206 +638,195 @@ async function generatePPTX() {
 
   try {
     const pres = new PptxGenJS();
-    pres.layout = 'LAYOUT_16x9'; // Definisce 13.33 x 7.5 pollici di area di lavoro
+    pres.layout = 'LAYOUT_16x9';
     
-    const FONT_NAME = 'Montserrat';
-    const colors = { dark: '0D1628', cyan: '00A0D2', orange: 'F39C12', white: 'FFFFFF', subBg: '1E293B', grayBorder: '334155' };
+    const BRAND_COLORS = { darkBg: '0D1628', accentCyan: '00A0D2', highlightOrange: 'F39C12', cleanWhite: 'FFFFFF', gridBorder: '334155' };
     let periodName = reportType === 'weekly' ? `Week ${reportPeriod}` : reportType === 'monthly' ? `Month ${reportPeriod}` : `Q${reportPeriod}`;
 
+    // Helper per label grafici (evita sbordamenti) e rispetto del "focus su top di gamma"
     const cleanLabel = (str) => {
       if(!str) return "";
       let s = str.replace("Focus on flagship", "Top Focus").replace("Display & Visual Merchandising Check", "Display Check");
-      return s.length > 20 ? s.substring(0, 19) + "..." : s;
+      return s.length > 18 ? s.substring(0, 16) + "..." : s;
     };
 
-    // --- AGGREGAZIONE DATI KPI & CHECKLIST SEPARATE ---
-    const totalPromoters = filteredVisits.reduce((sum, v) => sum + (v.promotersCount || 0), 0);
-    const totalAmbassadors = filteredVisits.reduce((sum, v) => sum + (v.ambassadorsCount || 0), 0);
-    const totalStaff = filteredVisits.reduce((sum, v) => sum + (v.staffCount || 0), 0);
-    const totalTrained = totalPromoters + totalAmbassadors + totalStaff;
+    // --- AGGREGAZIONI GLOBALI E PER INSEGNA ---
+    let totalSellout = 0, totalTarget = 0, totalStaff = 0, totalAmbassador = 0, totalPromoters = 0;
+    let chainAggregates = {};
+    let qualitativeCounts = {};
 
-    const reasonsCounts = {}, objectiveCounts = {}, contentCounts = {}, productCounts = {}, modeCounts = {};
-    
     filteredVisits.forEach(v => {
-        (v.reasonForVisit || []).forEach(r => { let k = cleanLabel(r); reasonsCounts[k] = (reasonsCounts[k] || 0) + 1; });
-        (v.objectives || []).forEach(o => { let k = cleanLabel(o); objectiveCounts[k] = (objectiveCounts[k] || 0) + 1; });
-        (v.contents || []).forEach(c => { let k = cleanLabel(c); contentCounts[k] = (contentCounts[k] || 0) + 1; });
-        (v.productCategories || []).forEach(p => { let k = cleanLabel(p); productCounts[k] = (productCounts[k] || 0) + 1; });
-        (v.deliveryMode || []).forEach(m => { let k = cleanLabel(m); modeCounts[k] = (modeCounts[k] || 0) + 1; });
+      totalSellout += (v.sellout || 0);
+      totalTarget += (v.target || 0);
+      totalStaff += (v.staffCount || 0);
+      totalAmbassador += (v.ambassadorsCount || 0);
+      totalPromoters += (v.promotersCount || 0);
+
+      // Aggregazione per insegna (Serve per report mensili/trimestrali)
+      let storeKey = v.storeName || 'Other';
+      if (!chainAggregates[storeKey]) chainAggregates[storeKey] = { visits: 0, sellout: 0, target: 0, staff: 0 };
+      chainAggregates[storeKey].visits += 1;
+      chainAggregates[storeKey].sellout += (v.sellout || 0);
+      chainAggregates[storeKey].target += (v.target || 0);
+      chainAggregates[storeKey].staff += ((v.staffCount || 0) + (v.ambassadorsCount || 0) + (v.promotersCount || 0));
+
+      // Aggregazione Qualitativa unificata
+      (v.objectives || []).forEach(o => { let k = "Obj: " + cleanLabel(o); qualitativeCounts[k] = (qualitativeCounts[k] || 0) + 1; });
+      (v.contents || []).forEach(c => { let k = "Topic: " + cleanLabel(c); qualitativeCounts[k] = (qualitativeCounts[k] || 0) + 1; });
+      (v.productCategories || []).forEach(p => { let k = "Prod: " + cleanLabel(p); qualitativeCounts[k] = (qualitativeCounts[k] || 0) + 1; });
     });
 
-    const formatForChart = (map) => {
-      const keys = Object.keys(map);
-      return keys.length > 0 ? [{ name: 'Occurrences', labels: keys, values: Object.values(map) }] : null;
-    };
+    let totalHeadcount = totalStaff + totalAmbassador + totalPromoters;
+    let avgAchievement = totalTarget > 0 ? ((totalSellout / totalTarget) * 100).toFixed(1) + '%' : '0%';
 
     // --- SLIDE 1: COPERTINA ---
     let slide1 = pres.addSlide();
-    slide1.background = { color: colors.dark };
-    slide1.addText("ZTE TRAINING REPORT", { x: 0.5, y: 2.2, w: 12.3, h: 0.8, fontSize: 38, bold: true, color: colors.cyan, align: 'center', fontFace: FONT_NAME });
-    slide1.addText(`${periodName.toUpperCase()} - ${reportYear}`, { x: 0.5, y: 3.2, w: 12.3, h: 0.5, fontSize: 20, color: colors.white, align: 'center', fontFace: FONT_NAME });
-    slide1.addText("ZTE - LFM Training on Field professional tools", { x: 0.5, y: 6.5, w: 12.3, h: 0.4, fontSize: 10, color: colors.cyan, align: 'center', fontFace: FONT_NAME });
+    slide1.background = { color: BRAND_COLORS.darkBg };
+    slide1.addText("TRAINING REPORT", { x: 1.0, y: 2.2, w: 11.3, fontSize: 52, bold: true, color: BRAND_COLORS.accentCyan, fontFace: 'Montserrat' });
+    slide1.addText(`FIELD OPERATIONS & DEVELOPMENT - ${periodName.toUpperCase()} ${reportYear}`, { x: 1.0, y: 3.3, w: 11.3, fontSize: 18, color: BRAND_COLORS.cleanWhite, fontFace: 'Montserrat' });
+    slide1.addText("ZTE - LFM Training on Field professional tools", { x: 1.0, y: 6.5, w: 11.3, fontSize: 12, color: BRAND_COLORS.accentCyan, italic: true });
 
-    // --- SLIDE 2: EXECUTIVE SUMMARY - METRICHE QUANTITATIVE ---
+    // --- SLIDE 2: EXECUTIVE RECAP (QUANTITATIVO) ---
     let slide2 = pres.addSlide();
-    slide2.background = { color: colors.dark };
-    slide2.addText("EXECUTIVE RECAP - QUANTITATIVE METRICS", { x: 0.5, y: 0.3, w: 12.3, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: FONT_NAME });
+    slide2.background = { color: BRAND_COLORS.darkBg };
+    slide2.addText("EXECUTIVE RECAP - GLOBAL METRICS", { x: 0.6, y: 0.4, w: 12.0, fontSize: 28, bold: true, color: BRAND_COLORS.accentCyan, fontFace: 'Montserrat' });
 
-    // Tabella KPI Generali (Sinistra)
     slide2.addTable([
-      [{text: "Global Metrics Summary", options: {bold: true, fill: colors.cyan, color: colors.white}}, {text: "Totals", options: {bold: true, fill: colors.cyan, color: colors.white, align:'center'}}],
-      ["Total Field Store Visits", filteredVisits.length.toString()],
-      ["Total People Trained (Headcount)", totalTrained.toString()],
-      ["• Brand Promoters Trained", totalPromoters.toString()],
-      ["• Field Ambassadors Trained", totalAmbassadors.toString()],
-      ["• Store Staff Trained", totalStaff.toString()]
-    ], { x: 0.6, y: 1.2, w: 4.5, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 10, fontFace: FONT_NAME, colW: [3.1, 1.4], margin: 5 });
+      [{ text: "METRICHE GLOBALI", options: { bold: true, fill: BRAND_COLORS.accentCyan, color: BRAND_COLORS.cleanWhite } },
+       { text: "VALORE CONSOLIDATO", options: { bold: true, fill: BRAND_COLORS.accentCyan, color: BRAND_COLORS.cleanWhite, align: 'center' } }],
+      ["Totale Visite nei Punti Vendita", filteredVisits.length.toString()],
+      ["Risorse Formate Complessive (Headcount)", totalHeadcount.toString()],
+      ["Volume Sell-out Totale rilevato", `${totalSellout} unità`],
+      ["Target di Periodo assegnato", `${totalTarget} unità`],
+      ["Tasso di Raggiungimento Target Medio", avgAchievement]
+    ], { x: 0.6, y: 1.5, w: 6.0, fontSize: 12, color: BRAND_COLORS.cleanWhite, border: { pt: 1, color: BRAND_COLORS.gridBorder }, margin: 10 });
 
-    // Grafico Ciambella Headcount (Destra)
-    if (totalTrained > 0) {
+    if (totalHeadcount > 0) {
       slide2.addChart(pres.ChartType.doughnut, [
-        { name: 'People', labels: ['Promoters', 'Ambassadors', 'Staff'], values: [totalPromoters, totalAmbassadors, totalStaff] }
-      ], {
-        x: 5.5, y: 1.2, w: 7.2, h: 2.8,
-        showLegend: true, legendPos: 'r', legendColor: colors.white, legendFontSize: 9, legendFontFace: FONT_NAME,
-        showLabel: true, dataLabelColor: colors.white, chartColors: ['00A0D2', 'F39C12', '27AE60'], holeSize: 60
-      });
+        { name: 'Personale', labels: ['Staff Negozio', 'Ambassador', 'Promoter'], values: [totalStaff, totalAmbassador, totalPromoters] }
+      ], { x: 7.2, y: 1.5, w: 5.5, h: 4.5, showLegend: true, legendColor: BRAND_COLORS.cleanWhite, chartColors: ['00A0D2', 'F39C12', '27AE60'] });
     }
 
-    // Grafico Orizzontale Ragione delle Visite (Basso - Largo a piena pagina)
-    const reasonsData = formatForChart(reasonsCounts);
-    if (reasonsData) {
-      slide2.addText("Primary Reasons for Store Visits", { x: 0.6, y: 4.1, w: 12.1, h: 0.3, fontSize: 11, color: colors.orange, bold: true, fontFace: FONT_NAME });
-      slide2.addChart(pres.ChartType.bar, reasonsData, {
-        x: 0.6, y: 4.4, w: 12.1, h: 2.6,
-        barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8.5,
-        valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8.5, catAxisLabelFontFace: FONT_NAME, 
-        chartColors: ['00A0D2', 'F39C12', '27AE60', 'E74C3C', '9B59B6'] // Palette colori differenziata
-      });
-    }
-
-    // --- SLIDE 3: EXECUTIVE SUMMARY - STRUTTURA OPERATIVA & PARAMETRI QUALITATIVI ---
+    // --- SLIDE 3: EXECUTIVE RECAP (QUALITATIVO) ---
     let slide3 = pres.addSlide();
-    slide3.background = { color: colors.dark };
-    slide3.addText("EXECUTIVE RECAP - OPERATIONAL FOCUS", { x: 0.5, y: 0.3, w: 12.3, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: FONT_NAME });
+    slide3.background = { color: BRAND_COLORS.darkBg };
+    slide3.addText("EXECUTIVE RECAP - OPERATIONAL FOCUS", { x: 0.6, y: 0.4, w: 12.0, fontSize: 28, bold: true, color: BRAND_COLORS.accentCyan, fontFace: 'Montserrat' });
 
-    // 4 Grafici indipendenti per assecondare la richiesta di spazio e colori differenziati per categoria
-    const objData = formatForChart(objectiveCounts);
-    if(objData) {
-      slide3.addText("Training Objectives Distribution", { x: 0.6, y: 1.0, w: 5.7, h: 0.3, fontSize: 11, color: colors.cyan, bold: true, fontFace: FONT_NAME });
-      slide3.addChart(pres.ChartType.bar, objData, { x: 0.6, y: 1.3, w: 5.7, h: 2.4, barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8, chartColors: ['00A0D2'] });
-    }
-    
-    const contentData = formatForChart(contentCounts);
-    if(contentData) {
-      slide3.addText("Covered Educational Contents", { x: 6.9, y: 1.0, w: 5.7, h: 0.3, fontSize: 11, color: colors.orange, bold: true, fontFace: FONT_NAME });
-      slide3.addChart(pres.ChartType.bar, contentData, { x: 6.9, y: 1.3, w: 5.7, h: 2.4, barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8, chartColors: ['F39C12'] });
+    const qualKeys = Object.keys(qualitativeCounts);
+    if (qualKeys.length > 0) {
+       slide3.addText("Qualitative Parameters Distribution", { x: 0.6, y: 1.2, w: 12.1, h: 0.3, fontSize: 12, color: BRAND_COLORS.highlightOrange, bold: true, fontFace: 'Montserrat' });
+       slide3.addChart(pres.ChartType.bar, [{ name: 'Occurrences', labels: qualKeys, values: Object.values(qualitativeCounts) }], {
+          x: 0.6, y: 1.6, w: 12.1, h: 4.5, barDir: 'bar', showValue: true, dataLabelColor: BRAND_COLORS.cleanWhite, dataLabelFontSize: 9,
+          valAxisHidden: true, catAxisLabelColor: BRAND_COLORS.cleanWhite, catAxisLabelFontSize: 9, chartColors: ['F39C12']
+       });
     }
 
-    const productData = formatForChart(productCounts);
-    if(productData) {
-      slide3.addText("Product Categories Core Focus", { x: 0.6, y: 4.1, w: 5.7, h: 0.3, fontSize: 11, color: '27AE60', bold: true, fontFace: FONT_NAME });
-      slide3.addChart(pres.ChartType.bar, productData, { x: 0.6, y: 4.4, w: 5.7, h: 2.4, barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8, chartColors: ['27AE60'] });
-    }
+    // --- RAMIFICAZIONE GRANULARITA' ---
+    if (reportType === 'monthly' || reportType === 'quarterly') {
+        // PERIODO LUNGO (EXECUTIVE) - Aggiungo Slide Aggregata per Insegna
+        let slideChain = pres.addSlide();
+        slideChain.background = { color: BRAND_COLORS.darkBg };
+        slideChain.addText("CHAIN PERFORMANCE INDEX", { x: 0.6, y: 0.4, w: 12.0, fontSize: 28, bold: true, color: BRAND_COLORS.accentCyan, fontFace: 'Montserrat' });
 
-    const modeData = formatForChart(modeCounts);
-    if(modeData) {
-      slide3.addText("Delivery Lesson Modes", { x: 6.9, y: 4.1, w: 5.7, h: 0.3, fontSize: 11, color: '9B59B6', bold: true, fontFace: FONT_NAME });
-      slide3.addChart(pres.ChartType.bar, modeData, { x: 6.9, y: 4.4, w: 5.7, h: 2.4, barDir: 'bar', showValue: true, dataLabelColor: colors.white, dataLabelFontSize: 8, valAxisHidden: true, catAxisLabelColor: colors.white, catAxisLabelFontSize: 8, chartColors: ['9B59B6'] });
-    }
+        let tableRows = [
+          [{ text: "INSEGNA RETAIL", options: { fill: BRAND_COLORS.accentCyan, bold: true, color: BRAND_COLORS.cleanWhite } },
+           { text: "N. VISITE", options: { fill: BRAND_COLORS.accentCyan, bold: true, color: BRAND_COLORS.cleanWhite } },
+           { text: "SELL-OUT", options: { fill: BRAND_COLORS.accentCyan, bold: true, color: BRAND_COLORS.cleanWhite } },
+           { text: "TARGET", options: { fill: BRAND_COLORS.accentCyan, bold: true, color: BRAND_COLORS.cleanWhite } },
+           { text: "ACHIEVEMENT %", options: { fill: BRAND_COLORS.accentCyan, bold: true, color: BRAND_COLORS.cleanWhite } },
+           { text: "RISORSE FORMATE", options: { fill: BRAND_COLORS.accentCyan, bold: true, color: BRAND_COLORS.cleanWhite } }]
+        ];
 
-    // --- SLIDES DI DETTAGLIO PER OGNI SINGOLA VISITA ---
-    filteredVisits.forEach((visit) => {
-      let slideV = pres.addSlide();
-      slideV.background = { color: colors.dark };
-      
-      slideV.addText(visit.storeName.toUpperCase(), { x: 0.6, y: 0.3, w: 8.0, h: 0.5, fontSize: 24, bold: true, color: colors.cyan, fontFace: FONT_NAME });
-      slideV.addText(`📍 Location: ${visit.storeLocation}    |    📅 Date: ${visit.visitDate} (Week ${visit.weekNumber})`, { x: 0.6, y: 0.8, w: 12.0, h: 0.4, fontSize: 11, color: colors.white, fontFace: FONT_NAME });
-      
-      let achPerc = (visit.target && visit.target > 0) ? ((visit.sellout / visit.target) * 100).toFixed(1) + "%" : "—";
-      
-      // Tabella Numerica Performance
-      slideV.addTable([
-        [{text: "Performance Metrics", options: {bold: true, fill: colors.subBg, color: colors.cyan}}, {text: "Value", options: {bold: true, fill: colors.subBg, color: colors.cyan}}],
-        ["Sell-out Volume", `${visit.sellout || 0} units`],
-        ["Target Volume", `${visit.target || 0} units`],
-        ["Target Achievement Rate", achPerc],
-        ["Promoters Trained", (visit.promotersCount || 0).toString()],
-        ["Ambassadors Trained", (visit.ambassadorsCount || 0).toString()],
-        ["In-Store Staff Trained", (visit.staffCount || 0).toString()]
-      ], { x: 0.6, y: 1.4, w: 5.4, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 9.5, fontFace: FONT_NAME, colW: [3.1, 2.3], margin: 4 });
+        Object.keys(chainAggregates).forEach(chainName => {
+          let cData = chainAggregates[chainName];
+          let cAch = cData.target > 0 ? ((cData.sellout / cData.target) * 100).toFixed(1) + '%' : '0%';
+          tableRows.push([chainName, cData.visits.toString(), `${cData.sellout} u.`, `${cData.target} u.`, cAch, cData.staff.toString()]);
+        });
+        slideChain.addTable(tableRows, { x: 0.6, y: 1.8, w: 12.1, fontSize: 11, color: BRAND_COLORS.cleanWhite, border: { pt: 0.5, color: BRAND_COLORS.gridBorder }, margin: 8 });
 
-      // Tabella Focus Operativo Speculare
-      slideV.addTable([
-        [{text: "Operational Focus", options: {bold: true, fill: colors.subBg, color: colors.orange}}, {text: "Applied Criteria", options: {bold: true, fill: colors.subBg, color: colors.orange}}],
-        ["Objectives", (visit.objectives || []).join(", ") || "—"],
-        ["Contents", (visit.contents || []).join(", ") || "—"],
-        ["Product Focus", (visit.productCategories || []).join(", ") || "—"],
-        ["Delivery Mode", (visit.deliveryMode || []).join(", ") || "—"]
-      ], { x: 6.4, y: 1.4, w: 6.3, border: {pt: 1, color: colors.grayBorder}, color: colors.white, fontSize: 8.5, fontFace: FONT_NAME, colW: [1.8, 4.5], margin: 4 });
-      
-      if(visit.notes) {
-          slideV.addText("Field Observer Notes:", { x: 0.6, y: 5.2, w: 12.0, h: 0.3, fontSize: 11, bold: true, color: colors.orange, fontFace: FONT_NAME });
-          slideV.addText(visit.notes, { x: 0.6, y: 5.5, w: 12.0, h: 1.2, fontSize: 9.5, color: colors.white, fill: colors.subBg, margin: 6, fontFace: FONT_NAME });
-      }
+        // Galleria Foto Migliori del Mese/Trimestre (Max 4 foto globali)
+        let allPhotos = [];
+        filteredVisits.forEach(v => {
+            if (v.visitPhotos && v.visitPhotos.length > 0) { allPhotos = allPhotos.concat(v.visitPhotos); }
+        });
 
-      // --- SLIDE ALLEGATI MULTIMEDIALI (COMPLETAMENTE ALLINEATI IN RATIO 4:3) ---
-      if ((visit.visitPhotos && visit.visitPhotos.length > 0) || visit.powerBiScreenshot) {
-          let slideM = pres.addSlide();
-          slideM.background = { color: colors.dark };
-          slideM.addText(`${visit.storeName.toUpperCase()} - ATTACHED VISUALS`, { x: 0.6, y: 0.3, w: 12.0, h: 0.5, fontSize: 20, bold: true, color: colors.cyan, fontFace: FONT_NAME });
+        if (allPhotos.length > 0) {
+            let slideGallery = pres.addSlide();
+            slideGallery.background = { color: BRAND_COLORS.darkBg };
+            slideGallery.addText("IN-STORE EXCELLENCE VISUALS", { x: 0.6, y: 0.4, w: 12.0, fontSize: 26, bold: true, color: BRAND_COLORS.accentCyan });
 
-          const cleanB64 = (str) => {
-            if(!str) return null;
-            return str.includes("base64,") ? str.split("base64,")[1].trim() : str.trim();
-          };
+            const gridPositions = [
+              { x: 0.6, y: 1.4, w: 5.8, h: 2.4 }, { x: 6.9, y: 1.4, w: 5.8, h: 2.4 },
+              { x: 0.6, y: 4.3, w: 5.8, h: 2.4 }, { x: 6.9, y: 4.3, w: 5.8, h: 2.4 }
+            ];
 
-          // Box Power BI (Rapporto geometrico 4:3 pulito a sinistra)
-          if(visit.powerBiScreenshot) {
-              slideM.addText("Power BI Sales Dashboard Trend", { x: 0.6, y: 1.1, w: 5.6, h: 0.3, fontSize: 12, bold: true, color: colors.orange, fontFace: FONT_NAME });
-              let biData = cleanB64(visit.powerBiScreenshot);
-              if(biData) {
-                slideM.addImage({ data: "base64," + biData, x: 0.6, y: 1.5, w: 5.6, h: 4.2 });
+            const cleanB64 = (str) => str.includes("base64,") ? str.split("base64,")[1].trim() : str.trim();
+
+            allPhotos.slice(0, 4).forEach((imgData, index) => {
+              let pData = cleanB64(imgData);
+              if (pData) {
+                  let pos = gridPositions[index];
+                  slideGallery.addImage({
+                    data: "base64," + pData,
+                    x: pos.x, y: pos.y, w: pos.w, h: pos.h,
+                    sizing: { type: 'contain' } // FIX DEFORMAZIONE FOTO
+                  });
               }
+            });
+        }
+
+    } else {
+        // PERIODO CORTO (WEEKLY) - Slide di dettaglio singola per ogni punto vendita
+        filteredVisits.forEach(visit => {
+          let slideVisit = pres.addSlide();
+          slideVisit.background = { color: BRAND_COLORS.darkBg };
+
+          slideVisit.addText(`${(visit.storeName || '').toUpperCase()} - ${(visit.storeLocation || '').toUpperCase()}`, { x: 0.6, y: 0.4, w: 12.0, fontSize: 26, bold: true, color: BRAND_COLORS.accentCyan, fontFace: 'Montserrat' });
+          slideVisit.addText(`Data Rilevazione: ${visit.visitDate} (Week ${visit.weekNumber})`, { x: 0.6, y: 1.0, w: 12.0, fontSize: 12, color: BRAND_COLORS.cleanWhite });
+
+          let vAch = visit.target > 0 ? ((visit.sellout / visit.target) * 100).toFixed(1) + '%' : '0%';
+          slideVisit.addTable([
+            [{text: "KPI Operativo", options: {bold: true, fill: BRAND_COLORS.gridBorder, color: BRAND_COLORS.accentCyan}}, {text: "Valore", options: {bold: true, fill: BRAND_COLORS.gridBorder, color: BRAND_COLORS.accentCyan}}],
+            ["Volume Sell-out", `${visit.sellout || 0} unità`],
+            ["Target di Visita", `${visit.target || 0} unità`],
+            ["Tasso di Conversione", vAch],
+            ["Staff Formato", (visit.staffCount || 0).toString()],
+            ["Ambassador Coinvolti", (visit.ambassadorsCount || 0).toString()],
+            ["Promoter Formati", (visit.promotersCount || 0).toString()]
+          ], { x: 0.6, y: 1.6, w: 5.5, fontSize: 11, color: BRAND_COLORS.cleanWhite, border: { pt: 0.5, color: BRAND_COLORS.gridBorder }, margin: 6 });
+
+          if (visit.notes) {
+              slideVisit.addText("Note / Osservazioni:", { x: 0.6, y: 4.8, w: 5.5, h: 0.3, fontSize: 11, bold: true, color: BRAND_COLORS.highlightOrange });
+              slideVisit.addText(visit.notes, { x: 0.6, y: 5.2, w: 5.5, h: 1.5, fontSize: 9.5, color: BRAND_COLORS.cleanWhite, fill: BRAND_COLORS.gridBorder, margin: 6 });
           }
 
-          // Griglia Foto In-Store (Proporzioni e posizionamento calibrato al millimetro)
-          if(visit.visitPhotos && visit.visitPhotos.length > 0) {
-              let photoStartX = visit.powerBiScreenshot ? 6.6 : 3.1;
-              let photoAreaW = visit.powerBiScreenshot ? 6.1 : 7.0;
-              slideM.addText("In-Store Execution Photos", { x: photoStartX, y: 1.1, w: photoAreaW, h: 0.3, fontSize: 12, bold: true, color: colors.orange, fontFace: FONT_NAME });
+          // Gestione foto nella singola slide con sizing = contain
+          const cleanB64 = (str) => str.includes("base64,") ? str.split("base64,")[1].trim() : str.trim();
 
-              let photoGrid = [];
-              if (visit.powerBiScreenshot) {
-                  // Con Power BI presente: Griglia 2x2 sul lato destro (Rapporto perfetto 4:3)
-                  photoGrid = [
-                      { x: 6.6, y: 1.5, w: 2.7, h: 2.025 }, { x: 9.6, y: 1.5, w: 2.7, h: 2.025 },
-                      { x: 6.6, y: 3.675, w: 2.7, h: 2.025 }, { x: 9.6, y: 3.675, w: 2.7, h: 2.025 }
-                  ];
-              } else {
-                  // Senza Power BI: Griglia 2x2 centrata, grande ed elegante (Rapporto perfetto 4:3)
-                  photoGrid = [
-                      { x: 3.1, y: 1.4, w: 3.4, h: 2.55 }, { x: 6.8, y: 1.4, w: 3.4, h: 2.55 },
-                      { x: 3.1, y: 4.2, w: 3.4, h: 2.55 }, { x: 6.8, y: 4.2, w: 3.4, h: 2.55 }
-                  ];
-              }
-
+          if(visit.powerBiScreenshot) {
+              let biData = cleanB64(visit.powerBiScreenshot);
+              if(biData) slideVisit.addImage({ data: "base64," + biData, x: 6.5, y: 1.6, w: 6.0, h: 5.1, sizing: { type: 'contain' } });
+          } else if (visit.visitPhotos && visit.visitPhotos.length > 0) {
+              let photoGrid = [
+                  { x: 6.5, y: 1.6, w: 2.9, h: 2.45 }, { x: 9.6, y: 1.6, w: 2.9, h: 2.45 },
+                  { x: 6.5, y: 4.25, w: 2.9, h: 2.45 }, { x: 9.6, y: 4.25, w: 2.9, h: 2.45 }
+              ];
               visit.visitPhotos.slice(0, 4).forEach((imgData, idx) => {
                   let pData = cleanB64(imgData);
-                  if(pData) {
-                    let pos = photoGrid[idx];
-                    slideM.addImage({ data: "base64," + pData, x: pos.x, y: pos.y, w: pos.w, h: pos.h });
+                  if (pData) {
+                      let pos = photoGrid[idx];
+                      slideVisit.addImage({ data: "base64," + pData, x: pos.x, y: pos.y, w: pos.w, h: pos.h, sizing: { type: 'contain' } });
                   }
               });
           }
-      }
-    });
+        });
+    }
 
-    const finalName = await pres.writeFile({ fileName: `ZTE_Report_${reportType}_${reportPeriod}_${reportYear}.pptx` });
-    alert(`Presentation "${finalName}" successfully compiled!`);
+    const finalName = await pres.writeFile({ fileName: `ZTE_Report_${reportType}_${reportYear}.pptx` });
+    alert(`Report ${finalName} Generato con Successo!`);
   } catch (err) {
-    console.error("PPTX Critical Error: ", err);
-    alert("Error building presentation: " + err.message);
+    console.error("PPTX Error: ", err);
+    alert("Error: " + err.message);
   } finally {
     pptxBtn.textContent = "Generate PPTX Report";
     pptxBtn.disabled = false;
