@@ -72,7 +72,7 @@
     .selector-group select { padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; }
     .report-actions { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
     
-    /* Nuovo blocco di stile per la gestione opzionale dei visual executive */
+    /* Executive Visuals Styling */
     .executive-visuals-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; display: none; }
     .executive-visuals-box h3 { font-size: 1.2rem; color: #0d1628; margin-bottom: 1rem; font-weight: 600; border-bottom: 2px solid #00a0d2; padding-bottom: 0.3rem; }
     .exec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
@@ -295,7 +295,7 @@
 
       <div class="executive-visuals-box" id="execVisualsContainer">
         <h3>Executive Report Visuals (Optional - Monthly / Quarterly Only)</h3>
-        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1rem;">If you want to append visual slides to the executive monthly/quarterly report, upload your global Power BI dashboards and top highlights images below. If left empty, the presentation will be generated with data tables only.</p>
+        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1rem;">Upload global Power BI dashboards and top highlights images below. These slides will be appended to the report.</p>
         <div class="exec-grid">
           <div class="form-col">
             <label>Global Power BI Screenshots (Max 2)</label>
@@ -322,7 +322,7 @@
 const CONFIG = { dbName: 'ZTEReportDBv3', dbVersion: 1 };
 let db = null, isOnline = navigator.onLine, visits = [];
 
-// Variabili globali temporanee per contenere i Base64 degli upload opzionali dei report
+// Temporarily store manual report images
 let execPowerBiImages = [];
 let execHighlightsImages = [];
 
@@ -433,11 +433,11 @@ document.getElementById('powerBiPhoto').addEventListener('change', async functio
   this.value = '';
 });
 
-// Listener per i caricamenti manuali opzionali della sezione Report Executive
+// Listener for Executive Report manual uploads
 document.getElementById('execPowerBiFiles').addEventListener('change', async function() {
   const preview = document.getElementById('execPowerBiPreview');
   for(let file of this.files) {
-    if(execPowerBiImages.length >= 2) { alert("Max 2 global Power BI screenshots allowed"); break; }
+    if(execPowerBiImages.length >= 2) { alert("Max 2 dashboards allowed"); break; }
     const compBlob = await compressImage(file, 1000);
     const b64 = await blobToBase64(compBlob);
     execPowerBiImages.push(b64);
@@ -457,7 +457,7 @@ document.getElementById('execPowerBiFiles').addEventListener('change', async fun
 document.getElementById('execHighlightsFiles').addEventListener('change', async function() {
   const preview = document.getElementById('execHighlightsPreview');
   for(let file of this.files) {
-    if(execHighlightsImages.length >= 8) { alert("Max 8 highlights photos allowed"); break; }
+    if(execHighlightsImages.length >= 8) { alert("Max 8 photos allowed"); break; }
     const compBlob = await compressImage(file, 800);
     const b64 = await blobToBase64(compBlob);
     execHighlightsImages.push(b64);
@@ -649,7 +649,6 @@ function updateReportSelectors() {
   periodSelect.innerHTML = '<option value="">-- Select --</option>';
   yearSelect.innerHTML = '<option value="">-- Select --</option>';
   
-  // Mostra la sezione upload opzionale solo se si sceglie un report a lungo termine (Monthly/Quarterly)
   if (reportType === 'monthly' || reportType === 'quarterly') {
     execVisualsContainer.style.display = 'block';
   } else {
@@ -695,49 +694,44 @@ async function initApp() {
   renderDashboard();
 }
 
-// --- GENERATORE DI REPORT PPTX RIGOROSAMENTE IN INGLESE CON LAYOUT STRATEGICO E CARICAMENTI MANUALI ---
+// --- GENERATORE DI REPORT PPTX OTTIMIZZATO ---
 async function generatePPTX() {
   const reportType = document.getElementById('reportType').value;
   const reportPeriod = document.getElementById('reportPeriod').value;
   const reportYear = parseInt(document.getElementById('reportYear').value);
   
-  if (!reportType || !reportPeriod || !reportYear) { alert('Please select all required filters'); return; }
+  if (!reportType || !reportPeriod || !reportYear) { alert('Select all filters'); return; }
   
   let filteredVisits = visits.filter(v => v.year === reportYear);
   if (reportType === 'weekly') filteredVisits = filteredVisits.filter(v => v.weekNumber === parseInt(reportPeriod));
   else if (reportType === 'monthly') filteredVisits = filteredVisits.filter(v => v.month === parseInt(reportPeriod));
   else if (reportType === 'quarterly') filteredVisits = filteredVisits.filter(v => v.quarter === parseInt(reportPeriod));
   
-  if (filteredVisits.length === 0) { alert('No visits found matching your selected criteria.'); return; }
+  if (filteredVisits.length === 0) { alert('No visits found.'); return; }
 
   const pptxBtn = document.getElementById('pptxBtn');
-  pptxBtn.textContent = "Generating Document...";
+  pptxBtn.textContent = "Generating...";
   pptxBtn.disabled = true;
 
   try {
     const pres = new PptxGenJS();
     pres.layout = 'LAYOUT_16x9';
     
-    const BRAND_COLORS = { darkBg: '0D1628', accentCyan: '00A0D2', highlightOrange: 'F39C12', cleanWhite: 'FFFFFF', gridBorder: '334155' };
+    const COLORS = { darkBg: '0D1628', accentCyan: '00A0D2', orange: 'F39C12', white: 'FFFFFF', gridBorder: '334155' };
     let periodName = reportType === 'weekly' ? `Week ${reportPeriod}` : reportType === 'monthly' ? `Month ${reportPeriod}` : `Q${reportPeriod}`;
 
-    // Helper per abbreviare i focus ed evitare overlap
     const cleanLabel = (str) => {
       if(!str) return "";
       let s = str.replace("Focus on flagship", "Top Focus").replace("Display & Visual Merchandising Check", "Display Check");
-      return s.length > 22 ? s.substring(0, 20) + "..." : s;
+      return s.length > 20 ? s.substring(0, 18) + "..." : s;
     };
 
     const cleanB64 = (str) => str.includes("base64,") ? str.split("base64,")[1].trim() : str.trim();
 
-    // --- AGGREGAZIONI METRICHE GLOBALI ---
+    // --- AGGREGAZIONI ---
     let totalSellout = 0, totalTarget = 0, totalStaff = 0, totalAmbassador = 0, totalPromoters = 0;
     let chainAggregates = {};
-    
-    // Mappe distinte separate per popolare il nuovo layout della strategia operativa
-    let objCounts = {};
-    let contentCounts = {};
-    let productCounts = {};
+    let objCounts = {}, contentCounts = {}, productCounts = {};
 
     filteredVisits.forEach(v => {
       totalSellout += (v.sellout || 0);
@@ -746,7 +740,6 @@ async function generatePPTX() {
       totalAmbassador += (v.ambassadorsCount || 0);
       totalPromoters += (v.promotersCount || 0);
 
-      // Struttura aggregata per le catene retail
       let storeKey = v.storeName || 'Other';
       if (!chainAggregates[storeKey]) chainAggregates[storeKey] = { visits: 0, sellout: 0, target: 0, staff: 0 };
       chainAggregates[storeKey].visits += 1;
@@ -754,7 +747,6 @@ async function generatePPTX() {
       chainAggregates[storeKey].target += (v.target || 0);
       chainAggregates[storeKey].staff += ((v.staffCount || 0) + (v.ambassadorsCount || 0) + (v.promotersCount || 0));
 
-      // Popolamento separato delle metriche qualitative
       (v.objectives || []).forEach(o => { let k = cleanLabel(o); objCounts[k] = (objCounts[k] || 0) + 1; });
       (v.contents || []).forEach(c => { let k = cleanLabel(c); contentCounts[k] = (contentCounts[k] || 0) + 1; });
       (v.productCategories || []).forEach(p => { let k = cleanLabel(p); productCounts[k] = (productCounts[k] || 0) + 1; });
@@ -763,191 +755,114 @@ async function generatePPTX() {
     let totalHeadcount = totalStaff + totalAmbassador + totalPromoters;
     let avgAchievement = totalTarget > 0 ? ((totalSellout / totalTarget) * 100).toFixed(1) + '%' : '0%';
 
-    // --- SLIDE 1: COPERTINA (ENGLISH ONLY) ---
-    let slide1 = pres.addSlide();
-    slide1.background = { color: BRAND_COLORS.darkBg };
-    slide1.addText("TRAINING REPORT", { x: 1.0, y: 2.2, w: 11.3, fontSize: 52, bold: true, color: BRAND_COLORS.accentCyan, fontFace: 'Montserrat' });
-    slide1.addText(`FIELD OPERATIONS & DEVELOPMENT - ${periodName.toUpperCase()} ${reportYear}`, { x: 1.0, y: 3.3, w: 11.3, fontSize: 18, color: BRAND_COLORS.cleanWhite, fontFace: 'Montserrat' });
-    slide1.addText("ZTE - LFM Training on Field professional tools", { x: 1.0, y: 6.5, w: 11.3, fontSize: 12, color: BRAND_COLORS.accentCyan, italic: true });
+    // --- SLIDE 1: COPERTINA ---
+    let s1 = pres.addSlide(); s1.background = { color: COLORS.darkBg };
+    s1.addText("TRAINING REPORT", { x: 1.0, y: 2.2, w: 11.3, fontSize: 52, bold: true, color: COLORS.accentCyan, fontFace: 'Montserrat' });
+    s1.addText(`${periodName.toUpperCase()} ${reportYear}`, { x: 1.0, y: 3.3, w: 11.3, fontSize: 18, color: COLORS.white });
 
-    // --- SLIDE 2: EXECUTIVE RECAP - GLOBAL METRICS (ENGLISH ONLY) ---
-    let slide2 = pres.addSlide();
-    slide2.background = { color: BRAND_COLORS.darkBg };
-    slide2.addText("EXECUTIVE RECAP - GLOBAL METRICS", { x: 0.6, y: 0.4, w: 12.0, fontSize: 28, bold: true, color: BRAND_COLORS.accentCyan, fontFace: 'Montserrat' });
-
-    slide2.addTable([
-      [{ text: "GLOBAL METRICS", options: { bold: true, fill: BRAND_COLORS.accentCyan, color: BRAND_COLORS.cleanWhite } },
-       { text: "CONSOLIDATED VALUE", options: { bold: true, fill: BRAND_COLORS.accentCyan, color: BRAND_COLORS.cleanWhite, align: 'center' } }],
-      ["Total Field Store Visits", filteredVisits.length.toString()],
-      ["Total People Trained (Headcount)", totalHeadcount.toString()],
-      ["Total Sell-out Volume", `${totalSellout} units`],
-      ["Target Volume Assigned", `${totalTarget} units`],
-      ["Average Target Achievement Rate", avgAchievement]
-    ], { x: 0.6, y: 1.7, w: 6.0, fontSize: 12, color: BRAND_COLORS.cleanWhite, border: { pt: 1, color: BRAND_COLORS.gridBorder }, margin: 10 });
+    // --- SLIDE 2: QUANTITATIVE ---
+    let s2 = pres.addSlide(); s2.background = { color: COLORS.darkBg };
+    s2.addText("EXECUTIVE RECAP - GLOBAL METRICS", { x: 0.6, y: 0.4, w: 12.0, fontSize: 28, bold: true, color: COLORS.accentCyan });
+    s2.addTable([
+      [{ text: "GLOBAL METRICS", options: { bold: true, fill: COLORS.accentCyan, color: COLORS.white } }, { text: "VALUE", options: { bold: true, fill: COLORS.accentCyan, color: COLORS.white, align:'center' } }],
+      ["Total Visits", filteredVisits.length.toString()],
+      ["People Trained", totalHeadcount.toString()],
+      ["Sell-out Volume", `${totalSellout} units`],
+      ["Target Volume", `${totalTarget} units`],
+      ["Achievement Rate", avgAchievement]
+    ], { x: 0.6, y: 1.7, w: 6.0, fontSize: 12, color: COLORS.white, border: { pt: 1, color: COLORS.gridBorder }, margin: 10 });
 
     if (totalHeadcount > 0) {
-      slide2.addChart(pres.ChartType.doughnut, [
-        { name: 'Trainees', labels: ['Store Staff', 'Ambassadors', 'Promoters'], values: [totalStaff, totalAmbassador, totalPromoters] }
-      ], { x: 7.2, y: 1.6, w: 5.5, h: 4.5, showLegend: true, legendColor: BRAND_COLORS.cleanWhite, chartColors: ['00A0D2', 'F39C12', '27AE60'] });
+      s2.addChart(pres.ChartType.doughnut, [
+        { name: 'People', labels: ['Staff', 'Ambassadors', 'Promoters'], values: [totalStaff, totalAmbassador, totalPromoters] }
+      ], { x: 7.2, y: 2.0, w: 4.5, h: 3.2, showLegend: true, legendColor: COLORS.white, chartColors: ['00A0D2', 'F39C12', '27AE60'] });
     }
 
-    // --- SLIDE 3: EXECUTIVE RECAP - OPERATIONAL STRATEGY (NUOVO LAYOUT A 3 COLONNE AFFIANCATE) ---
-    let slide3 = pres.addSlide();
-    slide3.background = { color: BRAND_COLORS.darkBg };
-    slide3.addText("EXECUTIVE RECAP - OPERATIONAL STRATEGY", { x: 0.6, y: 0.4, w: 12.0, fontSize: 26, bold: true, color: BRAND_COLORS.accentCyan, fontFace: 'Montserrat' });
-
-    const buildStrategicTable = (title, dataMap, xCoordinate) => {
-      let tableData = [[{ text: title.toUpperCase(), options: { fill: BRAND_COLORS.accentCyan, color: BRAND_COLORS.cleanWhite, bold: true, align: 'center' } }]];
-      let keys = Object.keys(dataMap);
-      if(keys.length === 0) {
-        tableData.push([{ text: "No metrics registered", options: { italic: true, color: '94A3B8' } }]);
-      } else {
-        keys.forEach(k => {
-          tableData.push([`${k} [${dataMap[k]} visits]`]);
-        });
-      }
-      slide3.addTable(tableData, { x: xCoordinate, y: 1.6, w: 3.8, fontSize: 10.5, color: BRAND_COLORS.cleanWhite, border: { pt: 0.5, color: BRAND_COLORS.gridBorder }, margin: 8 });
+    // --- SLIDE 3: OPERATIONAL STRATEGY ---
+    let s3 = pres.addSlide(); s3.background = { color: COLORS.darkBg };
+    s3.addText("EXECUTIVE RECAP - OPERATIONAL STRATEGY", { x: 0.6, y: 0.4, w: 12.0, fontSize: 26, bold: true, color: COLORS.accentCyan });
+    
+    const buildColTable = (title, dataMap, x, color) => {
+      let rows = [[{ text: title.toUpperCase(), options: { fill: color, color: COLORS.white, bold: true, align: 'center' } }]];
+      Object.keys(dataMap).forEach(k => rows.push([`${k} (${dataMap[k]})`]));
+      s3.addTable(rows, { x: x, y: 1.6, w: 3.8, fontSize: 10, color: COLORS.white, border: { pt: 0.5, color: COLORS.gridBorder }, margin: 8 });
     };
+    buildColTable("Strategic Objectives", objCounts, 0.6, COLORS.accentCyan);
+    buildColTable("Content Pillars", contentCounts, 4.7, COLORS.orange);
+    buildColTable("Product Focus", productCounts, 8.8, '27AE60');
 
-    buildStrategicTable("Strategic Objectives", objCounts, 0.6);
-    buildStrategicTable("Content Pillars", contentCounts, 4.7);
-    buildStrategicTable("Product Focus", productCounts, 8.8);
-
-
-    // --- RAMIFICAZIONE GRANULARITÀ REPORT ---
+    // --- EXECUTIVE SPECIFIC ---
     if (reportType === 'monthly' || reportType === 'quarterly') {
-      
-      // PERIODO LUNGO: Slide di Riepilogo per Insegna Retail
-      let slideChain = pres.addSlide();
-      slideChain.background = { color: BRAND_COLORS.darkBg };
-      slideChain.addText("CHAIN PERFORMANCE INDEX", { x: 0.6, y: 0.4, w: 12.0, fontSize: 26, bold: true, color: BRAND_COLORS.accentCyan, fontFace: 'Montserrat' });
-
-      let tableRows = [
-        [{ text: "RETAIL CHAIN", options: { fill: BRAND_COLORS.accentCyan, bold: true, color: BRAND_COLORS.cleanWhite } },
-         { text: "VISITS COUNTER", options: { fill: BRAND_COLORS.accentCyan, bold: true, color: BRAND_COLORS.cleanWhite } },
-         { text: "SELL-OUT VOLUME", options: { fill: BRAND_COLORS.accentCyan, bold: true, color: BRAND_COLORS.cleanWhite } },
-         { text: "TARGET VOLUME", options: { fill: BRAND_COLORS.accentCyan, bold: true, color: BRAND_COLORS.cleanWhite } },
-         { text: "ACHIEVEMENT %", options: { fill: BRAND_COLORS.accentCyan, bold: true, color: BRAND_COLORS.cleanWhite } },
-         { text: "STAFF TRAINED", options: { fill: BRAND_COLORS.accentCyan, bold: true, color: BRAND_COLORS.cleanWhite } }]
-      ];
-
-      Object.keys(chainAggregates).forEach(chainName => {
-        let cData = chainAggregates[chainName];
-        let cAch = cData.target > 0 ? ((cData.sellout / cData.target) * 100).toFixed(1) + '%' : '0%';
-        tableRows.push([chainName, cData.visits.toString(), `${cData.sellout} units`, `${cData.target} units`, cAch, cData.staff.toString()]);
+      let s4 = pres.addSlide(); s4.background = { color: COLORS.darkBg };
+      s4.addText("CHAIN PERFORMANCE INDEX", { x: 0.6, y: 0.4, w: 12.0, fontSize: 26, bold: true, color: COLORS.accentCyan });
+      let rows = [[{ text: "RETAIL CHAIN", options: { fill: COLORS.accentCyan, bold: true, color: COLORS.white } }, "VISITS", "SELL-OUT", "TARGET", "ACHIEV %", "TRAINED"]];
+      Object.keys(chainAggregates).forEach(k => {
+        let d = chainAggregates[k];
+        let ach = d.target > 0 ? ((d.sellout / d.target) * 100).toFixed(1) + '%' : '0%';
+        rows.push([k, d.visits.toString(), `${d.sellout} units`, `${d.target} units`, ach, d.staff.toString()]);
       });
-      slideChain.addTable(tableRows, { x: 0.6, y: 1.7, w: 12.1, fontSize: 11, color: BRAND_COLORS.cleanWhite, border: { pt: 0.5, color: BRAND_COLORS.gridBorder }, margin: 8 });
+      s4.addTable(rows, { x: 0.6, y: 1.7, w: 12.1, fontSize: 11, color: COLORS.white, border: { pt: 0.5, color: COLORS.gridBorder }, margin: 8 });
 
-      // SLIDE OPZIONALI DA CARICAMENTO MANUALE PER REPORT EXECUTIVE (POWER BI GLOBALE)
-      if (execPowerBiImages.length > 0) {
-        execPowerBiImages.forEach((imgData, index) => {
-          let b64Clean = cleanB64(imgData);
-          if (b64Clean) {
-            let slideBI = pres.addSlide();
-            slideBI.background = { color: BRAND_COLORS.darkBg };
-            slideBI.addText(`GLOBAL PERFORMANCE DASHBOARD - INDEX ${index + 1}`, { x: 0.6, y: 0.4, w: 12.0, fontSize: 24, bold: true, color: BRAND_COLORS.accentCyan });
-            slideBI.addImage({ data: "base64_" + b64Clean, x: 0.6, y: 1.3, w: 12.1, h: 5.3, sizing: { type: 'contain' } });
-          }
-        });
-      }
+      // Screenshots Power BI
+      execPowerBiImages.forEach((img, i) => {
+        let b = cleanB64(img);
+        if (b) {
+          let s = pres.addSlide(); s.background = { color: COLORS.darkBg };
+          s.addText(`GLOBAL DASHBOARD ${i+1}`, { x: 0.6, y: 0.4, color: COLORS.accentCyan, fontSize: 24, bold:true });
+          s.addImage({ data: "base64," + b, x: 0.6, y: 1.3, w: 12.1, h: 5.3, sizing: { type: 'contain' } });
+        }
+      });
 
-      // SLIDE OPZIONALI DA CARICAMENTO MANUALE PER REPORT EXECUTIVE (GALLERIA HIGHLIGHTS)
+      // Gallery Highlights
       if (execHighlightsImages.length > 0) {
-        let slideGallery = pres.addSlide();
-        slideGallery.background = { color: BRAND_COLORS.darkBg };
-        slideGallery.addText("IN-STORE & ONLINE EXCELLENCE VISUALS", { x: 0.6, y: 0.4, w: 12.0, fontSize: 24, bold: true, color: BRAND_COLORS.accentCyan, fontFace: 'Montserrat' });
-
-        // Griglia fissa bilanciata a 4 quadranti per pagina. Se ci sono più di 4 immagini, genera una seconda slide di galleria.
-        let currentSlide = slideGallery;
-        let positions = [
-          { x: 0.6, y: 1.4, w: 5.7, h: 2.4 }, { x: 6.9, y: 1.4, w: 5.7, h: 2.4 },
-          { x: 0.6, y: 4.2, w: 5.7, h: 2.4 }, { x: 6.9, y: 4.2, w: 5.7, h: 2.4 }
-        ];
-
-        execHighlightsImages.forEach((imgData, index) => {
-          if (index > 0 && index % 4 === 0) {
-            currentSlide = pres.addSlide();
-            currentSlide.background = { color: BRAND_COLORS.darkBg };
-            currentSlide.addText("IN-STORE & ONLINE EXCELLENCE VISUALS (CONT.)", { x: 0.6, y: 0.4, w: 12.0, fontSize: 24, bold: true, color: BRAND_COLORS.accentCyan, fontFace: 'Montserrat' });
+        let grid = [{x:0.6,y:1.4,w:5.7,h:2.4},{x:6.9,y:1.4,w:5.7,h:2.4},{x:0.6,y:4.2,w:5.7,h:2.4},{x:6.9,y:4.2,w:5.7,h:2.4}];
+        let currentS = null;
+        execHighlightsImages.forEach((img, index) => {
+          if (index % 4 === 0) {
+            currentS = pres.addSlide(); currentS.background = { color: COLORS.darkBg };
+            currentS.addText("IN-STORE & ONLINE EXCELLENCE VISUALS", { x: 0.6, y: 0.4, color: COLORS.accentCyan, fontSize: 24, bold:true });
           }
-          let b64Clean = cleanB64(imgData);
-          if (b64Clean) {
-            let posIndex = index % 4;
-            currentSlide.addImage({
-              data: "base64_" + b64Clean,
-              x: positions[posIndex].x, y: positions[posIndex].y, w: positions[posIndex].w, h: positions[posIndex].h,
-              sizing: { type: 'contain' }
-            });
-          }
+          let b = cleanB64(img);
+          if (b) currentS.addImage({ data: "base64," + b, x: grid[index % 4].x, y: grid[index % 4].y, w: grid[index % 4].w, h: grid[index % 4].h, sizing: { type: 'contain' } });
         });
       }
-
     } else {
-      // PERIODO CORTO (WEEKLY): Ciclo completo e slide di dettaglio specifiche per ogni singolo punto vendita rilevato
-      filteredVisits.forEach(visit => {
-        let slideVisit = pres.addSlide();
-        slideVisit.background = { color: BRAND_COLORS.darkBg };
-
-        slideVisit.addText(`${(visit.storeName || 'Other').toUpperCase()} - ${(visit.storeLocation || 'Unknown').toUpperCase()}`, { x: 0.6, y: 0.4, w: 12.0, fontSize: 26, bold: true, color: BRAND_COLORS.accentCyan, fontFace: 'Montserrat' });
-        slideVisit.addText(`Survey Date: ${visit.visitDate} (Weekly Report Axis - Week ${visit.weekNumber})`, { x: 0.6, y: 1.0, w: 12.0, fontSize: 11.5, color: '94A3B8' });
-
-        let vAch = visit.target > 0 ? ((visit.sellout / visit.target) * 100).toFixed(1) + '%' : '0%';
+      // WEEKLY DETAILED
+      filteredVisits.forEach(v => {
+        let s = pres.addSlide(); s.background = { color: COLORS.darkBg };
+        s.addText(`${(v.storeName||'').toUpperCase()} - ${(v.storeLocation||'').toUpperCase()}`, { x: 0.6, y: 0.4, fontSize: 26, bold: true, color: COLORS.accentCyan });
+        let ach = v.target > 0 ? ((v.sellout / v.target) * 100).toFixed(1) + '%' : '0%';
+        s.addTable([
+          [{text: "KPI Metrics", options: {fill: COLORS.gridBorder, color: COLORS.accentCyan, bold:true}}, {text: "Value", options: {fill: COLORS.gridBorder, color: COLORS.accentCyan, align:'center'}}],
+          ["Sell-out", `${v.sellout||0} units`], ["Target", `${v.target||0} units`], ["Achiev.", ach], ["Staff", (v.staffCount||0).toString()], ["Amb.", (v.ambassadorsCount||0).toString()]
+        ], { x: 0.6, y: 1.6, w: 5.5, fontSize: 11, color: COLORS.white, border: { pt: 0.5, color: COLORS.gridBorder }, margin: 6 });
         
-        // Tabella KPI operativa di sinistra blindata
-        slideVisit.addTable([
-          [{ text: "Operational KPI Metrics", options: { bold: true, fill: BRAND_COLORS.gridBorder, color: BRAND_COLORS.accentCyan } }, 
-           { text: "Value Output", options: { bold: true, fill: BRAND_COLORS.gridBorder, color: BRAND_COLORS.accentCyan, align: 'center' } }],
-          ["Sell-out Volume Surveyed", `${visit.sellout || 0} units`],
-          ["Assigned Target Volume", `${visit.target || 0} units`],
-          ["Conversion / Achievement Rate", vAch],
-          ["In-Store Staff Trained", (visit.staffCount || 0).toString()],
-          ["Field Ambassadors Involved", (visit.ambassadorsCount || 0).toString()],
-          ["Brand Promoters Trained", (visit.promotersCount || 0).toString()]
-        ], { x: 0.6, y: 1.6, w: 5.5, fontSize: 10.5, color: BRAND_COLORS.cleanWhite, border: { pt: 0.5, color: BRAND_COLORS.gridBorder }, margin: 6 });
-
-        // Area Note posizionata rigidamente al di sotto della tabella KPI, oscurata e isolata
-        if (visit.notes) {
-          slideVisit.addText("Field Observer Notes:", { x: 0.6, y: 4.8, w: 5.5, h: 0.3, fontSize: 11, bold: true, color: BRAND_COLORS.highlightOrange, fontFace: 'Montserrat' });
-          slideVisit.addText(visit.notes, { x: 0.6, y: 5.1, w: 5.5, h: 1.6, fontSize: 9.5, color: BRAND_COLORS.cleanWhite, fill: BRAND_COLORS.gridBorder, margin: 8 });
+        if (v.notes) {
+          s.addText("Notes:", { x: 0.6, y: 4.8, fontSize: 11, bold: true, color: COLORS.orange });
+          s.addText(v.notes, { x: 0.6, y: 5.1, w: 5.5, h: 1.6, fontSize: 9.5, color: COLORS.white, fill: COLORS.gridBorder, margin: 8 });
         }
 
-        // Area Visuals dedicata sulla destra (Larga 6.0 pollici). Evita incroci o sovrapposizioni.
-        if (visit.powerBiScreenshot) {
-          let biClean = cleanB64(visit.powerBiScreenshot);
-          if (biClean) {
-            slideVisit.addImage({ data: "base64_" + biClean, x: 6.5, y: 1.6, w: 6.0, h: 5.1, sizing: { type: 'contain' } });
-          }
-        } else if (visit.visitPhotos && visit.visitPhotos.length > 0) {
-          let weeklyGrid = [
-            { x: 6.5, y: 1.6, w: 2.9, h: 2.4 }, { x: 9.6, y: 1.6, w: 2.9, h: 2.4 },
-            { x: 6.5, y: 4.3, w: 2.9, h: 2.4 }, { x: 9.6, y: 4.3, w: 2.9, h: 2.4 }
-          ];
-          visit.visitPhotos.slice(0, 4).forEach((imgData, idx) => {
-            let pClean = cleanB64(imgData);
-            if (pClean) {
-              let pos = weeklyGrid[idx];
-              slideVisit.addImage({ data: "base64_" + pClean, x: pos.x, y: pos.y, w: pos.w, h: pos.h, sizing: { type: 'contain' } });
-            }
+        if (v.powerBiScreenshot) {
+          let b = cleanB64(v.powerBiScreenshot);
+          if (b) s.addImage({ data: "base64," + b, x: 6.5, y: 1.6, w: 6.0, h: 5.1, sizing: { type: 'contain' } });
+        } else if (v.visitPhotos && v.visitPhotos.length > 0) {
+          let pg = [{x:6.5,y:1.6,w:2.9,h:2.4},{x:9.6,y:1.6,w:2.9,h:2.4},{x:6.5,y:4.25,w:2.9,h:2.4},{x:9.6,y:4.25,w:2.9,h:2.4}];
+          v.visitPhotos.slice(0, 4).forEach((img, idx) => {
+            let b = cleanB64(img);
+            if (b) s.addImage({ data: "base64," + b, x: pg[idx].x, y: pg[idx].y, w: pg[idx].w, h: pg[idx].h, sizing: { type: 'contain' } });
           });
         }
       });
     }
 
-    const compiledName = await pres.writeFile({ fileName: `ZTE_Report_${reportType}_${reportYear}.pptx` });
-    alert(`Success! Generated file: ${compiledName}`);
-    
-    // Reset completo degli array degli upload manuali ad operazione completata
-    execPowerBiImages = [];
-    execHighlightsImages = [];
-    document.getElementById('execPowerBiPreview').innerHTML = '';
-    document.getElementById('execHighlightsPreview').innerHTML = '';
-
+    await pres.writeFile({ fileName: `ZTE_Report_${reportType}_${reportYear}.pptx` });
+    alert(`Success!`);
+    execPowerBiImages = []; execHighlightsImages = [];
+    document.getElementById('execPowerBiPreview').innerHTML = ''; document.getElementById('execHighlightsPreview').innerHTML = '';
   } catch (err) {
-    console.error("PPTX Master Generation Error: ", err);
-    alert("Generation failed: " + err.message);
+    alert("Error: " + err.message);
   } finally {
-    pptxBtn.textContent = "Generate PPTX Report";
-    pptxBtn.disabled = false;
+    pptxBtn.textContent = "Generate PPTX Report"; pptxBtn.disabled = false;
   }
 }
 
