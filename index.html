@@ -3,83 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZTE - LFM Field Professional Tool v6.1</title>
+    <title>ZTE LFM - Professional Field Tool v6.5</title>
     <script src="https://cdn.jsdelivr.net/gh/Stuk/jszip@v3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@v3.12.0/dist/pptxgen.bundle.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Urbanist:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Urbanist:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
     <style>
-        :root { --primary: #0d1628; --accent: #00a0d2; --secondary: #f39c12; --success: #22c55e; --gray: #64748b; --light-bg: #f1f5f9; --white: #ffffff; }
-        
+        :root { --primary: #0d1628; --accent: #00a0d2; --secondary: #f39c12; --white: #ffffff; --gray: #64748b; --light: #f8fafc; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Urbanist', sans-serif; background: var(--light-bg); color: var(--primary); line-height: 1.5; overflow-x: hidden; }
+        body { font-family: 'Urbanist', sans-serif; background: #f1f5f9; color: var(--primary); overflow-x: hidden; }
 
-        /* UI Components */
-        .header { background: var(--primary); color: var(--white); padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--accent); position: sticky; top: 0; z-index: 1000; }
-        .header h1 { font-family: 'Montserrat', sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 1px; }
-        
-        .nav { background: var(--white); display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow-x: auto; position: sticky; top: 60px; z-index: 999; }
-        .nav-item { flex: 1; min-width: 120px; padding: 1rem; text-align: center; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.3s; font-weight: 700; color: var(--gray); text-transform: uppercase; font-size: 0.8rem; }
+        .header { background: var(--primary); color: var(--white); padding: 1rem 2.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--accent); position: sticky; top: 0; z-index: 100; }
+        .header h1 { font-family: 'Montserrat'; font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; }
+
+        .nav { background: var(--white); display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .nav-item { flex: 1; padding: 1.2rem; text-align: center; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.3s; font-weight: 700; color: var(--gray); text-transform: uppercase; font-size: 0.8rem; }
         .nav-item.active { border-bottom-color: var(--accent); color: var(--accent); background: #f0f9ff; }
 
-        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
-        .section { display: none; animation: fadeIn 0.4s ease-out; }
+        .container { max-width: 1250px; margin: 2rem auto; padding: 0 1rem; }
+        .section { display: none; animation: fadeIn 0.3s ease-out; }
         .section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .card { background: var(--white); border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; margin-bottom: 2rem; }
-        h2 { font-family: 'Montserrat'; font-weight: 700; margin-bottom: 1.5rem; color: var(--primary); }
+        .card { background: var(--white); border-radius: 12px; padding: 2rem; border: 1px solid #e2e8f0; margin-bottom: 2rem; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        h2 { font-family: 'Montserrat'; font-weight: 700; margin-bottom: 1.5rem; }
 
-        /* Form Layout */
         .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
         .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
-        label { font-weight: 700; font-size: 0.85rem; color: var(--primary); }
-        input, select, textarea { padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.95rem; background: var(--white); }
-        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(0, 160, 210, 0.1); }
-
-        .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem; background: #f8fafc; padding: 1.2rem; border-radius: 8px; border: 1px solid #e2e8f0; }
-        .checkbox-group label { display: flex; align-items: center; gap: 0.6rem; font-weight: 500; cursor: pointer; color: var(--primary); }
+        label { font-weight: 700; font-size: 0.85rem; }
+        input, select, textarea { padding: 0.8rem; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 1rem; background: var(--white); }
+        
+        .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; background: var(--light); padding: 1.5rem; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .checkbox-group label { display: flex; align-items: center; gap: 0.8rem; font-weight: 500; cursor: pointer; }
         .checkbox-group input { width: 18px; height: 18px; accent-color: var(--accent); }
 
-        /* Archive Styles */
-        .week-group { margin-bottom: 2.5rem; }
-        .week-header { background: var(--primary); color: var(--white); padding: 0.8rem 1.2rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 700; font-family: 'Montserrat'; display: flex; justify-content: space-between; align-items: center; }
-        .visit-row { background: var(--white); border: 1px solid #e2e8f0; padding: 1.2rem; border-radius: 10px; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
-        .visit-row:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        .visit-info h4 { font-weight: 800; font-size: 1.1rem; }
-        .visit-meta { font-size: 0.8rem; color: var(--gray); font-weight: 600; }
-        .badge-container { display: flex; gap: 0.5rem; margin-top: 0.6rem; flex-wrap: wrap; }
-        .badge { padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; background: #f1f5f9; border: 1px solid #e2e8f0; text-transform: uppercase; }
-        .badge-primary { background: #f0f9ff; color: var(--accent); border-color: #bae6fd; }
+        .week-header { background: var(--primary); color: var(--white); padding: 1rem 1.5rem; border-radius: 8px; margin: 2rem 0 1rem; font-weight: 700; display: flex; justify-content: space-between; }
+        .visit-row { background: var(--white); border: 1px solid #e2e8f0; padding: 1.5rem; border-radius: 10px; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; }
+        .badge { padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; background: #f1f5f9; border: 1px solid #e2e8f0; margin-right: 0.5rem; }
 
-        /* Dashboard */
-        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; margin-bottom: 2rem; }
-        .stat-card { padding: 1.5rem; border-radius: 12px; color: var(--white); }
-        .stat-card.blue { background: linear-gradient(135deg, #0d1628 0%, #1e293b 100%); }
-        .stat-card.cyan { background: linear-gradient(135deg, #00a0d2 0%, #0084ad 100%); }
-        .stat-card.orange { background: linear-gradient(135deg, #f39c12 0%, #d68910 100%); }
-        .stat-card .val { font-size: 2.2rem; font-weight: 800; font-family: 'Montserrat'; display: block; }
-        .stat-card .lab { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; opacity: 0.8; letter-spacing: 1px; }
-
-        /* Photos Management */
-        .photo-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.8rem; margin-top: 1rem; }
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.8rem; margin-top: 1rem; }
         .photo-item { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 2px solid #e2e8f0; }
         .photo-item img { width: 100%; height: 100%; object-fit: cover; }
-        .remove-photo { position: absolute; top: 4px; right: 4px; background: rgba(239, 68, 68, 0.9); color: white; border: none; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 12px; }
+        .rem-btn { position: absolute; top: 2px; right: 2px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; font-size: 10px; }
 
-        /* Buttons & Icons */
-        .btn { padding: 0.8rem 1.5rem; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-family: inherit; }
+        .btn { padding: 0.8rem 2rem; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; font-family: 'Montserrat'; transition: 0.2s; }
         .btn-primary { background: var(--accent); color: var(--white); }
-        .btn-primary:hover { background: #0084ad; }
-        .btn-secondary { background: #cbd5e1; color: var(--primary); }
-        .btn-pptx { background: var(--secondary); color: var(--white); width: 100%; font-size: 1.1rem; margin-top: 1rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-pptx { background: var(--secondary); color: var(--white); width: 100%; font-size: 1.1rem; }
         .btn-pptx:hover { background: #d68910; }
-        .btn-icon { background: #f1f5f9; border: none; width: 35px; height: 35px; border-radius: 6px; cursor: pointer; transition: 0.2s; color: var(--gray); }
-        .btn-icon.edit:hover { background: #e0f2fe; color: var(--accent); }
-        .btn-icon.delete:hover { background: #fee2e2; color: #ef4444; }
+        
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+        .stat-card { padding: 1.5rem; border-radius: 12px; color: white; background: var(--primary); }
+        .stat-card .val { font-size: 2.2rem; font-weight: 800; display: block; }
+        .stat-card .lab { font-size: 0.7rem; text-transform: uppercase; opacity: 0.8; letter-spacing: 1px; }
 
         @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
     </style>
@@ -87,8 +65,8 @@
 <body>
 
 <div class="header">
-    <h1>ZTE PROFESSIONAL FIELD SUITE</h1>
-    <div class="sync-badge"><span class="dot" style="display:inline-block; width:8px; height:8px; background:var(--success); border-radius:50%; margin-right:5px;"></span> <span>DB: ZTEReportDBv3</span></div>
+    <h1>ZTE PERFORMANCE MANAGEMENT</h1>
+    <div style="font-size: 0.8rem; opacity: 0.8;">v6.5 STABLE | DB: ZTEReportDBv3</div>
 </div>
 
 <div class="nav">
@@ -100,15 +78,15 @@
 
 <div class="container">
     <section id="dashboard" class="section active">
-        <div id="statsContainer" class="stat-grid"></div>
+        <div id="statsBox" class="stat-grid"></div>
         <div class="card">
-            <h2>Tool Status</h2>
-            <p id="welcomeMsg">Caricamento dati...</p>
+            <h2>Welcome Trainer</h2>
+            <p id="dbMsg">Inizializzazione database...</p>
         </div>
     </section>
 
     <section id="new-visit" class="section">
-        <div class="form-container">
+        <div class="card">
             <h2 id="formTitle">Record Training Session</h2>
             <form id="visitForm">
                 <div class="grid">
@@ -122,459 +100,359 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>City / Location *</label>
-                        <input type="text" id="storeLocation" placeholder="e.g. Rome" required>
+                        <label>Location *</label>
+                        <input type="text" id="storeLoc" placeholder="e.g. Rome" required>
                     </div>
                 </div>
-
                 <div class="grid">
-                    <div class="form-group">
-                        <label>Visit Date *</label>
-                        <input type="date" id="visitDate" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Delivery Mode</label>
-                        <select id="deliveryMode">
-                            <option>In Person</option><option>Online Session</option><option>On the Job</option>
-                        </select>
-                    </div>
+                    <div class="form-group"><label>Date *</label><input type="date" id="visitDate" required></div>
+                    <div class="form-group"><label>Mode</label><select id="mode"><option>In Person</option><option>Online</option><option>On the Job</option></select></div>
                 </div>
-
                 <div class="grid">
-                    <div class="form-group">
-                        <label>Sell-out (Units)</label>
-                        <input type="number" id="sellout" value="0" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Target (Units)</label>
-                        <input type="number" id="target" value="0" min="0">
-                    </div>
+                    <div class="form-group"><label>Sell-out (Units)</label><input type="number" id="sOut" value="0"></div>
+                    <div class="form-group"><label>Target (Units)</label><input type="number" id="sTar" value="0"></div>
                 </div>
-
                 <div class="grid">
-                    <div class="form-group">
-                        <label>Staff Trained (Store)</label>
-                        <input type="number" id="staffCount" value="0" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Promoter Trained</label>
-                        <input type="number" id="promoterCount" value="0" min="0">
-                    </div>
+                    <div class="form-group"><label>Staff Trained (Store)</label><input type="number" id="cntStaff" value="0"></div>
+                    <div class="form-group"><label>Promoter Trained</label><input type="number" id="cntProm" value="0"></div>
                 </div>
-                
-                <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label>Ambassador Trained</label>
-                    <input type="number" id="ambassadorCount" value="0" min="0" style="width: 49%;">
-                </div>
+                <div class="form-group" style="width:50%; margin-bottom:1.5rem;"><label>Ambassador Trained</label><input type="number" id="cntAmb" value="0"></div>
 
-                <div class="form-group" style="margin-bottom: 1.5rem;">
+                <div class="form-group" style="margin-bottom:1.5rem;">
                     <label>Strategic Objectives *</label>
                     <div class="checkbox-group">
-                        <label><input type="checkbox" name="objective" value="focus su top di gamma"> Focus on Flagship</label>
-                        <label><input type="checkbox" name="objective" value="Increase sales"> Increase Sales</label>
-                        <label><input type="checkbox" name="objective" value="Brand awareness"> Brand Awareness</label>
+                        <label><input type="checkbox" name="obj" value="focus su top di gamma"> Focus on Flagship</label>
+                        <label><input type="checkbox" name="obj" value="Increase sales"> Increase Sales</label>
+                        <label><input type="checkbox" name="obj" value="Brand awareness"> Brand Awareness</label>
                     </div>
                 </div>
 
-                <div class="form-group" style="margin-bottom: 1.5rem;">
+                <div class="form-group" style="margin-bottom:1.5rem;">
                     <label>Product Focus *</label>
                     <div class="checkbox-group">
-                        <label><input type="checkbox" name="product" value="nubia AIR Lineup"> nubia AIR Lineup</label>
-                        <label><input type="checkbox" name="product" value="nubia Neo lineup"> nubia Neo lineup</label>
-                        <label><input type="checkbox" name="product" value="Blade V80/V70 lineup"> Blade V80/V70 lineup</label>
-                        <label><input type="checkbox" name="product" value="Blade A36"> Blade A36</label>
+                        <label><input type="checkbox" name="prod" value="nubia AIR Lineup"> nubia AIR Lineup</label>
+                        <label><input type="checkbox" name="prod" value="nubia Neo lineup"> nubia Neo lineup</label>
+                        <label><input type="checkbox" name="prod" value="Blade V80/V70 lineup"> Blade V80/V70 lineup</label>
+                        <label><input type="checkbox" name="prod" value="Blade A36"> Blade A36</label>
                     </div>
                 </div>
 
                 <div class="grid">
                     <div class="form-group">
-                        <label>Store Photos (Max 4)</label>
-                        <input type="file" id="visitPhotos" multiple accept="image/*">
-                        <div id="photosPreview" class="photo-preview-grid"></div>
+                        <label>Store Visuals</label>
+                        <input type="file" id="upPhotos" multiple accept="image/*">
+                        <div id="prevPhotos" class="photo-grid"></div>
                     </div>
                     <div class="form-group">
-                        <label>Power BI Screenshot</label>
-                        <input type="file" id="powerBiPhoto" accept="image/*">
-                        <div id="pbiPreview" class="photo-preview-grid"></div>
+                        <label>Power BI / Chart Screenshot</label>
+                        <input type="file" id="upPBI" accept="image/*">
+                        <div id="prevPBI" class="photo-grid"></div>
                     </div>
                 </div>
 
                 <div class="form-group">
-                    <label>Observer Notes</label>
-                    <textarea id="notes" rows="3" placeholder="Feedback or issues..."></textarea>
+                    <label>Notes</label>
+                    <textarea id="vNotes" rows="3" placeholder="Field observations..."></textarea>
                 </div>
 
-                <div style="display:flex; gap:1rem; margin-top:2rem;">
-                    <button type="submit" class="btn btn-primary" id="saveBtn" style="flex:2;">SAVE SESSION</button>
-                    <button type="reset" class="btn btn-secondary" style="flex:1;">RESET</button>
+                <div style="margin-top:2rem; display:flex; gap:1rem;">
+                    <button type="submit" class="btn btn-primary" id="saveBtn" style="flex:2;">SAVE RECORD</button>
+                    <button type="reset" class="btn" style="background:#cbd5e1; flex:1;">RESET</button>
                 </div>
             </form>
         </div>
     </section>
 
     <section id="archive" class="section">
-        <div class="archive-container">
-            <h2>Weekly History</h2>
-            <div id="archiveList"></div>
-        </div>
+        <div id="archiveContent"></div>
     </section>
 
     <section id="reports" class="section">
         <div class="card">
-            <h2>PPTX Reporting Engine</h2>
+            <h2>Executive PPTX Generator</h2>
             <div class="grid">
                 <div class="form-group">
-                    <label>Report Level</label>
-                    <select id="repType" onchange="updateRepFilters()">
-                        <option value="weekly">Weekly Detailed</option>
-                        <option value="monthly">Monthly Summary</option>
-                        <option value="quarterly">Quarterly Strategic</option>
-                    </select>
+                    <label>Type</label>
+                    <select id="rType" onchange="populateRPeriod()"><option value="weekly">Weekly Detailed</option><option value="monthly">Monthly Summary</option></select>
                 </div>
                 <div class="form-group">
                     <label>Target Period</label>
-                    <select id="repPeriod"></select>
+                    <select id="rPeriod"></select>
                 </div>
             </div>
-            <button class="btn btn-pptx" onclick="generateCorporatePPTX()">
-                <i class="fa-solid fa-file-powerpoint"></i> GENERATE EXECUTIVE DECK
-            </button>
+            <button class="btn btn-pptx" onclick="buildPPTX()"><i class="fa-solid fa-file-powerpoint"></i> GENERATE MCKINSEY DECK</button>
         </div>
     </section>
 </div>
 
 <script>
-    const DB_CONFIG = { name: 'ZTEReportDBv3', version: 1 };
+    const CONFIG = { db: 'ZTEReportDBv3', ver: 1 };
     let db, visits = [];
 
-    // --- DB MANAGEMENT ---
-    async function initDB() {
-        return new Promise((res, rej) => {
-            const req = indexedDB.open(DB_CONFIG.name, DB_CONFIG.version);
-            req.onupgradeneeded = e => {
-                const d = e.target.result;
-                if (!d.objectStoreNames.contains('visits')) d.createObjectStore('visits', { keyPath: 'id' });
-            };
-            req.onsuccess = e => { db = e.target.result; res(); };
-            req.onerror = rej;
-        });
+    // --- SYSTEM CORE ---
+    async function init() {
+        const req = indexedDB.open(CONFIG.db, CONFIG.ver);
+        req.onupgradeneeded = e => { if (!e.target.result.objectStoreNames.contains('visits')) e.target.result.createObjectStore('visits', { keyPath: 'id' }); };
+        req.onsuccess = e => { db = e.target.result; loadAll(); };
     }
 
-    async function fetchData() {
+    async function loadAll() {
+        const tx = db.transaction('visits', 'readonly');
         visits = await new Promise(res => {
-            const tx = db.transaction('visits', 'readonly');
             tx.objectStore('visits').getAll().onsuccess = e => {
-                const data = e.target.result || [];
-                // Normalizzazione preventiva dei vecchi record per compatibilità assoluta
-                res(data.map(item => {
-                    if (item.date && !item.visitDate) item.visitDate = item.date;
-                    if (item.store && !item.storeName) item.storeName = item.store;
-                    if (item.location && !item.storeLocation) item.storeLocation = item.location;
-                    return item;
+                res((e.target.result || []).map(v => {
+                    // Normalizzazione dati per compatibilità
+                    return {
+                        id: v.id,
+                        store: v.storeName || v.store || "Unknown",
+                        loc: v.storeLocation || v.location || "Unknown",
+                        date: v.visitDate || v.date || "",
+                        sOut: parseInt(v.sellout || v.sOut || 0),
+                        sTar: parseInt(v.target || v.sTar || 0),
+                        staff: parseInt(v.staffCount || v.staff || 0),
+                        prom: parseInt(v.promoterCount || v.prom || 0),
+                        amb: parseInt(v.ambassadorCount || v.amb || 0),
+                        obj: v.objectives || v.obj || [],
+                        prod: v.products || v.prod || [],
+                        pics: v.photos || v.photos || [],
+                        pbi: v.powerBi || v.pbi || null,
+                        notes: v.notes || v.vNotes || ""
+                    };
                 }));
             };
         });
-        updateDashboard();
+        refreshDashboard();
     }
 
-    // --- UI LOGIC ---
+    // --- UI ENGINE ---
     function showTab(id) {
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.section, .nav-item').forEach(el => el.classList.remove('active'));
         document.getElementById(id).classList.add('active');
-        
-        const currentNav = Array.from(document.querySelectorAll('.nav-item')).find(n => {
-            const clickAttr = n.getAttribute('onclick') || '';
-            return clickAttr.includes(`'${id}'`);
-        });
-        if(currentNav) currentNav.classList.add('active');
-        
+        const nav = Array.from(document.querySelectorAll('.nav-item')).find(n => n.innerText.toLowerCase().includes(id.split('-')[0]));
+        if(nav) nav.classList.add('active');
         if(id === 'archive') renderArchive();
-        if(id === 'reports') updateRepFilters();
+        if(id === 'reports') populateRPeriod();
     }
 
-    function getWeek(d) {
+    function getW(dStr) {
+        const d = new Date(dStr);
+        if(isNaN(d)) return 0;
         const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
         date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
-        const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-        return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+        return Math.ceil((((date - new Date(Date.UTC(date.getUTCFullYear(), 0, 1))) / 86400000) + 1) / 7);
     }
 
-    function updateDashboard() {
-        const container = document.getElementById('statsContainer');
-        if (!visits.length) {
-            document.getElementById('welcomeMsg').innerText = "Nessun dato in archivio. Registra la prima visita.";
-            container.innerHTML = "";
-            return;
-        }
-        const sOut = visits.reduce((a, b) => a + (parseInt(b.sellout) || 0), 0);
-        const trained = visits.reduce((a, b) => a + (parseInt(b.staffCount) || 0) + (parseInt(b.promoterCount) || 0) + (parseInt(b.ambassadorCount) || 0), 0);
-        
-        container.innerHTML = `
-            <div class="stat-card blue"><span class="lab">Visits</span><span class="val">${visits.length}</span></div>
-            <div class="stat-card cyan"><span class="lab">Sell-out</span><span class="val">${sOut}</span></div>
-            <div class="stat-card orange"><span class="lab">Headcount</span><span class="val">${trained}</span></div>
+    function refreshDashboard() {
+        const box = document.getElementById('statsBox');
+        if (!visits.length) { document.getElementById('dbMsg').innerText = "Nessun dato. Registra la prima visita."; return; }
+        const totalSO = visits.reduce((a, b) => a + b.sOut, 0);
+        const totalHead = visits.reduce((a, b) => a + b.staff + b.prom + b.amb, 0);
+        box.innerHTML = `
+            <div class="stat-card"><span class="lab">Visits</span><span class="val">${visits.length}</span></div>
+            <div class="stat-card" style="background:var(--accent)"><span class="lab">Sell-out</span><span class="val">${totalSO}</span></div>
+            <div class="stat-card" style="background:var(--secondary)"><span class="lab">Trained</span><span class="val">${totalHead}</span></div>
         `;
-        document.getElementById('welcomeMsg').innerText = "Sistema sincronizzato. Database pronto per l'esportazione.";
+        document.getElementById('dbMsg').innerText = "Sistema Sincronizzato.";
     }
 
     function renderArchive() {
-        const list = document.getElementById('archiveList');
-        list.innerHTML = "";
-        if (!visits.length) {
-            list.innerHTML = "<p style='color:var(--gray);'>Nessuna sessione archiviata.</p>";
-            return;
-        }
-        const sorted = [...visits].sort((a,b) => new Date(b.visitDate) - new Date(a.visitDate));
-        const grouped = sorted.reduce((acc, v) => {
-            if(!v.visitDate) return acc;
-            const key = `WEEK ${getWeek(new Date(v.visitDate))} - ${new Date(v.visitDate).getFullYear()}`;
+        const container = document.getElementById('archiveContent');
+        container.innerHTML = "";
+        const grouped = visits.sort((a,b) => new Date(b.date) - new Date(a.date)).reduce((acc, v) => {
+            const key = `WEEK ${getW(v.date)} - ${new Date(v.date).getFullYear()}`;
             if (!acc[key]) acc[key] = [];
             acc[key].push(v);
             return acc;
         }, {});
 
         for (const week in grouped) {
-            let html = `<div class="week-group"><div class="week-header"><span>${week}</span><span>${grouped[week].length} SESSIONS</span></div>`;
+            let html = `<div class="week-header"><span>${week}</span><span>${grouped[week].length} VISITS</span></div>`;
             grouped[week].forEach(v => {
-                html += `
-                <div class="visit-row">
-                    <div class="visit-info">
-                        <h4>${v.storeName || v.store}</h4>
-                        <p class="visit-meta">${v.storeLocation || v.location} | ${v.visitDate || v.date}</p>
-                        <div class="badge-container">
-                            <span class="badge badge-primary">S/O: ${v.sellout || 0} / ${v.target || 0}</span>
-                            <span class="badge">STAFF: ${v.staffCount || 0}</span>
-                            <span class="badge">PROM: ${v.promoterCount || 0}</span>
-                            <span class="badge">AMB: ${v.ambassadorCount || 0}</span>
+                html += `<div class="visit-row">
+                    <div>
+                        <h4>${v.store} - ${v.loc}</h4>
+                        <p style="font-size:0.8rem; color:var(--gray)">${v.date} | S/O: ${v.sOut} / ${v.sTar}</p>
+                        <div style="margin-top:0.5rem">
+                            <span class="badge">S:${v.staff}</span><span class="badge">P:${v.prom}</span><span class="badge">A:${v.amb}</span>
                         </div>
                     </div>
-                    <div style="display:flex; gap:0.5rem;">
-                        <button class="btn-icon edit" onclick="editVisit('${v.id}')"><i class="fa-solid fa-pen"></i></button>
-                        <button class="btn-icon delete" onclick="deleteVisit('${v.id}')"><i class="fa-solid fa-trash"></i></button>
+                    <div style="display:flex; gap:0.5rem">
+                        <button class="btn" style="padding:0.5rem; background:#e0f2fe; color:var(--accent)" onclick="editV('${v.id}')"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn" style="padding:0.5rem; background:#fee2e2; color:#ef4444" onclick="delV('${v.id}')"><i class="fa-solid fa-trash"></i></button>
                     </div>
                 </div>`;
             });
-            html += `</div>`;
-            list.innerHTML += html;
+            container.innerHTML += html;
         }
     }
 
-    // --- FORM & IMAGE HANDLERS ---
-    const blobToBase64 = (file) => new Promise(res => {
-        const r = new FileReader();
-        r.onload = () => res(r.result);
-        r.readAsDataURL(file);
-    });
+    // --- FORM LOGIC ---
+    const toB64 = f => new Promise(res => { const r = new FileReader(); r.onload = () => res(r.result); r.readAsDataURL(f); });
 
-    document.getElementById('visitPhotos').onchange = async function() {
-        const grid = document.getElementById('photosPreview');
+    document.getElementById('upPhotos').onchange = async function() {
         for (let f of this.files) {
-            const b64 = await blobToBase64(f);
-            grid.innerHTML += `<div class="photo-item"><img src="${b64}"><button type="button" class="remove-photo" onclick="this.parentElement.remove()">×</button></div>`;
+            const b = await toB64(f);
+            document.getElementById('prevPhotos').innerHTML += `<div class="photo-item"><img src="${b}"><button type="button" class="rem-btn" onclick="this.parentElement.remove()">×</button></div>`;
         }
     };
-
-    document.getElementById('powerBiPhoto').onchange = async function() {
-        const grid = document.getElementById('pbiPreview');
+    document.getElementById('upPBI').onchange = async function() {
         if (!this.files[0]) return;
-        const b64 = await blobToBase64(this.files[0]);
-        grid.innerHTML = `<div class="photo-item"><img src="${b64}"><button type="button" class="remove-photo" onclick="this.parentElement.remove()">×</button></div>`;
+        const b = await toB64(this.files[0]);
+        document.getElementById('prevPBI').innerHTML = `<div class="photo-item"><img src="${b}"><button type="button" class="rem-btn" onclick="this.parentElement.remove()">×</button></div>`;
     };
 
-    document.getElementById('visitForm').onsubmit = async (e) => {
+    document.getElementById('visitForm').onsubmit = async e => {
         e.preventDefault();
         const btn = document.getElementById('saveBtn');
         const id = btn.dataset.editId || 'v_' + Date.now();
-        
-        const payload = {
+        const data = {
             id,
             storeName: document.getElementById('storeName').value,
-            storeLocation: document.getElementById('storeLocation').value,
+            storeLocation: document.getElementById('storeLoc').value,
             visitDate: document.getElementById('visitDate').value,
-            deliveryMode: document.getElementById('deliveryMode').value,
-            sellout: document.getElementById('sellout').value,
-            target: document.getElementById('target').value,
-            staffCount: document.getElementById('staffCount').value,
-            promoterCount: document.getElementById('promoterCount').value,
-            ambassadorCount: document.getElementById('ambassadorCount').value,
-            objectives: Array.from(document.querySelectorAll('input[name="objective"]:checked')).map(i => i.value),
-            products: Array.from(document.querySelectorAll('input[name="product"]:checked')).map(i => i.value),
-            photos: Array.from(document.querySelectorAll('#photosPreview img')).map(i => i.src),
-            powerBi: document.querySelector('#pbiPreview img')?.src || null,
-            notes: document.getElementById('notes').value
+            deliveryMode: document.getElementById('mode').value,
+            sellout: parseInt(document.getElementById('sOut').value),
+            target: parseInt(document.getElementById('sTar').value),
+            staffCount: parseInt(document.getElementById('cntStaff').value),
+            promoterCount: parseInt(document.getElementById('cntProm').value),
+            ambassadorCount: parseInt(document.getElementById('cntAmb').value),
+            objectives: Array.from(document.querySelectorAll('input[name="obj"]:checked')).map(i => i.value),
+            products: Array.from(document.querySelectorAll('input[name="prod"]:checked')).map(i => i.value),
+            photos: Array.from(document.querySelectorAll('#prevPhotos img')).map(i => i.src),
+            powerBi: document.querySelector('#prevPBI img')?.src || null,
+            notes: document.getElementById('vNotes').value
         };
-
         const tx = db.transaction('visits', 'readwrite');
-        tx.objectStore('visits').put(payload);
-        alert("Sessione salvata con successo!");
-        
+        tx.objectStore('visits').put(data);
+        alert("Salvato.");
         document.getElementById('visitForm').reset();
-        document.getElementById('photosPreview').innerHTML = "";
-        document.getElementById('pbiPreview').innerHTML = "";
+        document.getElementById('prevPhotos').innerHTML = "";
+        document.getElementById('prevPBI').innerHTML = "";
         delete btn.dataset.editId;
-        btn.innerText = "SAVE SESSION";
-        
-        await fetchData();
+        await loadAll();
         showTab('dashboard');
     };
 
-    async function editVisit(id) {
+    async function editV(id) {
         const v = visits.find(x => x.id === id);
         if(!v) return;
-        document.getElementById('storeName').value = v.storeName || v.store || '';
-        document.getElementById('storeLocation').value = v.storeLocation || v.location || '';
-        document.getElementById('visitDate').value = v.visitDate || v.date || '';
-        document.getElementById('deliveryMode').value = v.deliveryMode || 'In Person';
-        document.getElementById('sellout').value = v.sellout || 0;
-        document.getElementById('target').value = v.target || 0;
-        document.getElementById('staffCount').value = v.staffCount || 0;
-        document.getElementById('promoterCount').value = v.promoterCount || 0;
-        document.getElementById('ambassadorCount').value = v.ambassadorCount || 0;
-        document.getElementById('notes').value = v.notes || '';
-        
+        document.getElementById('storeName').value = v.store;
+        document.getElementById('storeLoc').value = v.loc;
+        document.getElementById('visitDate').value = v.date;
+        document.getElementById('sOut').value = v.sOut;
+        document.getElementById('sTar').value = v.sTar;
+        document.getElementById('cntStaff').value = v.staff;
+        document.getElementById('cntProm').value = v.prom;
+        document.getElementById('cntAmb').value = v.amb;
+        document.getElementById('vNotes').value = v.notes;
         document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-        v.objectives?.forEach(o => { const el = document.querySelector(`input[value="${o}"]`); if(el) el.checked = true; });
-        v.products?.forEach(p => { const el = document.querySelector(`input[value="${p}"]`); if(el) el.checked = true; });
-        
-        document.getElementById('photosPreview').innerHTML = "";
-        v.photos?.forEach(p => {
-            document.getElementById('photosPreview').innerHTML += `<div class="photo-item"><img src="${p}"><button type="button" class="remove-photo" onclick="this.parentElement.remove()">×</button></div>`;
-        });
-        if(v.powerBi) {
-            document.getElementById('pbiPreview').innerHTML = `<div class="photo-item"><img src="${v.powerBi}"><button type="button" class="remove-photo" onclick="this.parentElement.remove()">×</button></div>`;
-        }
-
-        const btn = document.getElementById('saveBtn');
-        btn.dataset.editId = id;
-        btn.innerText = "UPDATE SESSION";
+        v.obj.forEach(o => { const el = document.querySelector(`input[value="${o}"]`); if(el) el.checked = true; });
+        v.prod.forEach(p => { const el = document.querySelector(`input[value="${p}"]`); if(el) el.checked = true; });
+        document.getElementById('prevPhotos').innerHTML = v.pics.map(p => `<div class="photo-item"><img src="${p}"><button type="button" class="rem-btn" onclick="this.parentElement.remove()">×</button></div>`).join('');
+        if(v.pbi) document.getElementById('prevPBI').innerHTML = `<div class="photo-item"><img src="${v.pbi}"><button type="button" class="rem-btn" onclick="this.parentElement.remove()">×</button></div>`;
+        document.getElementById('saveBtn').dataset.editId = id;
+        document.getElementById('saveBtn').innerText = "UPDATE RECORD";
         showTab('new-visit');
     }
 
-    async function deleteVisit(id) {
-        if(!confirm("Cancellare definitivamente?")) return;
-        const tx = db.transaction('visits', 'readwrite');
-        tx.objectStore('visits').delete(id);
-        await fetchData();
-        renderArchive();
+    async function delV(id) { if(confirm("Eliminare?")) { db.transaction('visits','readwrite').objectStore('visits').delete(id); await loadAll(); renderArchive(); } }
+
+    function populateRPeriod() {
+        const t = document.getElementById('rType').value;
+        const s = document.getElementById('rPeriod');
+        s.innerHTML = "";
+        let opts = [];
+        if(t === 'weekly') opts = [...new Set(visits.map(v => `Week ${getW(v.date)} - ${new Date(v.date).getFullYear()}`))];
+        else opts = [...new Set(visits.map(v => `${["January","February","March","April","May","June","July","August","September","October","November","December"][new Date(v.date).getMonth()]} ${new Date(v.date).getFullYear()}`))];
+        opts.sort().reverse().forEach(o => s.options.add(new Option(o, o)));
     }
 
-    // --- REPORTING FILTERS ---
-    function updateRepFilters() {
-        const type = document.getElementById('repType').value;
-        const select = document.getElementById('repPeriod');
-        select.innerHTML = "";
-        if(!visits.length) return;
-
-        let options = [];
-        if(type === 'weekly') {
-            options = [...new Set(visits.map(v => `Week ${getWeek(new Date(v.visitDate))} - ${new Date(v.visitDate).getFullYear()}`))];
-        } else if(type === 'monthly') {
-            const mNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-            options = [...new Set(visits.map(v => `${mNames[new Date(v.visitDate).getMonth()]} ${new Date(v.visitDate).getFullYear()}`))];
-        } else {
-            options = [...new Set(visits.map(v => `Q${Math.floor((new Date(v.visitDate).getMonth() + 3) / 3)} - ${new Date(v.visitDate).getFullYear()}`))];
-        }
-        options.sort().reverse().forEach(o => select.options.add(new Option(o, o)));
-    }
-
-    // --- PPTX GENERATION ENGINE ---
-    async function generateCorporatePPTX() {
-        const type = document.getElementById('repType').value;
-        const period = document.getElementById('repPeriod').value;
-        if(!period) { alert("Seleziona un periodo valido dal menu."); return; }
+    // ========================================================
+    // --- PROFESSIONAL PPTX ENGINE (RIGOROUS GEOMETRY) ---
+    // ========================================================
+    async function buildPPTX() {
+        const type = document.getElementById('rType').value;
+        const period = document.getElementById('rPeriod').value;
+        if(!period) return alert("Seleziona periodo.");
 
         const filtered = visits.filter(v => {
-            const d = new Date(v.visitDate);
-            if(type === 'weekly') return `Week ${getWeek(d)} - ${d.getFullYear()}` === period;
-            if(type === 'monthly') {
-                const mNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                return `${mNames[d.getMonth()]} ${d.getFullYear()}` === period;
-            }
-            return `Q${Math.floor((d.getMonth() + 3) / 3)} - ${d.getFullYear()}` === period;
+            if(type === 'weekly') return `Week ${getW(v.date)} - ${new Date(v.date).getFullYear()}` === period;
+            const m = ["January","February","March","April","May","June","July","August","September","October","November","December"][new Date(v.date).getMonth()];
+            return `${m} ${new Date(v.date).getFullYear()}` === period;
         });
-
-        if(!filtered.length) { alert("Nessun record trovato per il periodo selezionato."); return; }
 
         const pres = new PptxGenJS();
         pres.layout = 'LAYOUT_16x9'; 
-        const THEME = { bg: '0D1628', cyan: '00A0D2', white: 'FFFFFF', gray: '94A3B8', slate: '1E293B' };
+        const T = { bg: '0D1628', cyan: '00A0D2', white: 'FFFFFF', slate: '1E293B', gray: '94A3B8' };
 
-        // 1. Cover Slide
-        let s1 = pres.addSlide(); s1.background = { color: THEME.bg };
-        s1.addText("FIELD PERFORMANCE ANALYTICS", { x: 0.8, y: 2.2, w: 12, fontSize: 40, bold: true, color: THEME.cyan, fontFace: 'Montserrat' });
-        s1.addText(`${period.toUpperCase()} | EXECUTIVE TRAINING REPORT`, { x: 0.8, y: 3.1, w: 12, fontSize: 16, color: THEME.gray, fontFace: 'Urbanist' });
-        s1.addShape(pres.ShapeType.rect, { x: 0.8, y: 3.7, w: 1.5, h: 0.04, fill: { color: THEME.cyan } });
+        // 1. COVER
+        let s1 = pres.addSlide(); s1.background = { color: T.bg };
+        s1.addText("FIELD PERFORMANCE ANALYTICS", { x: 0.8, y: 2.2, w: 12, fontSize: 42, bold: true, color: T.cyan, fontFace: 'Montserrat' });
+        s1.addText(`${period.toUpperCase()} | ZTE LFM OPERATIONAL REPORT`, { x: 0.8, y: 3.2, w: 12, fontSize: 16, color: T.gray, fontFace: 'Urbanist' });
+        s1.addShape(pres.ShapeType.rect, { x: 0.8, y: 3.8, w: 2.0, h: 0.05, fill: { color: T.cyan } });
 
-        // Calcolo Totali
-        let tS = 0, tT = 0, tStaff = 0, tProm = 0, tAmb = 0;
-        filtered.forEach(v => {
-            tS += parseInt(v.sellout || 0); tT += parseInt(v.target || 0);
-            tStaff += parseInt(v.staffCount || 0); tProm += parseInt(v.promoterCount || 0); tAmb += parseInt(v.ambassadorCount || 0);
-        });
+        // 2. CONSOLIDATED
+        let tS=0, tT=0, tSt=0, tPr=0, tAm=0;
+        filtered.forEach(v => { tS+=v.sOut; tT+=v.sTar; tSt+=v.staff; tPr+=v.prom; tAm+=v.amb; });
         const ach = tT > 0 ? (tS/tT*100).toFixed(1)+'%' : '0%';
 
-        // 2. Summary Slide
-        let s2 = pres.addSlide(); s2.background = { color: THEME.bg };
-        s2.addText(`${type.toUpperCase()} SUMMARY - CONSOLIDATED KPI`, { x: 0.6, y: 0.4, fontSize: 22, bold: true, color: THEME.white, fontFace: 'Montserrat' });
-        s2.addShape(pres.ShapeType.line, { x: 0.6, y: 0.9, w: 12.1, line: { color: THEME.cyan, width: 2 } });
+        let s2 = pres.addSlide(); s2.background = { color: T.bg };
+        s2.addText("EXECUTIVE SUMMARY - KEY METRICS", { x: 0.6, y: 0.4, fontSize: 24, bold: true, color: T.white, fontFace: 'Montserrat' });
+        s2.addShape(pres.ShapeType.line, { x: 0.6, y: 0.9, w: 12.2, line: { color: T.cyan, width: 2 } });
 
         s2.addTable([
-            [{text: "KEY METRIC INDICATOR", options: {fill: THEME.slate, color: THEME.cyan, bold:true, fontFace:'Montserrat'}}, {text: "VALUE", options: {fill: THEME.slate, color: THEME.cyan, bold:true, align:'center', fontFace:'Montserrat'}}],
-            ["Total Sessions Recorded", filtered.length.toString()],
-            ["Total Store Staff Formed", tStaff.toString()],
-            ["Total Promoters Activated", tProm.toString()],
-            ["Total Brand Ambassadors Involved", tAmb.toString()],
-            ["Cumulative Sell-out Volume", `${tS} units`],
-            ["Average Achievement Rate", ach]
-        ], { x: 0.6, y: 1.6, w: 6.0, colW: [4.2, 1.8], fontSize: 11, fontFace: 'Urbanist', color: THEME.white, border: { pt: 0.5, color: '334155' }, margin: 10 });
+            [{text: "KPI INDICATOR", options: {fill: T.slate, color: T.cyan, bold:true}}, {text: "VALUE", options: {fill: T.slate, color: T.cyan, bold:true, align:'center'}}],
+            ["Validated Sessions", filtered.length.toString()],
+            ["Total Staff Trained", tSt.toString()],
+            ["Total Promoters Involved", tPr.toString()],
+            ["Total Brand Ambassadors", tAm.toString()],
+            ["Overall Sell-out Volume", `${tS} units`],
+            ["Target Achievement Rate", ach]
+        ], { x: 0.6, y: 1.6, w: 6.0, colW: [4.2, 1.8], fontSize: 12, fontFace: 'Urbanist', color: T.white, border: { pt: 0.5, color: '334155' }, margin: 10 });
 
-        s2.addChart(pres.ChartType.doughnut, [
-            { name: 'Headcount', labels: ['Staff', 'Promoter', 'Ambassador'], values: [tStaff||1, tProm, tAmb] }
-        ], { x: 7.2, y: 1.6, w: 5.0, h: 4.2, showLegend: true, legendPos: 'b', chartColors: ['00A0D2', 'F39C12', '22C55E'] });
+        s2.addChart(pres.ChartType.doughnut, [{ name: 'Audience', labels: ['Staff', 'Prom', 'Amb'], values: [tSt||1, tPr, tAm] }], 
+            { x: 7.2, y: 1.6, w: 5.0, h: 4.5, showLegend: true, legendPos: 'b', chartColors: ['00A0D2', 'F39C12', '22C55E'] });
 
-        // 3+. Store Details Slides
+        // 3. STORE DETAILS
         filtered.forEach(v => {
-            let s = pres.addSlide(); s.background = { color: THEME.bg };
-            s.addText(`${(v.storeName || v.store).toUpperCase()} - ${(v.storeLocation || v.location).toUpperCase()}`, { x: 0.6, y: 0.4, fontSize: 22, bold: true, color: THEME.white, fontFace: 'Montserrat' });
-            s.addText(v.visitDate || v.date, { x: 11.2, y: 0.4, fontSize: 12, color: THEME.gray, fontFace: 'Urbanist', align: 'right' });
-            s.addShape(pres.ShapeType.line, { x: 0.6, y: 0.9, w: 12.1, line: { color: THEME.cyan, width: 1 } });
+            let s = pres.addSlide(); s.background = { color: T.bg };
+            s.addText(`${v.store.toUpperCase()} - ${v.loc.toUpperCase()}`, { x: 0.6, y: 0.4, fontSize: 24, bold: true, color: T.white, fontFace: 'Montserrat' });
+            s.addText(v.date, { x: 11.0, y: 0.4, fontSize: 12, color: T.gray, fontFace: 'Urbanist', align: 'right' });
+            s.addShape(pres.ShapeType.line, { x: 0.6, y: 0.9, w: 12.2, line: { color: T.cyan, width: 1.5 } });
 
-            const vAch = (parseInt(v.target)||0) > 0 ? (parseInt(v.sellout)/parseInt(v.target)*100).toFixed(1)+'%' : '0%';
+            const vAch = v.sTar > 0 ? (v.sOut/v.sTar*100).toFixed(1)+'%' : '0%';
 
             s.addTable([
-                [{text: "KPI METRIC", options: {fill: THEME.slate, color: THEME.cyan, fontFace:'Montserrat', bold:true}}, {text: "VALUE", options: {fill: THEME.slate, color: THEME.cyan, fontFace:'Montserrat', bold:true}}],
-                ["Sell-out Volume", `${v.sellout || 0} units`], ["Target Volume", `${v.target || 0} units`], ["Achievement", vAch],
-                ["Staff Trained", (v.staffCount || 0).toString()], ["Promoters", (v.promoterCount || 0).toString()], ["Ambassadors", (v.ambassadorCount || 0).toString()]
-            ], { x: 0.6, y: 1.5, w: 4.8, colW: [3.0, 1.8], fontSize: 10, fontFace: 'Urbanist', color: THEME.white, border: {pt:0.5, color:'334155'}, margin: 8 });
+                [{text: "KPI", options: {fill: T.slate, color: T.cyan, bold:true}}, "VALUE"],
+                ["Sell-out", `${v.sOut} units`], ["Target", `${v.sTar} units`], ["Achiev.", vAch],
+                ["Staff", v.staff.toString()], ["Promoter", v.prom.toString()], ["Ambass.", v.amb.toString()]
+            ], { x: 0.6, y: 1.5, w: 4.8, colW: [3.2, 1.6], fontSize: 11, fontFace: 'Urbanist', color: T.white, border: {pt:0.5, color:'334155'}, margin: 8 });
 
             if(v.notes) {
-                s.addText("FIELD NOTES:", { x: 0.6, y: 4.8, fontSize: 9, bold: true, color: THEME.cyan, fontFace: 'Montserrat' });
-                s.addText(v.notes, { x: 0.6, y: 5.1, w: 4.8, h: 1.4, fontSize: 9, fontFace: 'Urbanist', color: THEME.gray, fill: { color: '101B30' }, margin: 8 });
+                s.addText("FIELD NOTES:", { x: 0.6, y: 5.0, fontSize: 10, bold: true, color: T.cyan, fontFace: 'Montserrat' });
+                s.addText(v.notes, { x: 0.6, y: 5.3, w: 4.8, h: 1.5, fontSize: 10, fontFace: 'Urbanist', color: T.gray, fill: '101B30', margin: 10 });
             }
 
-            // Box Immagini / Screenshot con contenimento proporzioni rigido
-            if(v.powerBi) {
-                s.addImage({ data: v.powerBi, x: 5.8, y: 1.5, w: 6.9, h: 5.0, sizing: { type: 'contain', w: 6.9, h: 5.0 } });
-            } else if(v.photos && v.photos.length > 0) {
-                const grid = [
-                    { x: 5.8, y: 1.5, w: 3.3, h: 2.3 }, { x: 9.4, y: 1.5, w: 3.3, h: 2.3 },
-                    { x: 5.8, y: 4.1, w: 3.3, h: 2.3 }, { x: 9.4, y: 4.1, w: 3.3, h: 2.3 }
-                ];
-                v.photos.slice(0, 4).forEach((img, idx) => {
-                    s.addImage({ data: img, x: grid[idx].x, y: grid[idx].y, w: grid[idx].w, h: grid[idx].h, sizing: { type: 'contain', w: grid[idx].w, h: grid[idx].h } });
+            // --- IMAGE GRID LOGIC ---
+            if(v.pbi) {
+                // LOCK SCREENSHOTS TO RIGHT HALF
+                s.addImage({ data: v.pbi, x: 5.8, y: 1.5, w: 7.0, h: 5.3, sizing: { type: 'contain', w: 7.0, h: 5.3 } });
+            } else if(v.pics && v.pics.length > 0) {
+                const grid = [ {x:5.8, y:1.5}, {x:9.4, y:1.5}, {x:5.8, y:4.2}, {x:9.4, y:4.2} ];
+                v.pics.slice(0, 4).forEach((img, idx) => {
+                    s.addImage({ data: img, x: grid[idx].x, y: grid[idx].y, w: 3.4, h: 2.5, sizing: { type: 'contain', w: 3.4, h: 2.5 } });
                 });
             } else {
-                s.addShape(pres.ShapeType.rect, { x: 5.8, y: 1.5, w: 6.9, h: 5.0, fill: { color: '101B30' } });
-                s.addText("NO VISUAL ASSETS CAPTURED", { x: 5.8, y: 3.8, w: 6.9, align:'center', fontSize: 12, color: THEME.gray, fontFace: 'Montserrat' });
+                s.addShape(pres.ShapeType.rect, { x: 5.8, y: 1.5, w: 7.0, h: 5.3, fill: '101B30' });
+                s.addText("NO VISUALS AVAILABLE", { x: 5.8, y: 3.8, w: 7.0, align:'center', fontSize: 14, color: T.gray, fontFace: 'Montserrat' });
             }
         });
 
-        await pres.writeFile({ fileName: `ZTE_Report_${period.replace(/ /g,'_')}.pptx` });
-        alert("Report PowerPoint generato e scaricato con successo.");
+        await pres.writeFile({ fileName: `ZTE_LFM_Report_${period.replace(/ /g,'_')}.pptx` });
+        alert("PowerPoint generata con successo.");
     }
 
-    window.onload = async () => { await initDB(); await fetchData(); };
+    window.onload = init;
 </script>
 </body>
 </html>
