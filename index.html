@@ -116,7 +116,7 @@
     <div id="dashboardContent"></div>
     <div class="card">
         <h3>Operational Excellence Tool</h3>
-        <p style="color:var(--gray);">Welcome to the upgraded field monitoring suite. Use the "New Visit" tab to log training sessions and "Archive" to review previous weeks. The reporting engine now supports dynamic filtering and McKinsey-standard PowerPoint generation.</p>
+        <p style="color:var(--gray);">Welcome to the field monitoring suite. Use the "New Visit" tab to log training sessions and "Archive" to review previous weeks. Configure filters in the Reporting Engine tab to download automated executive presentations.</p>
     </div>
   </div>
 
@@ -554,9 +554,9 @@ async function deleteVisit(id) {
     renderArchive();
 }
 
-// ==========================================
-// --- PPTX ENGINE (McKINSEY / STABLE) ---
-// ==========================================
+// ========================================================
+// --- MCKINSEY RE-ARCHITECTED PPTX ENGINE (DEEP CORRECTION) ---
+// ========================================================
 async function generatePPTX() {
   const type = document.getElementById('reportType').value;
   const selectedPeriod = document.getElementById('reportPeriodSelect').value;
@@ -578,15 +578,37 @@ async function generatePPTX() {
   if(filteredVisits.length === 0) { alert("No records matched the selected period."); return; }
 
   const pres = new PptxGenJS();
-  pres.layout = 'LAYOUT_16x9'; // McKinsey Standard
-  const THEME = { dark: '0D1628', cyan: '00A0D2', white: 'FFFFFF', gray: '64748B' };
+  pres.layout = 'LAYOUT_16x9'; 
 
-  // 1. Cover
-  let s1 = pres.addSlide(); s1.background = { color: THEME.dark };
-  s1.addText("FIELD PERFORMANCE ANALYTICS", { x: 0.8, y: 2.5, w: 12, fontSize: 44, bold: true, color: THEME.cyan, fontFace: 'Montserrat' });
-  s1.addText(`${customTitle.toUpperCase()} | ZTE PROFESSIONAL SUITE`, { x: 0.8, y: 3.4, w: 12, fontSize: 18, color: THEME.white });
+  // PALETTE DEFINITION (Strict Corporate Slate-Dark)
+  const THEME = { 
+    bg: '0D1628', 
+    cyan: '00A0D2', 
+    white: 'FFFFFF', 
+    gray: '64748B', 
+    lightBg: 'F8FAFC',
+    textDark: '1E293B' 
+  };
 
-  // Aggregations
+  // ----------------------------------------------------
+  // SLIDE 1: COVER (McKinsey Typography Fix)
+  // ----------------------------------------------------
+  let s1 = pres.addSlide(); 
+  s1.background = { color: THEME.bg };
+  
+  s1.addText("FIELD PERFORMANCE ANALYTICS", { 
+    x: 0.8, y: 2.2, w: 11, 
+    fontSize: 40, bold: true, 
+    color: THEME.cyan, fontFace: 'Montserrat' 
+  });
+  s1.addText(`${customTitle.toUpperCase()} | FIELD OPERATIONAL SUITE`, { 
+    x: 0.8, y: 3.1, w: 11, 
+    fontSize: 16, color: THEME.white, fontFace: 'Urbanist',
+    color: '94A3B8'
+  });
+  s1.addShape(pres.ShapeType.rect, { x: 0.8, y: 3.7, w: 1.5, h: 0.04, fill: { color: THEME.cyan } });
+
+  // Data aggregations
   let totS = 0, totT = 0, totStaff = 0, totProm = 0, totAmb = 0;
   filteredVisits.forEach(v => {
       totS += (parseInt(v.sellout)||0);
@@ -597,56 +619,110 @@ async function generatePPTX() {
   });
   const ach = totT > 0 ? (totS/totT*100).toFixed(1)+'%' : '0%';
 
-  // 2. Metrics Summary (Fixed McKinsey Grid)
+  // ----------------------------------------------------
+  // SLIDE 2: CONSOLIDATED METRICS (Clean Grid, No generic fonts)
+  // ----------------------------------------------------
   let s2 = pres.addSlide();
-  s2.addText(`${type.toUpperCase()} - CONSOLIDATED METRICS`, { x: 0.5, y: 0.4, fontSize: 24, bold: true, color: THEME.dark });
-  s2.addShape(pres.ShapeType.line, { x: 0.5, y: 0.9, w: 12.3, line: { color: THEME.cyan, width: 2 } });
+  s2.background = { color: THEME.bg };
+  
+  // Title Bar
+  s2.addText(`${type.toUpperCase()} RECAP - EXECUTIVE SUMMARY`, { x: 0.6, y: 0.4, fontSize: 22, bold: true, color: THEME.white, fontFace: 'Montserrat' });
+  s2.addShape(pres.ShapeType.line, { x: 0.6, y: 0.9, w: 12.1, line: { color: THEME.cyan, width: 2 } });
 
+  // McKinsey Fixed Table Metrics
   s2.addTable([
-    [{text: "KEY PERFORMANCE INDICATOR", options: {fill: THEME.dark, color: THEME.white, bold:true}}, {text: "CONSOLIDATED VALUE", options: {fill: THEME.dark, color: THEME.white, align:'center'}}],
+    [{text: "KEY METRIC INDICATOR", options: {fill: '1E293B', color: THEME.cyan, bold:true, fontFace:'Montserrat'}}, {text: "CONSOLIDATED", options: {fill: '1E293B', color: THEME.cyan, bold:true, align:'center', fontFace:'Montserrat'}}],
     ["Total Field Sessions Executed", filteredVisits.length.toString()],
-    ["Total Staff Trained", totStaff.toString()],
-    ["Total Promoters Involved", totProm.toString()],
-    ["Total Ambassadors Trained", totAmb.toString()],
+    ["Total Store Staff Formed", totStaff.toString()],
+    ["Total Promoters Activated", totProm.toString()],
+    ["Total Brand Ambassadors Involved", totAmb.toString()],
     ["Cumulative Sell-out Volume", `${totS} units`],
-    ["Total Achievement Rate", ach]
-  ], { x: 0.5, y: 1.5, w: 5.5, colW: [3.8, 1.7], fontSize: 11, border: {pt:0.5, color: THEME.gray}, margin: 8 });
+    ["Target Base Line", `${totT} units`],
+    ["Overall Target Achievement Rate", ach]
+  ], { 
+    x: 0.6, y: 1.6, w: 6.0, colW: [4.2, 1.8], 
+    fontSize: 11, fontFace: 'Urbanist', color: THEME.white,
+    border: { pt: 0.5, color: '334155' }, margin: 10
+  });
 
+  // Balanced Chart Layout beside table
   s2.addChart(pres.ChartType.doughnut, [
-    { name: 'Audience', labels: ['Staff', 'Promoter', 'Ambassador'], values: [totStaff || 1, totProm || 0, totAmb || 0] }
-  ], { x: 6.8, y: 1.5, w: 5.5, h: 4.5, showLegend: true, legendPos: 'b' });
+    { name: 'Headcount', labels: ['Staff', 'Promoter', 'Ambassador'], values: [totStaff || 1, totProm || 0, totAmb || 0] }
+  ], { 
+    x: 7.2, y: 1.6, w: 5.0, h: 4.2, 
+    showLegend: true, legendPos: 'b',
+    chartColors: ['00A0D2', 'F39C12', '22C55E']
+  });
 
-  // 3. Detailed Data Slides
+  // ----------------------------------------------------
+  // SLIDE 3+: INSTORE TARGET PAGES (Strict Sizing Rules)
+  // ----------------------------------------------------
   filteredVisits.forEach(v => {
       let s = pres.addSlide();
-      s.addText(`${v.storeName.toUpperCase()} - ${v.storeLocation.toUpperCase()}`, { x: 0.5, y: 0.4, fontSize: 24, bold: true });
+      s.background = { color: THEME.bg };
       
+      // Store Header Title
+      s.addText(`${v.storeName.toUpperCase()} - ${v.storeLocation.toUpperCase()}`, { x: 0.6, y: 0.4, fontSize: 22, bold: true, color: THEME.white, fontFace: 'Montserrat' });
+      s.addText(v.visitDate, { x: 11.2, y: 0.4, fontSize: 12, color: THEME.gray, fontFace: 'Urbanist', align: 'right' });
+      s.addShape(pres.ShapeType.line, { x: 0.6, y: 0.9, w: 12.1, line: { color: THEME.cyan, width: 1 } });
+
       let vAch = (parseInt(v.target)||0) > 0 ? (parseInt(v.sellout)/parseInt(v.target)*100).toFixed(1)+'%' : '0%';
       let vAmb = parseInt(v.ambassadorCount) || parseInt(v.ambassadorsCount) || 0;
       
+      // Fixed Left Data Block
       s.addTable([
-          [{text: "METRIC", options: {fill: THEME.dark, color: THEME.white}}, "VALUE"],
-          ["Sell-out", `${v.sellout} units`], ["Target", `${v.target} units`], ["Achievement", vAch],
-          ["Staff", v.staffCount.toString()], ["Promoter", (v.promoterCount||0).toString()], ["Ambassador", vAmb.toString()]
-      ], { x: 0.5, y: 1.5, w: 4.5, colW: [3, 1.5], fontSize: 10, border: {pt:0.5}, margin: 8 });
+          [{text: "METRIC", options: {fill: '1E293B', color: THEME.cyan, fontFace:'Montserrat', bold:true}}, {text: "VALUE", options: {fill: '1E293B', color: THEME.cyan, fontFace:'Montserrat', bold:true}}],
+          ["Recorded Sell-out", `${v.sellout} units`], 
+          ["Assigned Target", `${v.target} units`], 
+          ["Point Achievement", vAch],
+          ["Floor Staff Trained", v.staffCount.toString()], 
+          ["Promoter Present", (v.promoterCount||0).toString()], 
+          ["Ambassadors Present", vAmb.toString()]
+      ], { x: 0.6, y: 1.5, w: 4.8, colW: [3.0, 1.8], fontSize: 11, fontFace: 'Urbanist', color: THEME.white, border: {pt:0.5, color:'334155'}, margin: 8 });
 
+      // Observer Notes Container Placement
       if(v.notes) {
-          s.addText("OBSERVER NOTES:", { x: 0.5, y: 4.8, fontSize: 10, bold: true, color: THEME.secondary });
-          s.addText(v.notes, { x: 0.5, y: 5.1, w: 4.5, h: 1.5, fontSize: 9.5, fill: 'f8fafc', margin: 8 });
+          s.addText("FIELD OBSERVER INTELLIGENCE:", { x: 0.6, y: 4.8, fontSize: 10, bold: true, color: THEME.cyan, fontFace: 'Montserrat' });
+          s.addText(v.notes, { 
+            x: 0.6, y: 5.1, w: 4.8, h: 1.4, 
+            fontSize: 10, fontFace: 'Urbanist', color: 'CBD5E1',
+            fill: { color: '101B30' }, margin: 10 
+          });
       }
 
-      // Visual Area Fix: Aspect Ratio Contain
+      // VISUAL PLACEMENT CORRECTION: Prevents huge/spaginated images
+      // Coordinates block strictly mapped to right 16:9 sector (X: 5.8 to 12.7)
       if(v.powerBi) {
-          s.addImage({ data: "base64," + v.powerBi.split(',')[1], x: 5.5, y: 1.5, w: 7.3, h: 5.1, sizing: { type: 'contain', w: 7.3, h: 5.1 } });
-      } else if(v.photos && v.photos.length > 0) {
-          let grid = [{x:5.5, y:1.5, w:3.5, h:2.4}, {x:9.3, y:1.5, w:3.5, h:2.4}, {x:5.5, y:4.2, w:3.5, h:2.4}, {x:9.3, y:4.2, w:3.5, h:2.4}];
-          v.photos.slice(0, 4).forEach((img, idx) => {
-              s.addImage({ data: "base64," + img.split(',')[1], x: grid[idx].x, y: grid[idx].y, w: grid[idx].w, h: grid[idx].h, sizing: { type: 'contain', w: grid[idx].w, h: grid[idx].h } });
+          // If master chart exists, contain it in a safe 6.9 x 5.0 inch bounding box
+          s.addImage({ 
+            data: "base64," + v.powerBi.split(',')[1], 
+            x: 5.8, y: 1.5, w: 6.9, h: 5.0, 
+            sizing: { type: 'contain', w: 6.9, h: 5.0 } 
           });
+      } else if(v.photos && v.photos.length > 0) {
+          // If store gallery exists, arrange up to 4 photos in a perfect micro-grid matrix, preserving proportions
+          let grid = [
+            { x: 5.8, y: 1.5, w: 3.3, h: 2.3 }, 
+            { x: 9.4, y: 1.5, w: 3.3, h: 2.3 }, 
+            { x: 5.8, y: 4.1, w: 3.3, h: 2.3 }, 
+            { x: 9.4, y: 4.1, w: 3.3, h: 2.3 }
+          ];
+          v.photos.slice(0, 4).forEach((img, idx) => {
+              s.addImage({ 
+                data: "base64," + img.split(',')[1], 
+                x: grid[idx].x, y: grid[idx].y, w: grid[idx].w, h: grid[idx].h, 
+                sizing: { type: 'contain', w: grid[idx].w, h: grid[idx].h } 
+              });
+          });
+      } else {
+          // Fallback placeholder to maintain structural consistency
+          s.addShape(pres.ShapeType.rect, { x: 5.8, y: 1.5, w: 6.9, h: 5.0, fill: { color: '101B30' } });
+          s.addText("NO VISUAL ASSETS CAPTURED FOR THIS SESSION", { x: 5.8, y: 3.8, w: 6.9, align:'center', fontSize: 12, color: THEME.gray, fontFace: 'Montserrat' });
       }
   });
 
-  await pres.writeFile({ fileName: `ZTE_LFM_Tool_Report_${customTitle.replace(/ /g,'_')}.pptx` });
+  // Export File Execution
+  await pres.writeFile({ fileName: `ZTE_LFM_Suite_Report_${customTitle.replace(/ /g,'_')}.pptx` });
   alert("Professional Report Deck Compiled Successfully!");
 }
 
