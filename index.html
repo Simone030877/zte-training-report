@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -352,7 +352,7 @@
 
     <script>
         let localIndexedDB;
-        // Linked back to the original database name so old records load automatically
+        // Database link configurato sul nome storico per la persistenza dei dati reali
         const databaseConfig = { name: "ZTE_LFM_FieldManagement_DB", version: 1 };
         let activeVisitPhotos = [];
         let activePowerBiPhoto = null;
@@ -528,12 +528,49 @@
 
         function deleteRecord(uid) { if(confirm("Permanently delete this record?")) localIndexedDB.transaction(["fieldVisits"], "readwrite").objectStore("fieldVisits").delete(uid).onsuccess = () => refreshDataEngine(); }
 
-        function buildPeriodOptions(scope) {
+        /* NUOVA FUNZIONE AGGIORNATA: Filtra in modo dinamico solo i periodi in cui sono presenti i record effettivi */
+        async function buildPeriodOptions(scope) {
             const detail = document.getElementById("reportPeriodDetail");
+            detail.innerHTML = "<option value=''>-- Caricamento periodi... --</option>";
+            if(!scope) { detail.innerHTML = "<option value=''>-- Seleziona prima l'ambito --</option>"; return; }
+
+            const recs = await new Promise(res => localIndexedDB.transaction(["fieldVisits"]).objectStore("fieldVisits").getAll().onsuccess = (e) => res(e.target.result));
             detail.innerHTML = "";
-            if(scope === "weekly") for(let i=1; i<=52; i++) detail.innerHTML += `<option value="W${i}">Week ${i}</option>`;
-            else if(scope === "monthly") ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].forEach((m, i) => detail.innerHTML += `<option value="${String(i+1).padStart(2,'0')}">${m}</option>`);
-            else if(scope === "quarterly") ["Q1","Q2","Q3","Q4"].forEach(q => detail.innerHTML += `<option value="${q}">${q}</option>`);
+
+            if(recs.length === 0) {
+                detail.innerHTML = "<option value=''>Nessun dato disponibile</option>";
+                return;
+            }
+
+            if (scope === "weekly") {
+                const weeks = [...new Set(recs.map(r => r.operatingWeek).filter(w => w && w !== "W?"))];
+                weeks.sort((a, b) => parseInt(a.replace("W","")) - parseInt(b.replace("W","")));
+                
+                if(weeks.length === 0) detail.innerHTML = "<option value=''>Nessuna settimana attiva</option>";
+                else weeks.forEach(w => detail.innerHTML += `<option value="${w}">Settimana ${w.replace("W","")}</option>`);
+            } 
+            else if (scope === "monthly") {
+                const monthNames = { "01":"Gennaio", "02":"Febbraio", "03":"Marzo", "04":"Aprile", "05":"Maggio", "06":"Giugno", "07":"Luglio", "08":"Agosto", "09":"Settembre", "10":"Ottobre", "11":"Novembre", "12":"Dicembre" };
+                const months = [...new Set(recs.map(r => r.visitDate ? r.visitDate.split("-")[1] : null).filter(Boolean))];
+                months.sort();
+                
+                if(months.length === 0) detail.innerHTML = "<option value=''>Nessun mese attivo</option>";
+                else months.forEach(m => detail.innerHTML += `<option value="${m}">${monthNames[m] || m}</option>`);
+            } 
+            else if (scope === "quarterly") {
+                const quarters = [...new Set(recs.map(r => {
+                    if(!r.visitDate) return null;
+                    const m = parseInt(r.visitDate.split("-")[1]);
+                    if(m <= 3) return "Q1";
+                    if(m >= 4 && m <= 6) return "Q2";
+                    if(m >= 7 && m <= 9) return "Q3";
+                    return "Q4";
+                }).filter(Boolean))];
+                quarters.sort();
+                
+                if(quarters.length === 0) detail.innerHTML = "<option value=''>Nessun trimestre attivo</option>";
+                else quarters.forEach(q => detail.innerHTML += `<option value="${q}">${q}</option>`);
+            }
         }
 
         async function processPPTXGeneration() {
