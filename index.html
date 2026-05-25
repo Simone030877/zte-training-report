@@ -133,7 +133,7 @@
     <header class="header">
         <div>
             <h1>ZTE - LFM Training on Field professional tools</h1>
-            <div class="brand-subtitle">EXECUTIVE DATA MANAGEMENT ENVIRONMENT v9.3</div>
+            <div class="brand-subtitle">EXECUTIVE DATA MANAGEMENT ENVIRONMENT v9.4</div>
         </div>
     </header>
 
@@ -321,6 +321,12 @@
 
         function initIndexedDB() {
             const request = indexedDB.open(databaseConfig.name, databaseConfig.version);
+            request.onupgradeneeded = (e) => {
+                let db = e.target.result;
+                if (!db.objectStoreNames.contains("fieldVisits")) {
+                    db.createObjectStore("fieldVisits", { keyPath: "uid" });
+                }
+            };
             request.onsuccess = (e) => {
                 localIndexedDB = e.target.result;
                 refreshDataEngine();
@@ -334,8 +340,8 @@
             
             if(targetId === 'form-section') {
                 document.getElementById('tab-new-visit').classList.add('active');
-            } else if(event && event.currentTarget) {
-                event.currentTarget.classList.add("active");
+            } else if(window.event && window.event.currentTarget) {
+                window.event.currentTarget.classList.add("active");
             }
             
             if(targetId === 'archive-section' || targetId === 'dashboard-section') refreshDataEngine();
@@ -443,10 +449,12 @@
                 timestamp: Date.now()
             };
 
-            localIndexedDB.transaction(["fieldVisits"], "readwrite").objectStore("fieldVisits").put(record).onsuccess = () => {
+            const tx = localIndexedDB.transaction(["fieldVisits"], "readwrite");
+            tx.objectStore("fieldVisits").put(record).onsuccess = () => {
                 alert(document.getElementById("editUid").value ? "Record aggiornato!" : "Visita salvata con successo!"); 
                 clearForm(); 
-                switchModule("dashboard-section");
+                refreshDataEngine();
+                switchModule("archive-section");
             };
         };
 
@@ -459,7 +467,7 @@
             activePowerBiPhoto = null;
             rebuildPreview();
             renderPowerBiPreview();
-            document.querySelectorAll(".nav-tab")[1].innerText = "NEW VISIT";
+            document.getElementById('tab-new-visit').innerText = "NEW VISIT";
         }
 
         function editRec(uid) {
@@ -472,6 +480,8 @@
                 document.getElementById("storeLocation").value = r.storeLocation;
                 document.getElementById("visitDate").value = r.visitDate;
                 document.getElementById("calculatedWeek").value = r.operatingWeek;
+                
+                // Forza la lettura dinamica o assegna stringa vuota se mancava prima
                 document.getElementById("visitMode").value = r.visitMode || "";
                 
                 document.querySelectorAll('input[name="visitObjectives"]').forEach(cb => cb.checked = r.objectives.includes(cb.value));
@@ -492,13 +502,18 @@
 
                 document.getElementById("form-title").innerText = "Edit Visit Record";
                 document.getElementById("btnSubmitForm").innerText = "Update Visit";
-                document.querySelectorAll(".nav-tab")[1].innerText = "EDIT VISIT";
+                document.getElementById('tab-new-visit').innerText = "EDIT VISIT";
                 
-                switchModule('form-section');
+                // Sposta l'utente sul form attivando la tab corretta visualmente
+                document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+                document.getElementById('tab-new-visit').classList.add('active');
+                document.querySelectorAll(".app-section").forEach(s => s.classList.remove("active"));
+                document.getElementById('form-section').classList.add('active');
             };
         }
 
         function refreshDataEngine() {
+            if (!localIndexedDB) return;
             localIndexedDB.transaction(["fieldVisits"]).objectStore("fieldVisits").getAll().onsuccess = (e) => {
                 const recs = e.target.result;
                 updateKPIs(recs);
@@ -536,12 +551,12 @@
                     <td><strong>${r.storeChain}</strong></td>
                     <td>${r.storeLocation}</td>
                     <td>${r.visitDate}</td>
-                    <td><span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-size:0.7rem;">${r.visitMode || 'N/A'}</span></td>
+                    <td><span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:600;">${r.visitMode || 'N/A'}</span></td>
                     <td>${r.selloutUnits}</td>
                     <td>${r.targetUnits}</td>
                     <td class="actions-cell">
-                        <button class="action-btn btn-edit" style="padding:0.4rem" onclick="editRec('${r.uid}')">Edit</button>
-                        <button class="action-btn btn-danger" style="padding:0.4rem" onclick="deleteRec('${r.uid}')">Del</button>
+                        <button type="button" class="action-btn btn-edit" style="padding:0.4rem" onclick="editRec('${r.uid}')">Edit</button>
+                        <button type="button" class="action-btn btn-danger" style="padding:0.4rem" onclick="deleteRec('${r.uid}')">Del</button>
                     </td>
                 </tr>`;
             });
