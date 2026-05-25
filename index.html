@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZTE - LFM Field Training Professional Suite</title>
+    <title>ZTE - LFM Training on Field professional tools</title>
     <script src="https://cdn.jsdelivr.net/gh/Stuk/jszip@v3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@v3.12.0/dist/pptxgen.bundle.js"></script>
     
@@ -136,8 +136,8 @@
 
     <header class="header">
         <div>
-            <h1>ZTE - LFM Field Training Professional Suite</h1>
-            <div class="brand-subtitle">Field Operations & Management Environment v8.1</div>
+            <h1>ZTE - LFM Training on Field professional tools</h1>
+            <div class="brand-subtitle">Field Operations & Management Environment v8.2</div>
         </div>
     </header>
 
@@ -352,7 +352,6 @@
 
     <script>
         let localIndexedDB;
-        // Database link configurato sul nome storico per la persistenza dei dati reali
         const databaseConfig = { name: "ZTE_LFM_FieldManagement_DB", version: 1 };
         let activeVisitPhotos = [];
         let activePowerBiPhoto = null;
@@ -419,10 +418,7 @@
         function setupImageHandlers() {
             document.getElementById("inputPhotos").addEventListener("change", async function() {
                 for (let f of this.files) {
-                    if(activeVisitPhotos.length >= 4) {
-                        alert("Max 4 photos allowed per layout slot.");
-                        break;
-                    }
+                    if(activeVisitPhotos.length >= 4) { alert("Max 4 photos allowed per layout slot."); break; }
                     const b64 = await convertAndCompressFile(f);
                     activeVisitPhotos.push(b64);
                     rebuildVisitPhotosPreview();
@@ -438,21 +434,16 @@
         }
 
         function removeVisitPhoto(idx) { activeVisitPhotos.splice(idx, 1); rebuildVisitPhotosPreview(); }
-        
         function rebuildVisitPhotosPreview() {
             const gallery = document.getElementById("visitPhotosPreviewGallery");
             gallery.innerHTML = "";
-            activeVisitPhotos.forEach((b64, i) => {
-                gallery.innerHTML += `<div class="gallery-item"><img src="${b64}"><button type="button" class="remove-btn" onclick="removeVisitPhoto(${i})">X</button></div>`;
-            });
+            activeVisitPhotos.forEach((b64, i) => { gallery.innerHTML += `<div class="gallery-item"><img src="${b64}"><button type="button" class="remove-btn" onclick="removeVisitPhoto(${i})">X</button></div>`; });
         }
-        
         function removePowerBIPhoto() { activePowerBiPhoto = null; document.getElementById("powerBIPreviewGallery").innerHTML = ""; document.getElementById("inputPowerBI").value = ""; }
 
         document.getElementById("lfmMasterForm").onsubmit = function(e) {
             e.preventDefault();
             if (!localIndexedDB) return alert("Database connection unavailable.");
-            
             const getChecked = (n) => Array.from(document.querySelectorAll(`input[name="${n}"]:checked`)).map(el => el.value);
             
             const record = {
@@ -476,11 +467,8 @@
                 timestamp: Date.now()
             };
             
-            const tx = localIndexedDB.transaction(["fieldVisits"], "readwrite");
-            tx.objectStore("fieldVisits").put(record).onsuccess = () => {
-                alert("Report saved successfully."); 
-                clearForm(); 
-                switchModule("dashboard-section");
+            localIndexedDB.transaction(["fieldVisits"], "readwrite").objectStore("fieldVisits").put(record).onsuccess = () => {
+                alert("Report saved successfully."); clearForm(); switchModule("dashboard-section");
             };
         };
 
@@ -490,8 +478,6 @@
             document.getElementById("visitPhotosPreviewGallery").innerHTML = "";
             document.getElementById("powerBIPreviewGallery").innerHTML = "";
             document.getElementById("calculatedWeek").value = "";
-            document.getElementById("inputPhotos").value = "";
-            document.getElementById("inputPowerBI").value = "";
         }
 
         function refreshDataEngine() {
@@ -517,10 +503,7 @@
         function populateArchiveTable(recs) {
             const body = document.getElementById("archiveTableBody");
             body.innerHTML = "";
-            if(recs.length === 0) {
-                body.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-light);">No records stored locally.</td></tr>`;
-                return;
-            }
+            if(recs.length === 0) { body.innerHTML = `<tr><td colspan="7" style="text-align:center;">Nessun dato disponibile.</td></tr>`; return; }
             recs.sort((a,b) => b.timestamp - a.timestamp).forEach(r => {
                 body.innerHTML += `<tr><td><strong>${r.storeChain}</strong></td><td>${r.storeLocation}</td><td>${r.visitDate}</td><td><span style="font-weight:bold; color:var(--accent-cyan);">${r.operatingWeek}</span></td><td>${r.selloutUnits}</td><td>${r.targetUnits}</td><td><button class="action-btn btn-danger" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteRecord('${r.uid}')">Del</button></td></tr>`;
             });
@@ -528,48 +511,26 @@
 
         function deleteRecord(uid) { if(confirm("Permanently delete this record?")) localIndexedDB.transaction(["fieldVisits"], "readwrite").objectStore("fieldVisits").delete(uid).onsuccess = () => refreshDataEngine(); }
 
-        /* NUOVA FUNZIONE AGGIORNATA: Filtra in modo dinamico solo i periodi in cui sono presenti i record effettivi */
         async function buildPeriodOptions(scope) {
             const detail = document.getElementById("reportPeriodDetail");
-            detail.innerHTML = "<option value=''>-- Caricamento periodi... --</option>";
-            if(!scope) { detail.innerHTML = "<option value=''>-- Seleziona prima l'ambito --</option>"; return; }
+            detail.innerHTML = "<option value=''>-- Loading periods... --</option>";
+            if(!scope) { detail.innerHTML = "<option value=''>-- Select Scope First --</option>"; return; }
 
             const recs = await new Promise(res => localIndexedDB.transaction(["fieldVisits"]).objectStore("fieldVisits").getAll().onsuccess = (e) => res(e.target.result));
             detail.innerHTML = "";
-
-            if(recs.length === 0) {
-                detail.innerHTML = "<option value=''>Nessun dato disponibile</option>";
-                return;
-            }
+            if(recs.length === 0) { detail.innerHTML = "<option value=''>No data available</option>"; return; }
 
             if (scope === "weekly") {
                 const weeks = [...new Set(recs.map(r => r.operatingWeek).filter(w => w && w !== "W?"))];
                 weeks.sort((a, b) => parseInt(a.replace("W","")) - parseInt(b.replace("W","")));
-                
-                if(weeks.length === 0) detail.innerHTML = "<option value=''>Nessuna settimana attiva</option>";
-                else weeks.forEach(w => detail.innerHTML += `<option value="${w}">Settimana ${w.replace("W","")}</option>`);
+                if(weeks.length === 0) detail.innerHTML = "<option value=''>No active weeks</option>";
+                else weeks.forEach(w => detail.innerHTML += `<option value="${w}">Week ${w.replace("W","")}</option>`);
             } 
             else if (scope === "monthly") {
-                const monthNames = { "01":"Gennaio", "02":"Febbraio", "03":"Marzo", "04":"Aprile", "05":"Maggio", "06":"Giugno", "07":"Luglio", "08":"Agosto", "09":"Settembre", "10":"Ottobre", "11":"Novembre", "12":"Dicembre" };
                 const months = [...new Set(recs.map(r => r.visitDate ? r.visitDate.split("-")[1] : null).filter(Boolean))];
                 months.sort();
-                
-                if(months.length === 0) detail.innerHTML = "<option value=''>Nessun mese attivo</option>";
-                else months.forEach(m => detail.innerHTML += `<option value="${m}">${monthNames[m] || m}</option>`);
-            } 
-            else if (scope === "quarterly") {
-                const quarters = [...new Set(recs.map(r => {
-                    if(!r.visitDate) return null;
-                    const m = parseInt(r.visitDate.split("-")[1]);
-                    if(m <= 3) return "Q1";
-                    if(m >= 4 && m <= 6) return "Q2";
-                    if(m >= 7 && m <= 9) return "Q3";
-                    return "Q4";
-                }).filter(Boolean))];
-                quarters.sort();
-                
-                if(quarters.length === 0) detail.innerHTML = "<option value=''>Nessun trimestre attivo</option>";
-                else quarters.forEach(q => detail.innerHTML += `<option value="${q}">${q}</option>`);
+                if(months.length === 0) detail.innerHTML = "<option value=''>No active months</option>";
+                else months.forEach(m => detail.innerHTML += `<option value="${m}">Month ${m}</option>`);
             }
         }
 
@@ -579,29 +540,107 @@
             if(!scope || !period) return alert("Please select report scope and period parameters.");
 
             const recs = await new Promise(res => localIndexedDB.transaction(["fieldVisits"]).objectStore("fieldVisits").getAll().onsuccess = (e) => res(e.target.result));
+            
+            // FILTRA I DATI DEL PERIODO SCELTO
             const filtered = recs.filter(r => {
                 if(!r.visitDate) return false;
                 if(scope === "weekly") return r.operatingWeek === period;
                 const m = r.visitDate.split("-")[1];
                 if(scope === "monthly") return m === period;
-                if(period === "Q1") return m <= 3; if(period === "Q2") return m >= 4 && m <= 6;
-                if(period === "Q3") return m >= 7 && m <= 9; if(period === "Q4") return m >= 10;
                 return false;
             });
 
             if(filtered.length === 0) return alert("No matching records found for the selected period.");
 
+            // CALCOLI PER I GRAFICI EXECUTIVE
+            let totVisits = filtered.length;
+            let totPromoters = 0, totAmbassadors = 0, totStaff = 0, totSellout = 0, totTarget = 0;
+            let chainMap = {};
+
+            filtered.forEach(r => {
+                totPromoters += (r.promotersFormed || 0);
+                totAmbassadors += (r.ambassadorsEngaged || 0);
+                totStaff += (r.staffTrained || 0);
+                totSellout += (r.selloutUnits || 0);
+                totTarget += (r.targetUnits || 0);
+
+                const chain = r.storeChain || "Other";
+                if(!chainMap[chain]) chainMap[chain] = 0;
+                chainMap[chain] += (r.selloutUnits || 0);
+            });
+
+            let targetProgress = totTarget > 0 ? Math.round((totSellout/totTarget)*100) : 0;
+            let totRecipients = totPromoters + totAmbassadors + totStaff;
+
+            // INIZIO GENERAZIONE PPTX
             const pptx = new PptxGenJS();
             pptx.layout = "LAYOUT_16x9";
 
-            // SLIDE 1: STRATEGIC COVER
+            // === SLIDE 1: COVER ===
             const cover = pptx.addSlide();
             cover.addShape(pptx.ShapeType.rect, { x:0, y:0, w:"100%", h:"100%", fill:{ color:"0d1628" } });
-            cover.addText("ZTE & nubia Field Management", { x:1.0, y:2.5, fontSize:36, bold:true, color:"ffffff" });
-            cover.addText("FIELD TRAINING ACTIVITY REPORT", { x:1.0, y:3.4, fontSize:18, color:"00a0d2", bold:true });
-            cover.addText(`Scope: ${scope.toUpperCase()} | Period: ${period} | Year: 2026`, { x:1.0, y:4.2, fontSize:12, color:"94a3b8" });
+            cover.addText("ZTE - LFM Training on Field professional tools", { x:1.0, y:2.5, fontSize:32, bold:true, color:"ffffff" });
+            cover.addText("EXECUTIVE PERFORMANCE REPORT", { x:1.0, y:3.4, fontSize:20, color:"00a0d2", bold:true });
+            cover.addText(`Scope: ${scope.toUpperCase()} | Period: ${period} | Visits: ${totVisits}`, { x:1.0, y:4.2, fontSize:14, color:"94a3b8" });
 
-            // SLIDE LOOPS PER VISIT
+            // === SLIDE 2: KPI & EXECUTIVE SUMMARY ===
+            const execSlide = pptx.addSlide();
+            execSlide.addShape(pptx.ShapeType.rect, { x:0, y:0, w:"100%", h:0.6, fill:{ color:"0d1628" } });
+            execSlide.addText(`EXECUTIVE SUMMARY - ${period}`, { x:0.5, y:0.1, fontSize:16, bold:true, color:"ffffff" });
+            
+            // Box KPIs
+            const kpiBoxes = [
+                { title: "TOTAL VISITS", val: totVisits, x: 0.5 },
+                { title: "STAFF COACHED", val: totRecipients, x: 3.0 },
+                { title: "TARGET PROGRESS", val: `${targetProgress}%`, x: 5.5 },
+                { title: "SELL-OUT (UNITS)", val: totSellout, x: 8.0 }
+            ];
+
+            kpiBoxes.forEach(box => {
+                execSlide.addShape(pptx.ShapeType.rect, { x:box.x, y:1.0, w:2.2, h:1.2, fill:{ color:"f8fafc" }, line:{ color:"00a0d2", width:2 } });
+                execSlide.addText(box.val.toString(), { x:box.x, y:1.2, w:2.2, h:0.6, fontSize:32, bold:true, color:"00a0d2", align:"center" });
+                execSlide.addText(box.title, { x:box.x, y:1.8, w:2.2, h:0.3, fontSize:10, bold:true, color:"64748b", align:"center" });
+            });
+
+            // === SLIDE 3: CHARTS (DOUGHNUT & BAR) ===
+            const chartSlide = pptx.addSlide();
+            chartSlide.addShape(pptx.ShapeType.rect, { x:0, y:0, w:"100%", h:0.6, fill:{ color:"0d1628" } });
+            chartSlide.addText(`TRAINING & RETAIL PERFORMANCE - ${period}`, { x:0.5, y:0.1, fontSize:16, bold:true, color:"ffffff" });
+
+            // Doughnut Chart: Training Distribution
+            let chartDataDoughnut = [{
+                name: "Recipients",
+                labels: ["Promoters", "Ambassadors", "Store Staff"],
+                values: [totPromoters, totAmbassadors, totStaff]
+            }];
+            chartSlide.addChart(pptx.ChartType.doughnut, chartDataDoughnut, {
+                x: 0.5, y: 1.0, w: 4.5, h: 4.0,
+                showLegend: true, legendPos: 'b',
+                title: "Training Impact Composition", showTitle: true,
+                chartColors: ["00a0d2", "e61e28", "10b981"],
+                dataLabels: true, dataLabelFormatCode: "0"
+            });
+
+            // Bar Chart: Chain Performance
+            let chains = Object.keys(chainMap);
+            let chainValues = Object.values(chainMap);
+            
+            if(chains.length > 0) {
+                let chartDataBar = [{
+                    name: "Sell-Out by Chain",
+                    labels: chains,
+                    values: chainValues
+                }];
+                chartSlide.addChart(pptx.ChartType.bar, chartDataBar, {
+                    x: 5.5, y: 1.0, w: 4.5, h: 4.0,
+                    showLegend: false,
+                    title: "Sell-Out by Retail Chain", showTitle: true,
+                    barDir: "col", chartColors: ["00a0d2"],
+                    dataLabels: true
+                });
+            }
+
+            // === SLIDE 4+: LOOP DELLE SINGOLE VISITE ===
             filtered.forEach(r => {
                 const s = pptx.addSlide();
                 // Slide Banner Header
@@ -614,24 +653,25 @@
                 s.addText(`PROMOTERS TRAINED: ${r.promotersFormed}\nAMBASSADORS COACHED: ${r.ambassadorsEngaged}\nSTORE STAFF TRAINED: ${r.staffTrained}`, { x:0.7, y:1.2, fontSize:10, bold:true, color:"1e293b" });
                 s.addText(`SELL-OUT: ${r.selloutUnits} units / TARGET: ${r.targetUnits} units`, { x:0.7, y:2.1, fontSize:10, bold:true, color:"00a0d2" });
 
-                // Checkboxes textual conversion
+                // Checkboxes testuali
                 let details = `OBJECTIVES:\n- ${r.objectives.join("\n- ") || "None"}\n\nCONTENTS:\n- ${r.contents.join("\n- ") || "None"}\n\nPRODUCT FOCUS:\n- ${r.productFocus.join("\n- ") || "None"}`;
                 s.addText(details, { x:0.5, y:2.8, w:4.5, h:2.8, fontSize:9, color:"334155" });
 
-                // Footnote field logs
+                // Note
                 if(r.notes) {
                     s.addShape(pptx.ShapeType.rect, { x:0.5, y:5.8, w:4.5, h:1.2, fill:{ color:"fafafa" }, line:{ color:"cbd5e1", width:1 } });
                     s.addText(`FIELD NOTES:\n${r.notes}`, { x:0.6, y:5.9, fontSize:8.5, color:"475569" });
                 }
 
-                // 2x2 Unified Grid Layout for Images
+                // Grid Immagini
                 let pics = [...(r.photos || [])];
                 if(r.powerBiScreen) pics.push(r.powerBiScreen);
                 const coords = [ {x:5.4, y:1.1}, {x:9.0, y:1.1}, {x:5.4, y:4.0}, {x:9.0, y:4.0} ];
                 pics.slice(0, 4).forEach((p, i) => s.addImage({ data:p, x:coords[i].x, y:coords[i].y, w:3.4, h:2.6 }));
             });
 
-            pptx.writeFile({ fileName: `ZTE_FieldReport_${scope}_${period}_2026.pptx` });
+            // SALVA IL FILE PPTX
+            pptx.writeFile({ fileName: `ZTE_ExecutiveReport_${scope}_${period}.pptx` });
         }
     </script>
 </body>
