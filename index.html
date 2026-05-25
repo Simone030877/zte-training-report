@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZTE - LFM Training on Field professional tools</title>
+    <title>ZTE - LFM Field Training Professional Suite</title>
     <script src="https://cdn.jsdelivr.net/gh/Stuk/jszip@v3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@v3.12.0/dist/pptxgen.bundle.js"></script>
     
     <style>
-        /* === CONFIGURAZIONE E DESIGN SYSTEM INERENTE ZTE / LFM === */
+        /* === ZTE / LFM DESIGN SYSTEM === */
         :root {
             --primary-bg: #0d1628;
             --accent-cyan: #00a0d2;
@@ -19,11 +19,7 @@
             --text-light: #64748b;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
@@ -32,7 +28,6 @@
             line-height: 1.5;
         }
 
-        /* Top Bar Istituzionale */
         .header {
             background-color: var(--primary-bg);
             color: #ffffff;
@@ -43,356 +38,134 @@
             border-bottom: 3px solid var(--accent-cyan);
         }
 
-        .header h1 {
-            font-size: 1.4rem;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
+        .header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.5px; }
+        .brand-subtitle { font-size: 0.85rem; color: var(--accent-cyan); font-weight: 400; }
 
-        .brand-subtitle {
-            font-size: 0.85rem;
-            color: var(--accent-cyan);
-            font-weight: 400;
-        }
-
-        /* Sistema di Navigazione Tab */
-        .nav-bar {
-            background-color: #ffffff;
-            display: flex;
-            border-bottom: 1px solid var(--border-color);
-            overflow-x: auto;
-        }
+        .nav-bar { background-color: #ffffff; display: flex; border-bottom: 1px solid var(--border-color); overflow-x: auto; }
 
         .nav-tab {
-            flex: 1;
-            min-width: 150px;
-            padding: 1rem;
-            text-align: center;
-            background: none;
-            border: none;
-            border-bottom: 3px solid transparent;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--text-light);
-            cursor: pointer;
-            transition: all 0.2s ease;
+            flex: 1; min-width: 150px; padding: 1rem; text-align: center; background: none; border: none;
+            border-bottom: 3px solid transparent; font-size: 0.95rem; font-weight: 600;
+            color: var(--text-light); cursor: pointer; transition: all 0.2s ease;
         }
 
-        .nav-tab:hover {
-            color: var(--accent-cyan);
-            background-color: #f8fafc;
-        }
+        .nav-tab:hover { color: var(--accent-cyan); background-color: #f8fafc; }
+        .nav-tab.active { color: var(--accent-cyan); border-bottom-color: var(--accent-cyan); background-color: #f0f9ff; }
 
-        .nav-tab.active {
-            color: var(--accent-cyan);
-            border-bottom-color: var(--accent-cyan);
-            background-color: #f0f9ff;
-        }
-
-        /* Struttura Layout Principale */
-        .main-container {
-            max-width: 1200px;
-            margin: 2rem auto;
-            padding: 0 1.5rem;
-        }
-
-        .app-section {
-            display: none;
-        }
-
-        .app-section.active {
-            display: block;
-            animation: slideUp 0.30s ease-out;
-        }
+        .main-container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+        .app-section { display: none; }
+        .app-section.active { display: block; animation: slideUp 0.30s ease-out; }
 
         @keyframes slideUp {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Componenti Card e Form Extesi */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
 
         .kpi-card {
-            background: #ffffff;
-            border-radius: 8px;
-            padding: 1.5rem;
-            box-shadow: var(--card-shadow);
-            border-left: 4px solid var(--accent-cyan);
+            background: #ffffff; border-radius: 8px; padding: 1.5rem;
+            box-shadow: var(--card-shadow); border-left: 4px solid var(--accent-cyan);
         }
 
-        .kpi-card h3 {
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            color: var(--text-light);
-            margin-bottom: 0.5rem;
+        .kpi-card h3 { font-size: 0.75rem; text-transform: uppercase; color: var(--text-light); margin-bottom: 0.5rem; }
+        .kpi-card .value { font-size: 1.8rem; font-weight: 700; color: var(--primary-bg); }
+
+        .content-card { background: #ffffff; border-radius: 8px; padding: 2rem; box-shadow: var(--card-shadow); margin-bottom: 2rem; }
+        .content-card h2 { font-size: 1.4rem; color: var(--primary-bg); margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
+        @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
+
+        .form-group { display: flex; flex-direction: column; }
+        .form-group.full-width { grid-column: 1 / -1; }
+
+        label { font-size: 0.9rem; font-weight: 600; color: var(--text-dark); margin-bottom: 0.5rem; }
+
+        input, select, textarea {
+            width: 100%; padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 6px;
+            font-size: 0.95rem; color: var(--text-dark); background-color: #ffffff;
         }
 
-        .kpi-card .value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--primary-bg);
-        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-cyan); box-shadow: 0 0 0 3px rgba(0, 160, 210, 0.15); }
 
-        .content-card {
-            background: #ffffff;
-            border-radius: 8px;
-            padding: 2rem;
-            box-shadow: var(--card-shadow);
-            margin-bottom: 2rem;
-        }
-
-        .content-card h2 {
-            font-size: 1.4rem;
-            color: var(--primary-bg);
-            margin-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
-        }
-
-        /* Strutturazione Campi di Input Form */
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        @media (max-width: 768px) {
-            .form-grid { grid-template-columns: 1fr; }
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: var(--text-dark);
-            margin-bottom: 0.5rem;
-        }
-
-        input[type="text"],
-        input[type="number"],
-        input[type="date"],
-        select,
-        textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 0.95rem;
-            color: var(--text-dark);
-            background-color: #ffffff;
-            transition: border-color 0.2s;
-        }
-
-        input:focus, select:focus, textarea:focus {
-            outline: none;
-            border-color: var(--accent-cyan);
-            box-shadow: 0 0 0 3px rgba(0, 160, 210, 0.15);
-        }
-
-        /* Checkbox Specialistici */
         .checkbox-container-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 0.75rem;
-            background: #f8fafc;
-            padding: 1rem;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 0.75rem; background: #f8fafc; padding: 1rem; border-radius: 6px; border: 1px solid var(--border-color);
         }
 
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-weight: 500;
-            cursor: pointer;
-            font-size: 0.9rem;
-        }
+        .checkbox-label { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; cursor: pointer; font-size: 0.85rem; }
+        .checkbox-label input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent-cyan); cursor: pointer; }
 
-        .checkbox-label input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: var(--accent-cyan);
-            cursor: pointer;
-        }
+        .upload-zone { border: 2px dashed #cbd5e1; background: #f8fafc; padding: 2rem; border-radius: 6px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .upload-zone:hover { border-color: var(--accent-cyan); background: #f0f9ff; }
+        .file-hidden { display: none; }
 
-        /* Upload Immagini e Anteprima Dedicata */
-        .upload-zone {
-            border: 2px dashed #cbd5e1;
-            background: #f8fafc;
-            padding: 2rem;
-            border-radius: 6px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+        .gallery-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .gallery-item { position: relative; aspect-ratio: 4/3; border-radius: 4px; overflow: hidden; border: 1px solid var(--border-color); }
+        .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
+        .gallery-item .remove-btn { position: absolute; top: 4px; right: 4px; background: rgba(231, 76, 60, 0.9); color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; }
 
-        .upload-zone:hover {
-            border-color: var(--accent-cyan);
-            background: #f0f9ff;
-        }
-
-        .file-hidden {
-            display: none;
-        }
-
-        .gallery-preview {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 1rem;
-            margin-top: 1rem;
-        }
-
-        .gallery-item {
-            position: relative;
-            aspect-ratio: 4/3;
-            border-radius: 4px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-
-        .gallery-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .gallery-item .remove-btn {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            background: rgba(231, 76, 60, 0.9);
-            color: white;
-            border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 0.8rem;
-        }
-
-        /* Pulsanti d'Azione */
-        .btn-wrapper {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 1.5rem;
-        }
-
-        .action-btn {
-            padding: 0.75rem 1.5rem;
-            font-size: 0.95rem;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            border: none;
-            transition: background 0.2s;
-        }
-
+        .btn-wrapper { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem; }
+        .action-btn { padding: 0.75rem 1.5rem; font-size: 0.95rem; font-weight: 600; border-radius: 6px; cursor: pointer; border: none; }
         .btn-submit { background-color: var(--accent-cyan); color: white; }
-        .btn-submit:hover { background-color: #0082ab; }
         .btn-export { background-color: #e67e22; color: white; }
-        .btn-export:hover { background-color: #d35400; }
         .btn-danger { background-color: #e74c3c; color: white; }
 
-        /* Gestione Tabelle di Archivio */
-        .table-responsive {
-            width: 100%;
-            overflow-x: auto;
-            margin-top: 1rem;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.9rem;
-        }
-
-        th {
-            background-color: var(--primary-bg);
-            color: white;
-            padding: 0.75rem 1rem;
-            font-weight: 600;
-        }
-
-        td {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        tr:hover { background-color: #f8fafc; }
+        .table-responsive { width: 100%; overflow-x: auto; margin-top: 1rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+        th { background-color: var(--primary-bg); color: white; padding: 0.75rem 1rem; }
+        td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); }
     </style>
 </head>
 <body>
 
     <header class="header">
         <div>
-            <h1>ZTE - LFM Training on Field professional tools</h1>
-            <div class="brand-subtitle">Ambiente di Management e Operazioni sul Campo v8.0</div>
+            <h1>ZTE - LFM Field Training Professional Suite</h1>
+            <div class="brand-subtitle">Field Operations & Management Environment v8.1</div>
         </div>
     </header>
 
     <nav class="nav-bar">
         <button class="nav-tab active" onclick="switchModule('dashboard-section')">DASHBOARD</button>
-        <button class="nav-tab" onclick="switchModule('form-section')">INSERISCI VISITA</button>
-        <button class="nav-tab" onclick="switchModule('archive-section')">ARCHIVIO VISITE</button>
-        <button class="nav-tab" onclick="switchModule('report-section')">GENERATORE REPORT</button>
+        <button class="nav-tab" onclick="switchModule('form-section')">NEW VISIT</button>
+        <button class="nav-tab" onclick="switchModule('archive-section')">ARCHIVE</button>
+        <button class="nav-tab" onclick="switchModule('report-section')">REPORT GENERATOR</button>
     </nav>
 
     <main class="main-container">
 
         <section id="dashboard-section" class="app-section active">
             <div class="dashboard-grid">
-                <div class="kpi-card">
-                    <h3>Visite Totali Registrate</h3>
-                    <div id="kpi-total-visits" class="value">0</div>
-                </div>
-                <div class="kpi-card">
-                    <h3>Promoter Formati</h3>
-                    <div id="kpi-total-promoters" class="value">0</div>
-                </div>
-                <div class="kpi-card">
-                    <h3>Totale Sell-Out (Unità)</h3>
-                    <div id="kpi-total-sellout" class="value">0</div>
-                </div>
-                <div class="kpi-card">
-                    <h3>Avanzamento Target Medio</h3>
-                    <div id="kpi-target-progress" class="value">0%</div>
-                </div>
+                <div class="kpi-card"><h3>Total Visits</h3><div id="kpi-total-visits" class="value">0</div></div>
+                <div class="kpi-card"><h3>Promoters Trained</h3><div id="kpi-total-promoters" class="value">0</div></div>
+                <div class="kpi-card"><h3>Ambassadors Coached</h3><div id="kpi-total-ambassadors" class="value">0</div></div>
+                <div class="kpi-card"><h3>Store Staff Trained</h3><div id="kpi-total-staff" class="value">0</div></div>
+                <div class="kpi-card"><h3>Sell-Out (Units)</h3><div id="kpi-total-sellout" class="value">0</div></div>
+                <div class="kpi-card"><h3>Target Progress</h3><div id="kpi-target-progress" class="value">0%</div></div>
             </div>
             <div class="content-card">
-                <h2>Stato della Sincronizzazione Locale</h2>
-                <p>Tutti i report compilati sul campo vengono conservati all'interno dell'IndexedDB del browser per garantire la massima protezione dei dati, pronti per l'esportazione verso GitHub/Vercel senza la necessità di database esterni.</p>
+                <h2>Local Synchronization Status</h2>
+                <p>All field reports are stored within the browser's IndexedDB to ensure data persistence and privacy. Ready for professional PPTX export.</p>
             </div>
         </section>
 
         <section id="form-section" class="app-section">
             <div class="content-card">
-                <h2>Compilazione Report Visita ed Attività</h2>
+                <h2>Field Visit & Training Report</h2>
                 <form id="lfmMasterForm">
                     
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="storeChain">Catena / Store Record *</label>
+                            <label for="storeChain">Retail Chain *</label>
                             <select id="storeChain" required>
-                                <option value="">-- Seleziona Insegna --</option>
+                                <option value="">-- Select Chain --</option>
                                 <option value="Mediaworld">Mediaworld</option>
                                 <option value="Comet">Comet</option>
                                 <option value="Bruno">Bruno</option>
@@ -402,114 +175,118 @@
                                 <option value="DG Group">DG Group</option>
                                 <option value="Ires">Ires</option>
                                 <option value="Online Session">Online Session</option>
-                                <option value="Altro">Altro</option>
+                                <option value="Other">Other</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="storeLocation">Località Punto Vendita *</label>
-                            <input type="text" id="storeLocation" placeholder="Es. Milano Arese, Bari, Bologna" required>
+                            <label for="storeLocation">Store Location *</label>
+                            <input type="text" id="storeLocation" placeholder="e.g. London, Rome, Berlin" required>
                         </div>
                     </div>
 
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="visitDate">Data Visita *</label>
+                            <label for="visitDate">Visit Date *</label>
                             <input type="date" id="visitDate" required onchange="calculateWeekNumber(this.value)">
                         </div>
                         <div class="form-group">
-                            <label>Settimana Operativa Corrispondente</label>
+                            <label>Operating Week</label>
                             <input type="text" id="calculatedWeek" readonly style="background-color: #f1f5f9; font-weight: bold;">
                         </div>
                     </div>
 
-                    <div class="form-group style-margin" style="margin-bottom: 1.5rem;">
-                        <label>Obiettivi Strategici della Visita *</label>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label>Strategic Visit Objectives *</label>
                         <div class="checkbox-container-grid">
-                            <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="focus su top di gamma">focus su top di gamma</label>
-                            <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Incremento Sell-Out"> Incremento Sell-Out</label>
-                            <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Allineamento Canale Retail"> Allineamento Canale Retail</label>
-                            <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Miglioramento Brand Awareness"> Miglioramento Brand Awareness</label>
+                            <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Focus on Flagship"> Focus on Flagship</label>
+                            <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Sell-Out Increase"> Sell-Out Increase</label>
+                            <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Retail Channel Alignment"> Retail Channel Alignment</label>
+                            <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Brand Awareness Improvement"> Brand Awareness Improvement</label>
                         </div>
                     </div>
 
-                    <div class="form-group style-margin" style="margin-bottom: 1.5rem;">
-                        <label>Contenuti di Formazione Erogati *</label>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label>Training Contents Delivered *</label>
                         <div class="checkbox-container-grid">
-                            <label class="checkbox-label"><input type="checkbox" name="trainingContents" value="Lineup Prodotti 2026"> Lineup Prodotti 2026</label>
-                            <label class="checkbox-label"><input type="checkbox" name="trainingContents" value="Argomentazioni di Vendita ZTE"> Argomentazioni di Vendita ZTE</label>
-                            <label class="checkbox-label"><input type="checkbox" name="trainingContents" value="Analisi Tecnica Comparativa"> Analisi Tecnica Comparativa</label>
-                            <label class="checkbox-label"><input type="checkbox" name="trainingContents" value="Sistemi di Automation & Quiz"> Sistemi di Automation & Quiz</label>
+                            <label class="checkbox-label"><input type="checkbox" name="trainingContents" value="2026 Product Lineup"> 2026 Product Lineup</label>
+                            <label class="checkbox-label"><input type="checkbox" name="trainingContents" value="ZTE Sales Arguments"> ZTE Sales Arguments</label>
+                            <label class="checkbox-label"><input type="checkbox" name="trainingContents" value="Comparative Technical Analysis"> Comparative Technical Analysis</label>
+                            <label class="checkbox-label"><input type="checkbox" name="trainingContents" value="Automation & Quiz Systems"> Automation & Quiz Systems</label>
                         </div>
                     </div>
 
-                    <div class="form-group style-margin" style="margin-bottom: 1.5rem;">
-                        <label>Focus Categorie e Lineup Prodotto *</label>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label>Product Focus & Categories *</label>
                         <div class="checkbox-container-grid">
-                            <label class="checkbox-label"><input type="checkbox" name="productFocus" value="nubia AIR Lineup"> nubia AIR Lineup</label>
-                            <label class="checkbox-label"><input type="checkbox" name="productFocus" value="nubia NEO Lineup"> nubia NEO Lineup</label>
+                            <label class="checkbox-label"><input type="checkbox" name="productFocus" value="nubia AIR Series"> nubia AIR Series</label>
+                            <label class="checkbox-label"><input type="checkbox" name="productFocus" value="nubia NEO Series"> nubia NEO Series</label>
                             <label class="checkbox-label"><input type="checkbox" name="productFocus" value="Blade V80/V70 Series"> Blade V80/V70 Series</label>
                             <label class="checkbox-label"><input type="checkbox" name="productFocus" value="Blade V36/V55 Series"> Blade V36/V55 Series</label>
                         </div>
                     </div>
 
-                    <div class="form-group style-margin" style="margin-bottom: 1.5rem;">
-                        <label>Destinatari dell'Attività sul Campo *</label>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label>Training Recipients *</label>
                         <div class="checkbox-container-grid">
-                            <label class="checkbox-label"><input type="checkbox" name="targetAudience" value="Promoter"> Promoter</label>
-                            <label class="checkbox-label"><input type="checkbox" name="targetAudience" value="Field Ambassador"> Field Ambassador</label>
-                            <label class="checkbox-label"><input type="checkbox" name="targetAudience" value="Staff di Vendita Negozio"> Staff di Vendita Negozio</label>
-                            <label class="checkbox-label"><input type="checkbox" name="targetAudience" value="Controllo Visual Merchandising"> Controllo Visual Merchandising</label>
+                            <label class="checkbox-label"><input type="checkbox" name="targetAudience" value="Promoters"> Promoters</label>
+                            <label class="checkbox-label"><input type="checkbox" name="targetAudience" value="Field Ambassadors"> Field Ambassadors</label>
+                            <label class="checkbox-label"><input type="checkbox" name="targetAudience" value="Store Staff"> Store Staff</label>
+                            <label class="checkbox-label"><input type="checkbox" name="targetAudience" value="Visual Merchandising Check"> Visual Merchandising Check</label>
                         </div>
                     </div>
 
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="countPromoters">Promoter Formati (Q.tà)</label>
+                            <label for="countPromoters">Promoters Trained (Qty)</label>
                             <input type="number" id="countPromoters" min="0" value="0">
                         </div>
                         <div class="form-group">
-                            <label for="countAmbassadors">Ambassador Agganciati (Q.tà)</label>
+                            <label for="countAmbassadors">Ambassadors Coached (Qty)</label>
                             <input type="number" id="countAmbassadors" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="countStaff">Store Staff Trained (Qty)</label>
+                            <input type="number" id="countStaff" min="0" value="0">
                         </div>
                     </div>
 
                     <div class="form-grid">
                         <div class="form-group">
-                            <label for="metricSellout">Volume Sell-Out Rilevato (Unità)</label>
+                            <label for="metricSellout">Sell-Out Volume (Units)</label>
                             <input type="number" id="metricSellout" min="0" value="0">
                         </div>
                         <div class="form-group">
-                            <label for="metricTarget">Target di Riferimento Assegnato (Unità)</label>
+                            <label for="metricTarget">Target (Units)</label>
                             <input type="number" id="metricTarget" min="0" value="0">
                         </div>
                     </div>
 
                     <div class="form-group" style="margin-bottom: 1.5rem;">
-                        <label>Foto di Campo Rilevate (Massimo 4 per Griglia Slide)</label>
+                        <label>Field Photos (Max 4 for Grid Slide)</label>
                         <div class="upload-zone" onclick="document.getElementById('inputPhotos').click()">
-                            <p>Clicca qui per caricare le immagini operative della visita</p>
+                            <p>Click here to upload visit photos</p>
                             <input type="file" id="inputPhotos" class="file-hidden" multiple accept="image/*">
                         </div>
                         <div id="visitPhotosPreviewGallery" class="gallery-preview"></div>
                     </div>
 
                     <div class="form-group" style="margin-bottom: 1.5rem;">
-                        <label>Screenshot Analitico Power BI Dedicato</label>
+                        <label>Analytical Power BI Screenshot</label>
                         <div class="upload-zone" onclick="document.getElementById('inputPowerBI').click()">
-                            <p>Carica lo screenshot delle metriche o dei grafici delle performance</p>
+                            <p>Upload performance dashboard screenshot</p>
                             <input type="file" id="inputPowerBI" class="file-hidden" accept="image/*">
                         </div>
                         <div id="powerBIPreviewGallery" class="gallery-preview"></div>
                     </div>
 
                     <div class="form-group" style="margin-bottom: 1.5rem;">
-                        <label for="visitNotes">Note Operative e Commenti di Campo</label>
-                        <textarea id="visitNotes" placeholder="Rilevazioni critiche, riscontri della formazione..."></textarea>
+                        <label for="visitNotes">Field Notes & Qualitative Comments</label>
+                        <textarea id="visitNotes" placeholder="Critical findings, training feedback..."></textarea>
                     </div>
 
                     <div class="btn-wrapper">
-                        <button type="button" class="action-btn btn-danger" onclick="clearForm()">Azzera Campi</button>
-                        <button type="submit" class="action-btn btn-submit">Salva Record Visita</button>
+                        <button type="button" class="action-btn btn-danger" onclick="clearForm()">Reset Form</button>
+                        <button type="submit" class="action-btn btn-submit">Save Visit Record</button>
                     </div>
                 </form>
             </div>
@@ -517,22 +294,21 @@
 
         <section id="archive-section" class="app-section">
             <div class="content-card">
-                <h2>Archivio Storico Dati Rilevati</h2>
+                <h2>Visit Data Archive</h2>
                 <div class="table-responsive">
                     <table id="archiveTable">
                         <thead>
                             <tr>
-                                <th>Insegna</th>
-                                <th>Località</th>
-                                <th>Data</th>
-                                <th>Settimana</th>
+                                <th>Chain</th>
+                                <th>Location</th>
+                                <th>Date</th>
+                                <th>Week</th>
                                 <th>Sell-Out</th>
                                 <th>Target</th>
-                                <th>Azioni</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="archiveTableBody">
-                            </tbody>
+                        <tbody id="archiveTableBody"></tbody>
                     </table>
                 </div>
             </div>
@@ -540,480 +316,250 @@
 
         <section id="report-section" class="app-section">
             <div class="content-card">
-                <h2>Esportazione ed Elaborazione Executive Report</h2>
+                <h2>Executive Report Generation</h2>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="reportScope">Periodicità del Report Strategico *</label>
+                        <label for="reportScope">Report Periodicity *</label>
                         <select id="reportScope" onchange="buildPeriodOptions(this.value)">
-                            <option value="">-- Seleziona Ambito --</option>
-                            <option value="weekly">Settimanale (Weekly Recap)</option>
-                            <option value="monthly">Mensile (Monthly Dashboard)</option>
-                            <option value="quarterly">Trimestrale (Quarterly Review)</option>
+                            <option value="">-- Select Scope --</option>
+                            <option value="weekly">Weekly Recap</option>
+                            <option value="monthly">Monthly Dashboard</option>
+                            <option value="quarterly">Quarterly Review</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="reportPeriodDetail">Seleziona Intervallo Periodo *</label>
+                        <label for="reportPeriodDetail">Select Interval *</label>
                         <select id="reportPeriodDetail">
-                            <option value="">-- Seleziona Prima la Periodicità --</option>
+                            <option value="">-- Select Scope First --</option>
                         </select>
                     </div>
                 </div>
-
                 <div class="btn-wrapper" style="justify-content: flex-start;">
-                    <button type="button" class="action-btn btn-export" onclick="processPPTXGeneration()">Compila e Genera File PPTX</button>
+                    <button type="button" class="action-btn btn-export" onclick="processPPTXGeneration()">Compile & Generate PPTX</button>
                 </div>
             </div>
         </section>
-
     </main>
 
     <script>
-        // Inizializzazione Database Locale e Variabili Globali di Stato
         let localIndexedDB;
-        const databaseConfig = { name: "ZTE_LFM_FieldManagement_DB", version: 1 };
+        const databaseConfig = { name: "ZTE_LFM_FieldManagement_DB_v81", version: 1 };
         let activeVisitPhotos = [];
         let activePowerBiPhoto = null;
 
-        // Bootstrap Applicativo all'avvio del Documento DOM
         document.addEventListener("DOMContentLoaded", () => {
             initIndexedDB();
             setupImageHandlers();
         });
 
-        // Configurazione ed Apertura IndexedDB
         function initIndexedDB() {
             const request = indexedDB.open(databaseConfig.name, databaseConfig.version);
-
-            request.onupgradeneeded = (event) => {
-                const db = event.target.result;
+            request.onupgradeneeded = (e) => {
+                const db = e.target.result;
                 if (!db.objectStoreNames.contains("fieldVisits")) {
                     db.createObjectStore("fieldVisits", { keyPath: "uid" });
                 }
             };
-
-            request.onsuccess = (event) => {
-                localIndexedDB = event.target.result;
+            request.onsuccess = (e) => {
+                localIndexedDB = e.target.result;
                 refreshDataEngine();
-            };
-
-            request.onerror = (event) => {
-                console.error("Errore irreversibile nell'apertura del Database Locale:", event.target.error);
             };
         }
 
-        // Sistema di Navigazione Tab Modulari
-        function switchModule(targetSectionId) {
-            document.querySelectorAll(".app-section").forEach(section => {
-                section.classList.remove("active");
-            });
-            document.querySelectorAll(".nav-tab").forEach(tab => {
-                tab.classList.remove("active");
-            });
-
-            document.getElementById(targetSectionId).classList.add("active");
+        function switchModule(targetId) {
+            document.querySelectorAll(".app-section").forEach(s => s.classList.remove("active"));
+            document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+            document.getElementById(targetId).classList.add("active");
             event.currentTarget.classList.add("active");
-            
-            if(targetSectionId === 'archive-section' || targetSectionId === 'dashboard-section') {
-                refreshDataEngine();
-            }
+            if(targetId === 'archive-section' || targetId === 'dashboard-section') refreshDataEngine();
         }
 
-        // Calcolo Automatico Numero Settimana ISO per scopi ZTE LFM
-        function calculateWeekNumber(dateInputValue) {
-            if (!dateInputValue) return;
-            const targetDate = new Date(dateInputValue);
-            targetDate.setHours(0, 0, 0, 0);
-            targetDate.setDate(targetDate.getDate() + 4 - (targetDate.getDay() || 7));
-            const startOfYear = new Date(targetDate.getFullYear(), 0, 1);
-            const weekNumber = Math.ceil((((targetDate - startOfYear) / 86400000) + 1) / 7);
-            document.getElementById("calculatedWeek").value = "W" + weekNumber;
+        function calculateWeekNumber(dateVal) {
+            if (!dateVal) return;
+            const d = new Date(dateVal);
+            d.setHours(0,0,0,0);
+            d.setDate(d.getDate() + 4 - (d.getDay() || 7));
+            const yearStart = new Date(d.getFullYear(), 0, 1);
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            document.getElementById("calculatedWeek").value = "W" + weekNo;
         }
 
-        // Ottimizzazione Immagini via Canvas Asincrono per evitare Memory Crash nel DB e PPTX
-        async function convertAndCompressFile(fileInstance, maxDimen = 900) {
+        async function convertAndCompressFile(file, maxDimen = 900) {
             return new Promise((resolve) => {
-                const fileReader = new FileReader();
-                fileReader.onload = (readEvent) => {
-                    const tempImg = new Image();
-                    tempImg.onload = () => {
+                const reader = new FileReader();
+                reader.onload = (re) => {
+                    const img = new Image();
+                    img.onload = () => {
                         const canvas = document.createElement("canvas");
-                        let currentWidth = tempImg.width;
-                        let currentHeight = tempImg.height;
-
-                        if (currentWidth > maxDimen || currentHeight > maxDimen) {
-                            if (currentWidth > currentHeight) {
-                                currentHeight = (currentHeight * maxDimen) / currentWidth;
-                                currentWidth = maxDimen;
-                            } else {
-                                currentWidth = (currentWidth * maxDimen) / currentHeight;
-                                currentHeight = maxDimen;
-                            }
+                        let w = img.width, h = img.height;
+                        if (w > maxDimen || h > maxDimen) {
+                            if (w > h) { h = (h * maxDimen) / w; w = maxDimen; }
+                            else { w = (w * maxDimen) / h; h = maxDimen; }
                         }
-
-                        canvas.width = currentWidth;
-                        canvas.height = currentHeight;
-                        const ctx = canvas.getContext("2d");
-                        ctx.drawImage(tempImg, 0, 0, currentWidth, currentHeight);
+                        canvas.width = w; canvas.height = h;
+                        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
                         resolve(canvas.toDataURL("image/jpeg", 0.75));
                     };
-                    tempImg.src = readEvent.target.result;
+                    img.src = re.target.result;
                 };
-                fileReader.readAsDataURL(fileInstance);
+                reader.readAsDataURL(file);
             });
         }
 
-        // Setup Listener Caricamento File Immagini
         function setupImageHandlers() {
-            // Handler per Foto Visita Multiple
             document.getElementById("inputPhotos").addEventListener("change", async function() {
-                const previewZone = document.getElementById("visitPhotosPreviewGallery");
-                for (let file of this.files) {
-                    if(activeVisitPhotos.length >= 4) {
-                        alert("Limite massimo per slide raggiunto (4 Foto)");
-                        break;
-                    }
-                    const base64Data = await convertAndCompressFile(file);
-                    activeVisitPhotos.push(base64Data);
-
-                    const imgIndex = activeVisitPhotos.length - 1;
-                    const container = document.createElement("div");
-                    container.className = "gallery-item";
-                    container.innerHTML = `
-                        <img src="${base64Data}">
-                        <button type="button" class="remove-btn" onclick="removeVisitPhoto(${imgIndex})">X</button>
-                    `;
-                    previewZone.appendChild(container);
+                const gallery = document.getElementById("visitPhotosPreviewGallery");
+                for (let f of this.files) {
+                    if(activeVisitPhotos.length >= 4) break;
+                    const b64 = await convertAndCompressFile(f);
+                    activeVisitPhotos.push(b64);
+                    rebuildVisitPhotosPreview();
                 }
             });
-
-            // Handler per Singolo Screenshot Power BI
             document.getElementById("inputPowerBI").addEventListener("change", async function() {
-                const previewZone = document.getElementById("powerBIPreviewGallery");
-                previewZone.innerHTML = "";
                 if(this.files.length > 0) {
-                    const base64Data = await convertAndCompressFile(this.files[0]);
-                    activePowerBiPhoto = base64Data;
-
-                    const container = document.createElement("div");
-                    container.className = "gallery-item";
-                    container.innerHTML = `
-                        <img src="${base64Data}">
-                        <button type="button" class="remove-btn" onclick="removePowerBIPhoto()">X</button>
-                    `;
-                    previewZone.appendChild(container);
+                    activePowerBiPhoto = await convertAndCompressFile(this.files[0]);
+                    const gallery = document.getElementById("powerBIPreviewGallery");
+                    gallery.innerHTML = `<div class="gallery-item"><img src="${activePowerBiPhoto}"><button type="button" class="remove-btn" onclick="removePowerBIPhoto()">X</button></div>`;
                 }
             });
         }
 
-        function removeVisitPhoto(index) {
-            activeVisitPhotos.splice(index, 1);
-            rebuildVisitPhotosPreview();
-        }
-
+        function removeVisitPhoto(idx) { activeVisitPhotos.splice(idx, 1); rebuildVisitPhotosPreview(); }
         function rebuildVisitPhotosPreview() {
-            const previewZone = document.getElementById("visitPhotosPreviewGallery");
-            previewZone.innerHTML = "";
-            activeVisitPhotos.forEach((base64Data, idx) => {
-                const container = document.createElement("div");
-                container.className = "gallery-item";
-                container.innerHTML = `
-                    <img src="${base64Data}">
-                    <button type="button" class="remove-btn" onclick="removeVisitPhoto(${idx})">X</button>
-                `;
-                previewZone.appendChild(container);
+            const gallery = document.getElementById("visitPhotosPreviewGallery");
+            gallery.innerHTML = "";
+            activeVisitPhotos.forEach((b64, i) => {
+                gallery.innerHTML += `<div class="gallery-item"><img src="${b64}"><button type="button" class="remove-btn" onclick="removeVisitPhoto(${i})">X</button></div>`;
             });
         }
+        function removePowerBIPhoto() { activePowerBiPhoto = null; document.getElementById("powerBIPreviewGallery").innerHTML = ""; }
 
-        function removePowerBIPhoto() {
-            activePowerBiPhoto = null;
-            document.getElementById("powerBIPreviewGallery").innerHTML = "";
-            document.getElementById("inputPowerBI").value = "";
-        }
-
-        // Raccolta e Salvataggio Dati nel Form (IndexedDB)
-        document.getElementById("lfmMasterForm").onsubmit = function(event) {
-            event.preventDefault();
-
-            if (!localIndexedDB) {
-                alert("Errore: Database locale non inizializzato correttamente.");
-                return;
-            }
-
-            // Mappatura Checkbox ad Array di Stringhe Riferite
-            const getCheckedValues = (checkboxName) => {
-                return Array.from(document.querySelectorAll(`input[name="${checkboxName}"]:checked`)).map(el => el.value);
-            };
-
-            const visitRecord = {
-                uid: "record_" + Date.now(),
+        document.getElementById("lfmMasterForm").onsubmit = function(e) {
+            e.preventDefault();
+            const getChecked = (n) => Array.from(document.querySelectorAll(`input[name="${n}"]:checked`)).map(el => el.value);
+            const record = {
+                uid: "rec_" + Date.now(),
                 storeChain: document.getElementById("storeChain").value,
                 storeLocation: document.getElementById("storeLocation").value,
                 visitDate: document.getElementById("visitDate").value,
                 operatingWeek: document.getElementById("calculatedWeek").value,
-                objectives: getCheckedValues("visitObjectives"),
-                contents: getCheckedValues("trainingContents"),
-                productFocus: getCheckedValues("productFocus"),
-                targetAudience: getCheckedValues("targetAudience"),
+                objectives: getChecked("visitObjectives"),
+                contents: getChecked("trainingContents"),
+                productFocus: getChecked("productFocus"),
+                targetAudience: getChecked("targetAudience"),
                 promotersFormed: parseInt(document.getElementById("countPromoters").value) || 0,
                 ambassadorsEngaged: parseInt(document.getElementById("countAmbassadors").value) || 0,
+                staffTrained: parseInt(document.getElementById("countStaff").value) || 0,
                 selloutUnits: parseInt(document.getElementById("metricSellout").value) || 0,
                 targetUnits: parseInt(document.getElementById("metricTarget").value) || 0,
                 photos: activeVisitPhotos,
                 powerBiScreen: activePowerBiPhoto,
                 notes: document.getElementById("visitNotes").value,
-                timestamp: new Date().getTime()
+                timestamp: Date.now()
             };
-
-            const transaction = localIndexedDB.transaction(["fieldVisits"], "readwrite");
-            const store = transaction.objectStore("fieldVisits");
-            const writeRequest = store.put(visitRecord);
-
-            writeRequest.onsuccess = () => {
-                alert("Report della visita memorizzato con successo in locale.");
-                clearForm();
-                switchModule("dashboard-section");
-            };
-
-            writeRequest.onerror = (e) => {
-                console.error("Errore durante la scrittura su DB:", e.target.error);
+            const tx = localIndexedDB.transaction(["fieldVisits"], "readwrite");
+            tx.objectStore("fieldVisits").put(record).onsuccess = () => {
+                alert("Report saved successfully."); clearForm(); switchModule("dashboard-section");
             };
         };
 
         function clearForm() {
             document.getElementById("lfmMasterForm").reset();
-            activeVisitPhotos = [];
-            activePowerBiPhoto = null;
-            document.getElementById("visitPhotosPreviewGallery").innerHTML = "";
-            document.getElementById("powerBIPreviewGallery").innerHTML = "";
+            activeVisitPhotos = []; activePowerBiPhoto = null;
+            document.querySelectorAll(".gallery-preview").forEach(g => g.innerHTML = "");
             document.getElementById("calculatedWeek").value = "";
-            document.getElementById("inputPhotos").value = "";
-            document.getElementById("inputPowerBI").value = "";
         }
 
-        // Motore Dati: Refresh e Aggiornamento dei moduli di Interfaccia Grafica
         function refreshDataEngine() {
             if (!localIndexedDB) return;
-
-            const transaction = localIndexedDB.transaction(["fieldVisits"], "readonly");
-            const store = transaction.objectStore("fieldVisits");
-            const getAllRequest = store.getAll();
-
-            getAllRequest.onsuccess = (event) => {
-                const records = event.target.result;
-                updateDashboardKPIs(records);
-                populateArchiveTable(records);
+            localIndexedDB.transaction(["fieldVisits"], "readonly").objectStore("fieldVisits").getAll().onsuccess = (e) => {
+                const recs = e.target.result;
+                updateDashboardKPIs(recs);
+                populateArchiveTable(recs);
             };
         }
 
-        function updateDashboardKPIs(records) {
-            document.getElementById("kpi-total-visits").innerText = records.length;
-            
-            let totalPromoters = 0;
-            let totalSellout = 0;
-            let totalTarget = 0;
-
-            records.forEach(rec => {
-                totalPromoters += (rec.promotersFormed || 0);
-                totalSellout += (rec.selloutUnits || 0);
-                totalTarget += (rec.targetUnits || 0);
-            });
-
-            document.getElementById("kpi-total-promoters").innerText = totalPromoters;
-            document.getElementById("kpi-total-sellout").innerText = totalSellout;
-
-            if (totalTarget > 0) {
-                const percentage = Math.round((totalSellout / totalTarget) * 100);
-                document.getElementById("kpi-target-progress").innerText = percentage + "%";
-            } else {
-                document.getElementById("kpi-target-progress").innerText = "0%";
-            }
+        function updateDashboardKPIs(recs) {
+            document.getElementById("kpi-total-visits").innerText = recs.length;
+            let p=0, a=0, s=0, so=0, t=0;
+            recs.forEach(r => { p+=r.promotersFormed; a+=r.ambassadorsEngaged; s+=r.staffTrained; so+=r.selloutUnits; t+=r.targetUnits; });
+            document.getElementById("kpi-total-promoters").innerText = p;
+            document.getElementById("kpi-total-ambassadors").innerText = a;
+            document.getElementById("kpi-total-staff").innerText = s;
+            document.getElementById("kpi-total-sellout").innerText = so;
+            document.getElementById("kpi-target-progress").innerText = t > 0 ? Math.round((so/t)*100)+"%" : "0%";
         }
 
-        function populateArchiveTable(records) {
-            const tableBody = document.getElementById("archiveTableBody");
-            tableBody.innerHTML = "";
-
-            if(records.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-light);">Nessun record presente in archivio locale.</td></tr>`;
-                return;
-            }
-
-            // Ordinamento decrescente cronologico
-            records.sort((a,b) => b.timestamp - a.timestamp);
-
-            records.forEach(rec => {
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td><strong>${rec.storeChain}</strong></td>
-                    <td>${rec.storeLocation}</td>
-                    <td>${rec.visitDate}</td>
-                    <td><span style="font-weight:bold; color:var(--accent-cyan);">${rec.operatingWeek}</span></td>
-                    <td>${rec.selloutUnits}</td>
-                    <td>${rec.targetUnits}</td>
-                    <td>
-                        <button class="action-btn btn-danger" style="padding: 0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteRecord('${rec.uid}')">Elimina</button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
+        function populateArchiveTable(recs) {
+            const body = document.getElementById("archiveTableBody");
+            body.innerHTML = "";
+            recs.sort((a,b) => b.timestamp - a.timestamp).forEach(r => {
+                body.innerHTML += `<tr><td><strong>${r.storeChain}</strong></td><td>${r.storeLocation}</td><td>${r.visitDate}</td><td>${r.operatingWeek}</td><td>${r.selloutUnits}</td><td>${r.targetUnits}</td><td><button class="action-btn btn-danger" style="padding:0.3rem" onclick="deleteRecord('${r.uid}')">Del</button></td></tr>`;
             });
         }
 
-        function deleteRecord(uid) {
-            if(confirm("Sicuro di voler rimuovere definitivamente questa visita dall'archivio locale?")) {
-                const transaction = localIndexedDB.transaction(["fieldVisits"], "readwrite");
-                const store = transaction.objectStore("fieldVisits");
-                store.delete(uid).onsuccess = () => {
-                    refreshDataEngine();
-                };
-            }
+        function deleteRecord(uid) { if(confirm("Delete this record?")) localIndexedDB.transaction(["fieldVisits"], "readwrite").objectStore("fieldVisits").delete(uid).onsuccess = () => refreshDataEngine(); }
+
+        function buildPeriodOptions(scope) {
+            const detail = document.getElementById("reportPeriodDetail");
+            detail.innerHTML = "";
+            if(scope === "weekly") for(let i=1; i<=52; i++) detail.innerHTML += `<option value="W${i}">Week ${i}</option>`;
+            else if(scope === "monthly") ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"].forEach((m, i) => detail.innerHTML += `<option value="${String(i+1).padStart(2,'0')}">${m}</option>`);
+            else if(scope === "quarterly") ["Q1","Q2","Q3","Q4"].forEach(q => detail.innerHTML += `<option value="${q}">${q}</option>`);
         }
 
-        // Costruttore delle opzioni dei selettori temporali del Report
-        function buildPeriodOptions(scopeValue) {
-            const periodSelect = document.getElementById("reportPeriodDetail");
-            periodSelect.innerHTML = "";
-
-            if (!scopeValue) {
-                periodSelect.innerHTML = '<option value="">-- Seleziona Prima la Periodicità --</option>';
-                return;
-            }
-
-            if (scopeValue === "weekly") {
-                for (let i = 1; i <= 52; i++) {
-                    const opt = document.createElement("option");
-                    opt.value = "W" + i;
-                    opt.innerText = "Settimana Operativa " + i;
-                    periodSelect.appendChild(opt);
-                }
-            } else if (scopeValue === "monthly") {
-                const months = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
-                months.forEach((m, idx) => {
-                    const opt = document.createElement("option");
-                    opt.value = String(idx + 1).padStart(2, '0');
-                    opt.innerText = m;
-                    periodSelect.appendChild(opt);
-                });
-            } else if (scopeValue === "quarterly") {
-                ["Q1", "Q2", "Q3", "Q4"].forEach(q => {
-                    const opt = document.createElement("option");
-                    opt.value = q;
-                    opt.innerText = "Trimestre " + q;
-                    periodSelect.appendChild(opt);
-                });
-            }
-        }
-
-        // GENERATORE AVANZATO PPTX MCKINSEY/ZTE CORPORATE STYLE
         async function processPPTXGeneration() {
             const scope = document.getElementById("reportScope").value;
-            const chosenPeriod = document.getElementById("reportPeriodDetail").value;
+            const period = document.getElementById("reportPeriodDetail").value;
+            if(!scope || !period) return alert("Select report parameters.");
 
-            if (!scope || !chosenPeriod) {
-                alert("Compilare tutti i selettori obbligatori del report.");
-                return;
-            }
-
-            // Lettura record da filtrare
-            const transaction = localIndexedDB.transaction(["fieldVisits"], "readonly");
-            const store = transaction.objectStore("fieldVisits");
-            const records = await new Promise(res => {
-                store.getAll().onsuccess = (e) => res(e.target.result);
-            });
-
-            // Logica di Filtraggio Avanzata del Periodo Operativo
-            const filteredRecords = records.filter(rec => {
-                if (!rec.visitDate) return false;
-                
-                if (scope === "weekly") {
-                    return rec.operatingWeek === chosenPeriod;
-                } else if (scope === "monthly") {
-                    const monthPart = rec.visitDate.split("-")[1]; // YYYY-MM-DD
-                    return monthPart === chosenPeriod;
-                } else if (scope === "quarterly") {
-                    const m = parseInt(rec.visitDate.split("-")[1]);
-                    if (chosenPeriod === "Q1") return (m >= 1 && m <= 3);
-                    if (chosenPeriod === "Q2") return (m >= 4 && m <= 6);
-                    if (chosenPeriod === "Q3") return (m >= 7 && m <= 9);
-                    if (chosenPeriod === "Q4") return (m >= 10 && m <= 12);
-                }
+            const recs = await new Promise(res => localIndexedDB.transaction(["fieldVisits"]).objectStore("fieldVisits").getAll().onsuccess = (e) => res(e.target.result));
+            const filtered = recs.filter(r => {
+                if(scope === "weekly") return r.operatingWeek === period;
+                const m = r.visitDate.split("-")[1];
+                if(scope === "monthly") return m === period;
+                if(period === "Q1") return m <= 3; if(period === "Q2") return m >= 4 && m <= 6;
+                if(period === "Q3") return m >= 7 && m <= 9; if(period === "Q4") return m >= 10;
                 return false;
             });
 
-            if (filteredRecords.length === 0) {
-                alert("Nessuna visita registrata corrispondente al periodo selezionato.");
-                return;
-            }
+            if(filtered.length === 0) return alert("No records found for this period.");
 
-            // Inizializzazione Istanza Presentazione PptxGenJS Layout Widescreen 16:9
-            const pptxInstance = new PptxGenJS();
-            pptxInstance.layout = "LAYOUT_16x9";
+            const pptx = new PptxGenJS();
+            pptx.layout = "LAYOUT_16x9";
 
-            // SLIDE 1: COPERTINA ISTITUZIONALE
-            const coverSlide = pptxInstance.addSlide();
-            // Sfondo scuro aziendale
-            coverSlide.addShape(pptxInstance.ShapeType.rect, { x: 0, y: 0, w: "100%", h: "100%", fill: { color: "0d1628" } });
-            coverSlide.addText("ZTE & nubia Field Management", { x: 1.0, y: 2.5, w: 11.0, h: 0.8, fontSize: 36, bold: true, color: "ffffff" });
-            coverSlide.addText("REPORT ATTIVITÀ DI FORMAZIONE SUL CAMPO", { x: 1.0, y: 3.4, w: 11.0, h: 0.5, fontSize: 18, color: "00a0d2", bold: true });
-            coverSlide.addText(`Ambito Report: ${scope.toUpperCase()} | Ambito Temporale Rilevazione: ${chosenPeriod} | Anno: 2026`, { x: 1.0, y: 4.2, w: 11.0, h: 0.4, fontSize: 12, color: "94a3b8" });
+            const cover = pptx.addSlide();
+            cover.addShape(pptx.ShapeType.rect, { x:0, y:0, w:"100%", h:"100%", fill:{ color:"0d1628" } });
+            cover.addText("ZTE & nubia Field Management", { x:1, y:2.5, fontSize:36, bold:true, color:"ffffff" });
+            cover.addText("FIELD TRAINING ACTIVITY REPORT", { x:1, y:3.4, fontSize:18, color:"00a0d2", bold:true });
+            cover.addText(`Scope: ${scope.toUpperCase()} | Period: ${period} | Year: 2026`, { x:1, y:4.2, fontSize:12, color:"94a3b8" });
 
-            // LOOP GENERATIVO VISITE SUL CAMPO DETTAGLIATE
-            filteredRecords.forEach((recordData) => {
-                const recordSlide = pptxInstance.addSlide();
+            filtered.forEach(r => {
+                const s = pptx.addSlide();
+                s.addShape(pptx.ShapeType.rect, { x:0, y:0, w:"100%", h:0.8, fill:{ color:"0d1628" } });
+                s.addText(`${r.storeChain.toUpperCase()} - ${r.storeLocation.toUpperCase()}`, { x:0.5, y:0.15, fontSize:18, bold:true, color:"ffffff" });
+                s.addText(`${r.operatingWeek} | ${r.visitDate}`, { x:8.5, y:0.22, fontSize:11, color:"00a0d2", align:"right", bold:true });
 
-                // Intestazione Superiore Slide di Campo
-                recordSlide.addShape(pptxInstance.ShapeType.rect, { x: 0, y: 0, w: "100%", h: 0.8, fill: { color: "0d1628" } });
-                recordSlide.addText(`${recordData.storeChain.toUpperCase()} - ${recordData.storeLocation.toUpperCase()}`, { x: 0.5, y: 0.15, w: 8.0, h: 0.5, fontSize: 18, bold: true, color: "ffffff" });
-                recordSlide.addText(`Settimana Operativa: ${recordData.operatingWeek} | Data: ${recordData.visitDate}`, { x: 8.5, y: 0.22, w: 4.3, h: 0.4, fontSize: 11, color: "00a0d2", align: "right", bold: true });
+                s.addShape(pptx.ShapeType.rect, { x:0.5, y:1.1, w:4.5, h:1.5, fill:{ color:"f1f5f9" }, line:{ color:"cbd5e1" } });
+                s.addText(`PROMOTERS TRAINED: ${r.promotersFormed}\nAMBASSADORS COACHED: ${r.ambassadorsEngaged}\nSTORE STAFF TRAINED: ${r.staffTrained}`, { x:0.7, y:1.2, fontSize:10, bold:true, color:"1e293b" });
+                s.addText(`SELL-OUT: ${r.selloutUnits} units / TARGET: ${r.targetUnits} units`, { x:0.7, y:2.1, fontSize:10, bold:true, color:"00a0d2" });
 
-                // COLONNA SINISTRA: METRICHE E BUSINESS LOGIC (KPI BLOCKS)
-                // Blocco Dati Numerici
-                recordSlide.addShape(pptxInstance.ShapeType.rect, { x: 0.5, y: 1.1, w: 4.5, h: 1.3, fill: { color: "f1f5f9" }, line: { color: "cbd5e1", width: 1 } });
-                recordSlide.addText(`PROMOTER FORMATI: ${recordData.promotersFormed}\nAMBASSADOR COINVOLTI: ${recordData.ambassadorsEngaged}`, { x: 0.7, y: 1.2, w: 4.1, h: 0.5, fontSize: 11, bold: true, color: "1e293b" });
-                recordSlide.addText(`SELL-OUT: ${recordData.selloutUnits} unità / TARGET: ${recordData.targetUnits} unità`, { x: 0.7, y: 1.8, w: 4.1, h: 0.4, fontSize: 11, bold: true, color: "00a0d2" });
+                let details = `OBJECTIVES:\n- ${r.objectives.join("\n- ")}\n\nCONTENTS:\n- ${r.contents.join("\n- ")}\n\nPRODUCT FOCUS:\n- ${r.productFocus.join("\n- ")}`;
+                s.addText(details, { x:0.5, y:2.8, w:4.5, h:2.8, fontSize:9, color:"334155" });
 
-                // Elenco Checkbox - Obiettivi e Contenuti (Sostituito etichetta focus con logica di business richiesta)
-                let textMetricsBlock = `OBIETTIVI VISITA:\n- ${recordData.objectives.join("\n- ") || "Nessuno"}\n\n`;
-                textMetricsBlock += `CONTENUTI TRATTATI:\n- ${recordData.contents.join("\n- ") || "Nessuno"}\n\n`;
-                textMetricsBlock += `FOCUS LINEUP PRODOTTO:\n- ${recordData.productFocus.join("\n- ") || "Nessuno"}`;
-
-                recordSlide.addText(textMetricsBlock, { x: 0.5, y: 2.6, w: 4.5, h: 2.8, fontSize: 9.5, color: "334155", fontFace: "Courier New" });
-
-                // Eventuali Note di Campo a Piè di Pagina
-                if (recordData.notes) {
-                    recordSlide.addShape(pptxInstance.ShapeType.rect, { x: 0.5, y: 5.6, w: 4.5, h: 1.5, fill: { color: "fafafa" }, line: { color: "cbd5e1", width: 1 } });
-                    recordSlide.addText(`NOTE DI CAMPO:\n${recordData.notes}`, { x: 0.6, y: 5.7, w: 4.3, h: 1.3, fontSize: 9, color: "475569" });
+                if(r.notes) {
+                    s.addShape(pptx.ShapeType.rect, { x:0.5, y:5.8, w:4.5, h:1.2, fill:{ color:"fafafa" }, line:{ color:"cbd5e1" } });
+                    s.addText(`FIELD NOTES:\n${r.notes}`, { x:0.6, y:5.9, fontSize:8.5, color:"475569" });
                 }
 
-                // COLONNA DESTRA: GRIGLIA FOTO OPERATIVE E RECAP POWER BI
-                // Unificazione in un array unico di asset per preservare il layout griglia fisso
-                let combinedAssets = [...(recordData.photos || [])];
-                if (recordData.powerBiScreen) {
-                    combinedAssets.push(recordData.powerBiScreen);
-                }
-
-                // Coordinate Matrice Griglia 2x2 fissa per le Immagini di Campo
-                const imageGridCoordinates = [
-                    { x: 5.4, y: 1.1, w: 3.4, h: 2.6 },
-                    { x: 9.0, y: 1.1, w: 3.4, h: 2.6 },
-                    { x: 5.4, y: 4.0, w: 3.4, h: 2.6 },
-                    { x: 9.0, y: 4.0, w: 3.4, h: 2.6 }
-                ];
-
-                combinedAssets.slice(0, 4).forEach((base64Image, elementIdx) => {
-                    const currentCoords = imageGridCoordinates[elementIdx];
-                    recordSlide.addImage({
-                        data: base64Image,
-                        x: currentCoords.x,
-                        y: currentCoords.y,
-                        w: currentCoords.w,
-                        h: currentCoords.h
-                    });
-                });
+                let pics = [...(r.photos || [])];
+                if(r.powerBiScreen) pics.push(r.powerBiScreen);
+                const coords = [ {x:5.4, y:1.1}, {x:9.0, y:1.1}, {x:5.4, y:4.0}, {x:9.0, y:4.0} ];
+                pics.slice(0, 4).forEach((p, i) => s.addImage({ data:p, x:coords[i].x, y:coords[i].y, w:3.4, h:2.6 }));
             });
 
-            // Output e Download Fisico della Presentazione Generata
-            const outputName = `ZTE_LFM_FieldReport_${scope}_${chosenPeriod}_2026.pptx`;
-            pptxInstance.writeFile({ fileName: outputName });
+            pptx.writeFile({ fileName: `ZTE_FieldReport_${period}.pptx` });
         }
     </script>
 </body>
