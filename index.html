@@ -71,11 +71,18 @@
     .visit-main { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
     .visit-info h4 { font-size: 1.15rem; color: #0d1628; font-weight: 700; }
     .visit-meta { font-size: 0.85rem; color: #64748b; font-weight: 600; margin-top: 2px; }
-    .visit-badges { display: flex; gap: 0.8rem; margin-top: 0.8rem; }
+    .visit-actions { display: flex; gap: 0.5rem; }
+    .btn-action { background: none; border: none; cursor: pointer; padding: 0.4rem; font-size: 1rem; transition: 0.2s; }
+    .btn-action.edit { color: #00a0d2; }
+    .btn-action.edit:hover { color: #0084ad; }
+    .btn-action.delete { color: #ef4444; }
+    .btn-action.delete:hover { color: #dc2626; }
+    
+    .visit-badges { display: flex; gap: 0.6rem; margin-top: 0.8rem; flex-wrap: wrap; }
     .badge { padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.75rem; font-weight: 700; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
     
     /* Dashboard */
-    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
     .stat-card { padding: 1.8rem; border-radius: 12px; color: #fff; position: relative; overflow: hidden; }
     .stat-card.blue { background: linear-gradient(135deg, #0d1628 0%, #1e293b 100%); }
     .stat-card.cyan { background: linear-gradient(135deg, #00a0d2 0%, #0084ad 100%); }
@@ -163,8 +170,12 @@
         </div>
 
         <div class="form-row">
-            <div class="form-col"><label>Staff Trained</label><input type="number" id="staffCount" value="0"></div>
-            <div class="form-col"><label>Ambassadors</label><input type="number" id="ambassadorsCount" value="0"></div>
+            <div class="form-col"><label>Staff Trained</label><input type="number" id="staffCount" value="0" min="0"></div>
+            <div class="form-col"><label>Promoter Trained</label><input type="number" id="promoterCount" value="0" min="0"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-col"><label>Ambassador Trained</label><input type="number" id="ambassadorCount" value="0" min="0"></div>
+            <div class="form-col"></div>
         </div>
 
         <div class="form-col full-width" style="margin-bottom:2rem;">
@@ -263,7 +274,7 @@
 <script>
 // --- DB CONFIGURATION (RECONNECT TO ORIGINAL V3) ---
 const CONFIG = { dbName: 'ZTEReportDBv3', dbVersion: 1 };
-let db, visits = [], manualDash = [], manualHigh = [];
+let db, visits = [];
 
 // --- APP INIT ---
 async function init() {
@@ -326,19 +337,24 @@ function renderDashboard() {
     const sell = visits.reduce((a,b)=>a+(parseInt(b.sellout)||0), 0);
     const target = visits.reduce((a,b)=>a+(parseInt(b.target)||0), 0);
     const perc = target > 0 ? (sell/target*100).toFixed(1) : 0;
-    const staff = visits.reduce((a,b)=>a+(parseInt(b.staffCount)||0)+(parseInt(b.ambassadorsCount)||0), 0);
+    
+    // Summing all three categories for total audience headcount
+    const staff = visits.reduce((a,b)=>a+(parseInt(b.staffCount)||0), 0);
+    const promoter = visits.reduce((a,b)=>a+(parseInt(b.promoterCount)||0), 0);
+    const ambassador = visits.reduce((a,b)=>a+(parseInt(b.ambassadorCount)||parseInt(b.ambassadorsCount)||0), 0);
+    const totalTrained = staff + promoter + ambassador;
 
     container.innerHTML = `
         <div class="dashboard-grid">
             <div class="stat-card blue"><div class="stat-lab">Total Sessions</div><div class="stat-val">${visits.length}</div></div>
             <div class="stat-card cyan"><div class="stat-lab">Total Sell-out</div><div class="stat-val">${sell}</div></div>
             <div class="stat-card success" style="background:#22c55e;"><div class="stat-lab">Achievement</div><div class="stat-val">${perc}%</div></div>
-            <div class="stat-card orange"><div class="stat-lab">Staff Trained</div><div class="stat-val">${staff}</div></div>
+            <div class="stat-card orange"><div class="stat-lab">Total Trained</div><div class="stat-val">${totalTrained}</div></div>
         </div>
     `;
 }
 
-// --- ARCHIVE GROUPING (CRITICAL UX FIX) ---
+// --- ARCHIVE GROUPING ---
 function renderArchive() {
   const list = document.getElementById('archiveList');
   if(visits.length === 0) { list.innerHTML = "<p>Archive is empty.</p>"; return; }
@@ -355,6 +371,10 @@ function renderArchive() {
   for(const week in grouped) {
     html += `<div class="week-group"><div class="week-header"><span>${week}</span><span>${grouped[week].length} Sessions</span></div>`;
     grouped[week].forEach(v => {
+      let vAmb = parseInt(v.ambassadorCount) || parseInt(v.ambassadorsCount) || 0;
+      let vProm = parseInt(v.promoterCount) || 0;
+      let vStaff = parseInt(v.staffCount) || 0;
+      
       html += `
         <div class="visit-card">
           <div class="visit-main">
@@ -368,9 +388,10 @@ function renderArchive() {
             </div>
           </div>
           <div class="visit-badges">
-            <span class="badge">SELL-OUT: ${v.sellout}</span>
-            <span class="badge">TARGET: ${v.target}</span>
-            <span class="badge">TRAINED: ${(parseInt(v.staffCount)||0)+(parseInt(v.ambassadorsCount)||0)}</span>
+            <span class="badge" style="border-color:#00a0d2; color:#00a0d2;">SELL-OUT: ${v.sellout} / ${v.target}</span>
+            <span class="badge">STAFF: ${vStaff}</span>
+            <span class="badge">PROMOTER: ${vProm}</span>
+            <span class="badge">AMBASSADOR: ${vAmb}</span>
           </div>
         </div>`;
     });
@@ -409,7 +430,8 @@ document.getElementById('visitForm').onsubmit = async (e) => {
         sellout: document.getElementById('sellout').value,
         target: document.getElementById('target').value,
         staffCount: document.getElementById('staffCount').value,
-        ambassadorsCount: document.getElementById('ambassadorsCount').value,
+        promoterCount: document.getElementById('promoterCount').value,
+        ambassadorCount: document.getElementById('ambassadorCount').value,
         objectives: Array.from(document.querySelectorAll('input[name="objective"]:checked')).map(i => i.value),
         contents: Array.from(document.querySelectorAll('input[name="contents"]:checked')).map(i => i.value),
         photos: Array.from(document.querySelectorAll('#photosPreview img')).map(i => i.src),
@@ -421,7 +443,7 @@ document.getElementById('visitForm').onsubmit = async (e) => {
     tx.objectStore('visits').put(visit);
     alert("Training session saved successfully!");
     
-    // Reset
+    // Reset Form
     document.getElementById('visitForm').reset();
     document.querySelectorAll('.photos-preview').forEach(p => p.innerHTML = "");
     delete saveBtn.dataset.editId;
@@ -437,15 +459,21 @@ async function editVisit(id) {
     document.getElementById('storeName').value = v.storeName;
     document.getElementById('storeLocation').value = v.storeLocation;
     document.getElementById('visitDate').value = v.visitDate;
-    document.getElementById('sellout').value = v.sellout;
-    document.getElementById('target').value = v.target;
-    document.getElementById('staffCount').value = v.staffCount;
-    document.getElementById('ambassadorsCount').value = v.ambassadorsCount;
-    document.getElementById('notes').value = v.notes;
+    document.getElementById('deliveryMode').value = v.deliveryMode || 'In Person';
+    document.getElementById('sellout').value = v.sellout || 0;
+    document.getElementById('target').value = v.target || 0;
     
+    document.getElementById('staffCount').value = v.staffCount || 0;
+    document.getElementById('promoterCount').value = v.promoterCount || 0;
+    document.getElementById('ambassadorCount').value = v.ambassadorCount || v.ambassadorsCount || 0;
+    
+    document.getElementById('notes').value = v.notes || "";
+    
+    document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
     v.objectives?.forEach(o => { const el = document.querySelector(`input[value="${o}"]`); if(el) el.checked = true; });
     v.contents?.forEach(c => { const el = document.querySelector(`input[value="${c}"]`); if(el) el.checked = true; });
     
+    document.getElementById('photosPreview').innerHTML = "";
     v.photos?.forEach(p => {
         const div = document.createElement('div');
         div.className = 'photo-item';
@@ -464,21 +492,21 @@ async function editVisit(id) {
 }
 
 async function deleteVisit(id) {
-    if(!confirm("Are you sure?")) return;
+    if(!confirm("Are you sure you want to delete this session?")) return;
     const tx = db.transaction('visits', 'readwrite');
     tx.objectStore('visits').delete(id);
     await loadData();
     renderArchive();
 }
 
-// --- PPTX GENERATOR (STABLE & PROPORTIONAL) ---
+// --- PPTX GENERATOR (STABLE, MCKINSEY-ALIGNED & THREE NOMENCLATURES) ---
 async function generatePPTX() {
   const type = document.getElementById('reportType').value;
   const period = document.getElementById('reportPeriod').value || "Current Period";
   if(visits.length === 0) { alert("No data to export."); return; }
 
   const pres = new PptxGenJS();
-  pres.layout = 'LAYOUT_16x9'; // 13.33 x 7.5 inches
+  pres.layout = 'LAYOUT_16x9';
 
   const BRAND = { dark: '0D1628', cyan: '00A0D2', white: 'FFFFFF', gray: '64748B' };
 
@@ -488,17 +516,19 @@ async function generatePPTX() {
   s1.addText(`${period.toUpperCase()} | ZTE PROFESSIONAL SUITE`, { x: 0.8, y: 3.4, w: 12, fontSize: 18, color: BRAND.white });
 
   // Aggregations
-  let totS = 0, totT = 0, totP = 0;
-  let objMap = {};
+  let totS = 0, totT = 0;
+  let totStaff = 0, totPromoter = 0, totAmbassador = 0;
+  
   visits.forEach(v => {
       totS += (parseInt(v.sellout)||0);
       totT += (parseInt(v.target)||0);
-      totP += (parseInt(v.staffCount)||0) + (parseInt(v.ambassadorsCount)||0);
-      (v.objectives||[]).forEach(o => objMap[o] = (objMap[o]||0)+1);
+      totStaff += (parseInt(v.staffCount)||0);
+      totPromoter += (parseInt(v.promoterCount)||0);
+      totAmbassador += (parseInt(v.ambassadorCount)||parseInt(v.ambassadorsCount)||0);
   });
   const ach = totT > 0 ? (totS/totT*100).toFixed(1)+'%' : '0%';
 
-  // Slide 2: Global Metrics (Fixed McKinsey Width)
+  // Slide 2: Global Metrics (McKinsey Style Split Columns)
   let s2 = pres.addSlide();
   s2.addText("EXECUTIVE RECAP - GLOBAL METRICS", { x: 0.5, y: 0.4, fontSize: 24, bold: true, color: BRAND.dark });
   s2.addShape(pres.ShapeType.line, { x: 0.5, y: 0.9, w: 12.3, line: { color: BRAND.cyan, width: 2 } });
@@ -506,38 +536,50 @@ async function generatePPTX() {
   s2.addTable([
     [{text: "KPI METRIC", options: {fill: BRAND.dark, color: BRAND.white, bold:true}}, {text: "VALUE", options: {fill: BRAND.dark, color: BRAND.white, align:'center'}}],
     ["Total Validated Visits", visits.length.toString()],
-    ["Overall Headcount Trained", totP.toString()],
+    ["Total Staff Trained", totStaff.toString()],
+    ["Total Promoters Trained", totPromoter.toString()],
+    ["Total Ambassadors Trained", totAmbassador.toString()],
     ["Total Sell-out Volume", `${totS} units`],
     ["Assigned Target Volume", `${totT} units`],
     ["Average Achievement Rate", ach]
-  ], { x: 0.5, y: 1.5, w: 5.5, colW: [3.8, 1.7], fontSize: 12, border: {pt:0.5, color: BRAND.gray}, margin: 8 });
+  ], { x: 0.5, y: 1.5, w: 5.5, colW: [3.8, 1.7], fontSize: 11, border: {pt:0.5, color: BRAND.gray}, margin: 6 });
 
-  if(totP > 0) {
-    s2.addChart(pres.ChartType.doughnut, [{ name: 'People', labels: ['Staff', 'Amb.'], values: [1, 1] }], { x: 7, y: 1.5, w: 4.5, h: 3.5, showLegend: true });
-  }
+  // Doughnut chart summarizing audience proportions
+  s2.addChart(pres.ChartType.doughnut, [
+    { 
+      name: 'Audience Breakdown', 
+      labels: ['Staff', 'Promoter', 'Ambassador'], 
+      values: [totStaff || 1, totPromoter || 0, totAmbassador || 0] 
+    }
+  ], { x: 6.8, y: 1.5, w: 5.5, h: 4.5, showLegend: true, legendPos: 'b' });
 
-  // Detailed Slides (Weekly)
+  // Detailed Slides (Weekly breakdown)
   if(type === 'weekly') {
       visits.forEach(v => {
           let s = pres.addSlide();
           s.addText(`${v.storeName.toUpperCase()} - ${v.storeLocation.toUpperCase()}`, { x: 0.5, y: 0.4, fontSize: 24, bold: true, color: BRAND.dark });
           
           let vAch = (parseInt(v.target)||0) > 0 ? (parseInt(v.sellout)/parseInt(v.target)*100).toFixed(1)+'%' : '0%';
+          let vAmb = parseInt(v.ambassadorCount) || parseInt(v.ambassadorsCount) || 0;
+          let vProm = parseInt(v.promoterCount) || 0;
+          let vStaff = parseInt(v.staffCount) || 0;
           
           s.addTable([
               [{text: "OPERATIONAL KPI", options: {fill: BRAND.dark, color: BRAND.white, bold:true}}, "VALUE"],
               ["Sell-out Volume", `${v.sellout} units`],
               ["Target Volume", `${v.target} units`],
-              ["Achievement", vAch],
-              ["Headcount Trained", (parseInt(v.staffCount)||0 + parseInt(v.ambassadorsCount)||0).toString()]
-          ], { x: 0.5, y: 1.5, w: 4.5, colW: [3, 1.5], fontSize: 11, border: {pt:0.5}, margin: 8 });
+              ["Achievement Rate", vAch],
+              ["Staff Trained", vStaff.toString()],
+              ["Promoter Trained", vProm.toString()],
+              ["Ambassador Trained", vAmb.toString()]
+          ], { x: 0.5, y: 1.5, w: 4.5, colW: [3, 1.5], fontSize: 10, border: {pt:0.5}, margin: 6 });
 
           if(v.notes) {
               s.addText("FIELD OBSERVER NOTES:", { x: 0.5, y: 4.8, fontSize: 10, bold: true, color: '#f39c12' });
               s.addText(v.notes, { x: 0.5, y: 5.1, w: 4.5, h: 1.5, fontSize: 9, fill: 'f8fafc', margin: 8 });
           }
 
-          // Visuals (Aspect Ratio Contain Fix)
+          // Image Handling Box with Proportion Control (Contain Fix)
           if(v.powerBi) {
               const b64 = v.powerBi.split(',')[1];
               s.addImage({ data: "base64," + b64, x: 5.5, y: 1.5, w: 7.3, h: 5.1, sizing: { type: 'contain', w: 7.3, h: 5.1 } });
