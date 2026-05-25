@@ -71,12 +71,9 @@
     .selector-group label { font-weight: 600; margin-bottom: 0.5rem; color: #0d1628; }
     .selector-group select { padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; }
     .report-actions { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
-    
-    /* Executive Visuals Styling */
     .executive-visuals-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; display: none; }
     .executive-visuals-box h3 { font-size: 1.2rem; color: #0d1628; margin-bottom: 1rem; font-weight: 600; border-bottom: 2px solid #00a0d2; padding-bottom: 0.3rem; }
     .exec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    @media (max-width: 768px) { .container { padding: 1rem; } .form-row { grid-template-columns: 1fr; gap: 1.5rem; } .header { flex-direction: column; } .header h1 { width: 100%; text-align: center; } .exec-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -294,18 +291,18 @@
       </div>
 
       <div class="executive-visuals-box" id="execVisualsContainer">
-        <h3>Executive Report Visuals (Optional - Monthly / Quarterly Only)</h3>
-        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1rem;">Upload global Power BI dashboards and top highlights images below. These slides will be appended to the report.</p>
+        <h3>Executive Highlights (Optional)</h3>
+        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1rem;">Upload screenshots for the monthly/quarterly recap.</p>
         <div class="exec-grid">
           <div class="form-col">
-            <label>Global Power BI Screenshots (Max 2)</label>
-            <input type="file" id="execPowerBiFiles" multiple accept="image/*" style="padding: 0.5rem; border: 1px dashed #64748b; border-radius: 6px;">
-            <div id="execPowerBiPreview" class="photos-preview" style="margin-top:0.5rem;"></div>
+            <label>Global Dashboards (Max 2)</label>
+            <input type="file" id="execPowerBiFiles" multiple accept="image/*">
+            <div id="execPowerBiPreview" class="photos-preview"></div>
           </div>
           <div class="form-col">
-            <label>Top Highlights Photos (Max 8)</label>
-            <input type="file" id="execHighlightsFiles" multiple accept="image/*" style="padding: 0.5rem; border: 1px dashed #64748b; border-radius: 6px;">
-            <div id="execHighlightsPreview" class="photos-preview" style="margin-top:0.5rem;"></div>
+            <label>Highlights Photos (Max 8)</label>
+            <input type="file" id="execHighlightsFiles" multiple accept="image/*">
+            <div id="execHighlightsPreview" class="photos-preview"></div>
           </div>
         </div>
       </div>
@@ -321,8 +318,6 @@
 <script>
 const CONFIG = { dbName: 'ZTEReportDBv3', dbVersion: 1 };
 let db = null, isOnline = navigator.onLine, visits = [];
-
-// Temporarily store manual report images
 let execPowerBiImages = [];
 let execHighlightsImages = [];
 
@@ -389,7 +384,7 @@ function compressImage(file, maxWidth = 800) {
         canvas.width = width; canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
-        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.3);
+        canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.6);
       };
       img.src = e.target.result;
     };
@@ -433,11 +428,10 @@ document.getElementById('powerBiPhoto').addEventListener('change', async functio
   this.value = '';
 });
 
-// Listener for Executive Report manual uploads
 document.getElementById('execPowerBiFiles').addEventListener('change', async function() {
   const preview = document.getElementById('execPowerBiPreview');
   for(let file of this.files) {
-    if(execPowerBiImages.length >= 2) { alert("Max 2 dashboards allowed"); break; }
+    if(execPowerBiImages.length >= 2) break;
     const compBlob = await compressImage(file, 1000);
     const b64 = await blobToBase64(compBlob);
     execPowerBiImages.push(b64);
@@ -445,8 +439,7 @@ document.getElementById('execPowerBiFiles').addEventListener('change', async fun
     div.className = 'photo-item';
     div.innerHTML = `<img src="${b64}"><button type="button" class="delete-btn">×</button>`;
     div.querySelector('.delete-btn').onclick = function() {
-      let idx = execPowerBiImages.indexOf(b64);
-      if(idx > -1) execPowerBiImages.splice(idx, 1);
+      execPowerBiImages = execPowerBiImages.filter(i => i !== b64);
       div.remove();
     };
     preview.appendChild(div);
@@ -457,7 +450,7 @@ document.getElementById('execPowerBiFiles').addEventListener('change', async fun
 document.getElementById('execHighlightsFiles').addEventListener('change', async function() {
   const preview = document.getElementById('execHighlightsPreview');
   for(let file of this.files) {
-    if(execHighlightsImages.length >= 8) { alert("Max 8 photos allowed"); break; }
+    if(execHighlightsImages.length >= 8) break;
     const compBlob = await compressImage(file, 800);
     const b64 = await blobToBase64(compBlob);
     execHighlightsImages.push(b64);
@@ -465,8 +458,7 @@ document.getElementById('execHighlightsFiles').addEventListener('change', async 
     div.className = 'photo-item';
     div.innerHTML = `<img src="${b64}"><button type="button" class="delete-btn">×</button>`;
     div.querySelector('.delete-btn').onclick = function() {
-      let idx = execHighlightsImages.indexOf(b64);
-      if(idx > -1) execHighlightsImages.splice(idx, 1);
+      execHighlightsImages = execHighlightsImages.filter(i => i !== b64);
       div.remove();
     };
     preview.appendChild(div);
@@ -694,7 +686,7 @@ async function initApp() {
   renderDashboard();
 }
 
-// --- GENERATORE DI REPORT PPTX OTTIMIZZATO ---
+// --- GENERATORE DI REPORT PPTX McKinsey STYLE ---
 async function generatePPTX() {
   const reportType = document.getElementById('reportType').value;
   const reportPeriod = document.getElementById('reportPeriod').value;
@@ -715,20 +707,22 @@ async function generatePPTX() {
 
   try {
     const pres = new PptxGenJS();
-    pres.layout = 'LAYOUT_16x9';
+    pres.layout = 'LAYOUT_16x9'; // 13.33 x 7.5 inches
     
-    const COLORS = { darkBg: '0D1628', accentCyan: '00A0D2', orange: 'F39C12', white: 'FFFFFF', gridBorder: '334155' };
-    let periodName = reportType === 'weekly' ? `Week ${reportPeriod}` : reportType === 'monthly' ? `Month ${reportPeriod}` : `Q${reportPeriod}`;
+    const COLORS = { darkBg: '0D1628', accentCyan: '00A0D2', orange: 'F39C12', white: 'FFFFFF', gridBorder: '334155', textGray: '475569' };
+    let periodName = reportType === 'weekly' ? `WEEK ${reportPeriod}` : reportType === 'monthly' ? `MONTH ${reportPeriod}` : `Q${reportPeriod}`;
 
     const cleanLabel = (str) => {
       if(!str) return "";
-      let s = str.replace("Focus on flagship", "Top Focus").replace("Display & Visual Merchandising Check", "Display Check");
-      return s.length > 20 ? s.substring(0, 18) + "..." : s;
+      return str.replace("Focus on flagship", "Top Focus").replace("Display & Visual Merchandising Check", "Display Check");
     };
 
-    const cleanB64 = (str) => str.includes("base64,") ? str.split("base64,")[1].trim() : str.trim();
+    const cleanB64 = (str) => {
+      if(!str) return null;
+      return str.includes("base64,") ? str.split("base64,")[1].trim() : str.trim();
+    };
 
-    // --- AGGREGAZIONI ---
+    // Aggregazioni
     let totalSellout = 0, totalTarget = 0, totalStaff = 0, totalAmbassador = 0, totalPromoters = 0;
     let chainAggregates = {};
     let objCounts = {}, contentCounts = {}, productCounts = {};
@@ -755,108 +749,115 @@ async function generatePPTX() {
     let totalHeadcount = totalStaff + totalAmbassador + totalPromoters;
     let avgAchievement = totalTarget > 0 ? ((totalSellout / totalTarget) * 100).toFixed(1) + '%' : '0%';
 
-    // --- SLIDE 1: COPERTINA ---
+    // Slide 1: Cover
     let s1 = pres.addSlide(); s1.background = { color: COLORS.darkBg };
-    s1.addText("TRAINING REPORT", { x: 1.0, y: 2.2, w: 11.3, fontSize: 52, bold: true, color: COLORS.accentCyan, fontFace: 'Montserrat' });
-    s1.addText(`${periodName.toUpperCase()} ${reportYear}`, { x: 1.0, y: 3.3, w: 11.3, fontSize: 18, color: COLORS.white });
+    s1.addText("TRAINING ANALYTICS REPORT", { x: 0.8, y: 2.5, w: 11, fontSize: 44, bold: true, color: COLORS.accentCyan, fontFace: 'Montserrat' });
+    s1.addText(`${periodName} ${reportYear} | FIELD OPERATIONS`, { x: 0.8, y: 3.4, w: 11, fontSize: 18, color: COLORS.white, fontFace: 'Montserrat' });
 
-    // --- SLIDE 2: QUANTITATIVE ---
-    let s2 = pres.addSlide(); s2.background = { color: COLORS.darkBg };
-    s2.addText("EXECUTIVE RECAP - GLOBAL METRICS", { x: 0.6, y: 0.4, w: 12.0, fontSize: 28, bold: true, color: COLORS.accentCyan });
+    // Slide 2: Global Metrics
+    let s2 = pres.addSlide(); s2.background = { color: COLORS.white };
+    s2.addText("EXECUTIVE RECAP - GLOBAL METRICS", { x: 0.5, y: 0.4, w: 12, fontSize: 24, bold: true, color: COLORS.darkBg });
+    s2.addShape(pres.ShapeType.line, { x: 0.5, y: 0.9, w: 12.3, line: { color: COLORS.accentCyan, width: 2 } });
+
     s2.addTable([
-      [{ text: "GLOBAL METRICS", options: { bold: true, fill: COLORS.accentCyan, color: COLORS.white } }, { text: "VALUE", options: { bold: true, fill: COLORS.accentCyan, color: COLORS.white, align:'center' } }],
+      [{ text: "METRIC", options: { fill: COLORS.darkBg, color: COLORS.white, bold: true } }, { text: "VALUE", options: { fill: COLORS.darkBg, color: COLORS.white, bold: true, align:'center' } }],
       ["Total Visits", filteredVisits.length.toString()],
       ["People Trained", totalHeadcount.toString()],
       ["Sell-out Volume", `${totalSellout} units`],
       ["Target Volume", `${totalTarget} units`],
       ["Achievement Rate", avgAchievement]
-    ], { x: 0.6, y: 1.7, w: 6.0, fontSize: 12, color: COLORS.white, border: { pt: 1, color: COLORS.gridBorder }, margin: 10 });
+    ], { x: 0.5, y: 1.5, w: 5.5, fontSize: 12, color: COLORS.darkBg, border: { pt: 0.5, color: COLORS.textGray }, margin: 8 });
 
     if (totalHeadcount > 0) {
       s2.addChart(pres.ChartType.doughnut, [
-        { name: 'People', labels: ['Staff', 'Ambassadors', 'Promoters'], values: [totalStaff, totalAmbassador, totalPromoters] }
-      ], { x: 7.2, y: 2.0, w: 4.5, h: 3.2, showLegend: true, legendColor: COLORS.white, chartColors: ['00A0D2', 'F39C12', '27AE60'] });
+        { name: 'Trainees', labels: ['Staff', 'Amb.', 'Prom.'], values: [totalStaff, totalAmbassador, totalPromoters] }
+      ], { x: 7, y: 1.8, w: 4.5, h: 3.5, showLegend: true, legendPos: 'r', chartColors: ['00A0D2', 'F39C12', '27AE60'] });
     }
 
-    // --- SLIDE 3: OPERATIONAL STRATEGY ---
-    let s3 = pres.addSlide(); s3.background = { color: COLORS.darkBg };
-    s3.addText("EXECUTIVE RECAP - OPERATIONAL STRATEGY", { x: 0.6, y: 0.4, w: 12.0, fontSize: 26, bold: true, color: COLORS.accentCyan });
+    // Slide 3: Operational Strategy
+    let s3 = pres.addSlide(); s3.background = { color: COLORS.white };
+    s3.addText("EXECUTIVE RECAP - OPERATIONAL STRATEGY", { x: 0.5, y: 0.4, w: 12, fontSize: 24, bold: true, color: COLORS.darkBg });
+    s3.addShape(pres.ShapeType.line, { x: 0.5, y: 0.9, w: 12.3, line: { color: COLORS.orange, width: 2 } });
     
-    const buildColTable = (title, dataMap, x, color) => {
-      let rows = [[{ text: title.toUpperCase(), options: { fill: color, color: COLORS.white, bold: true, align: 'center' } }]];
+    const buildColumn = (title, dataMap, x, headerColor) => {
+      let rows = [[{ text: title.toUpperCase(), options: { fill: headerColor, color: COLORS.white, bold: true, align: 'center' } }]];
       Object.keys(dataMap).forEach(k => rows.push([`${k} (${dataMap[k]})`]));
-      s3.addTable(rows, { x: x, y: 1.6, w: 3.8, fontSize: 10, color: COLORS.white, border: { pt: 0.5, color: COLORS.gridBorder }, margin: 8 });
+      s3.addTable(rows, { x: x, y: 1.6, w: 3.9, fontSize: 10, border: { pt: 0.5, color: COLORS.textGray }, margin: 8 });
     };
-    buildColTable("Strategic Objectives", objCounts, 0.6, COLORS.accentCyan);
-    buildColTable("Content Pillars", contentCounts, 4.7, COLORS.orange);
-    buildColTable("Product Focus", productCounts, 8.8, '27AE60');
+    buildColumn("Strategic Objectives", objCounts, 0.5, COLORS.accentCyan);
+    buildColumn("Content Pillars", contentCounts, 4.7, COLORS.orange);
+    buildColumn("Product Categories", productCounts, 8.9, '27AE60');
 
-    // --- EXECUTIVE SPECIFIC ---
-    if (reportType === 'monthly' || reportType === 'quarterly') {
-      let s4 = pres.addSlide(); s4.background = { color: COLORS.darkBg };
-      s4.addText("CHAIN PERFORMANCE INDEX", { x: 0.6, y: 0.4, w: 12.0, fontSize: 26, bold: true, color: COLORS.accentCyan });
-      let rows = [[{ text: "RETAIL CHAIN", options: { fill: COLORS.accentCyan, bold: true, color: COLORS.white } }, "VISITS", "SELL-OUT", "TARGET", "ACHIEV %", "TRAINED"]];
+    // Slide 4: Chain Index
+    if (reportType !== 'weekly') {
+      let s4 = pres.addSlide(); s4.background = { color: COLORS.white };
+      s4.addText("CHAIN PERFORMANCE INDEX", { x: 0.5, y: 0.4, w: 12, fontSize: 24, bold: true, color: COLORS.darkBg });
+      let rows = [[{ text: "CHAIN", options: { fill: COLORS.darkBg, bold: true, color: COLORS.white } }, "VISITS", "SELL-OUT", "TARGET", "ACHIEV %", "TRAINED"]];
       Object.keys(chainAggregates).forEach(k => {
         let d = chainAggregates[k];
         let ach = d.target > 0 ? ((d.sellout / d.target) * 100).toFixed(1) + '%' : '0%';
-        rows.push([k, d.visits.toString(), `${d.sellout} units`, `${d.target} units`, ach, d.staff.toString()]);
+        rows.push([k, d.visits.toString(), `${d.sellout} u.`, `${d.target} u.`, ach, d.staff.toString()]);
       });
-      s4.addTable(rows, { x: 0.6, y: 1.7, w: 12.1, fontSize: 11, color: COLORS.white, border: { pt: 0.5, color: COLORS.gridBorder }, margin: 8 });
+      s4.addTable(rows, { x: 0.5, y: 1.5, w: 12.3, fontSize: 11, border: { pt: 0.5, color: COLORS.textGray }, margin: 8 });
 
-      // Screenshots Power BI
+      // Manual Uploads
       execPowerBiImages.forEach((img, i) => {
         let b = cleanB64(img);
         if (b) {
-          let s = pres.addSlide(); s.background = { color: COLORS.darkBg };
-          s.addText(`GLOBAL DASHBOARD ${i+1}`, { x: 0.6, y: 0.4, color: COLORS.accentCyan, fontSize: 24, bold:true });
-          s.addImage({ data: "base64," + b, x: 0.6, y: 1.3, w: 12.1, h: 5.3, sizing: { type: 'contain' } });
+          let s = pres.addSlide(); s.addText(`GLOBAL DASHBOARD ${i+1}`, { x: 0.5, y: 0.3, color: COLORS.accentCyan, fontSize: 20, bold:true });
+          s.addImage({ data: "base64," + b, x: 0.5, y: 1, w: 12.3, h: 5.5, sizing: { type: 'contain', w: 12.3, h: 5.5 } });
         }
       });
 
-      // Gallery Highlights
       if (execHighlightsImages.length > 0) {
-        let grid = [{x:0.6,y:1.4,w:5.7,h:2.4},{x:6.9,y:1.4,w:5.7,h:2.4},{x:0.6,y:4.2,w:5.7,h:2.4},{x:6.9,y:4.2,w:5.7,h:2.4}];
+        let grid = [
+          {x:0.5,y:1.2,w:3.5,h:2.6}, {x:4.9,y:1.2,w:3.5,h:2.6}, {x:9.3,y:1.2,w:3.5,h:2.6},
+          {x:0.5,y:4.2,w:3.5,h:2.6}, {x:4.9,y:4.2,w:3.5,h:2.6}, {x:9.3,y:4.2,w:3.5,h:2.6}
+        ];
         let currentS = null;
         execHighlightsImages.forEach((img, index) => {
-          if (index % 4 === 0) {
-            currentS = pres.addSlide(); currentS.background = { color: COLORS.darkBg };
-            currentS.addText("IN-STORE & ONLINE EXCELLENCE VISUALS", { x: 0.6, y: 0.4, color: COLORS.accentCyan, fontSize: 24, bold:true });
+          if (index % 6 === 0) {
+            currentS = pres.addSlide();
+            currentS.addText("IN-STORE & ONLINE EXCELLENCE VISUALS", { x: 0.5, y: 0.4, fontSize: 24, bold: true, color: COLORS.darkBg });
           }
           let b = cleanB64(img);
-          if (b) currentS.addImage({ data: "base64," + b, x: grid[index % 4].x, y: grid[index % 4].y, w: grid[index % 4].w, h: grid[index % 4].h, sizing: { type: 'contain' } });
+          if (b) {
+            let pos = grid[index % 6];
+            currentS.addImage({ data: "base64," + b, x: pos.x, y: pos.y, w: pos.w, h: pos.h, sizing: { type: 'contain', w: pos.w, h: pos.h } });
+          }
         });
       }
     } else {
-      // WEEKLY DETAILED
+      // Weekly Details
       filteredVisits.forEach(v => {
-        let s = pres.addSlide(); s.background = { color: COLORS.darkBg };
-        s.addText(`${(v.storeName||'').toUpperCase()} - ${(v.storeLocation||'').toUpperCase()}`, { x: 0.6, y: 0.4, fontSize: 26, bold: true, color: COLORS.accentCyan });
+        let s = pres.addSlide();
+        s.addText(`${(v.storeName||'').toUpperCase()} - ${(v.storeLocation||'').toUpperCase()}`, { x: 0.5, y: 0.4, fontSize: 26, bold: true, color: COLORS.darkBg });
         let ach = v.target > 0 ? ((v.sellout / v.target) * 100).toFixed(1) + '%' : '0%';
         s.addTable([
-          [{text: "KPI Metrics", options: {fill: COLORS.gridBorder, color: COLORS.accentCyan, bold:true}}, {text: "Value", options: {fill: COLORS.gridBorder, color: COLORS.accentCyan, align:'center'}}],
+          [{text: "KPI Metrics", options: {fill: COLORS.darkBg, color: COLORS.white, bold:true}}, "Value"],
           ["Sell-out", `${v.sellout||0} units`], ["Target", `${v.target||0} units`], ["Achiev.", ach], ["Staff", (v.staffCount||0).toString()], ["Amb.", (v.ambassadorsCount||0).toString()]
-        ], { x: 0.6, y: 1.6, w: 5.5, fontSize: 11, color: COLORS.white, border: { pt: 0.5, color: COLORS.gridBorder }, margin: 6 });
+        ], { x: 0.5, y: 1.5, w: 4.5, fontSize: 11, border: { pt: 0.5, color: COLORS.textGray }, margin: 8 });
         
         if (v.notes) {
-          s.addText("Notes:", { x: 0.6, y: 4.8, fontSize: 11, bold: true, color: COLORS.orange });
-          s.addText(v.notes, { x: 0.6, y: 5.1, w: 5.5, h: 1.6, fontSize: 9.5, color: COLORS.white, fill: COLORS.gridBorder, margin: 8 });
+          s.addText("Observer Notes:", { x: 0.5, y: 4.8, fontSize: 11, bold: true, color: COLORS.orange });
+          s.addText(v.notes, { x: 0.5, y: 5.1, w: 4.5, h: 1.5, fontSize: 10, fill: 'F8FAFC', margin: 8 });
         }
 
         if (v.powerBiScreenshot) {
           let b = cleanB64(v.powerBiScreenshot);
-          if (b) s.addImage({ data: "base64," + b, x: 6.5, y: 1.6, w: 6.0, h: 5.1, sizing: { type: 'contain' } });
+          if (b) s.addImage({ data: "base64," + b, x: 5.5, y: 1.5, w: 7.3, h: 5.5, sizing: { type: 'contain', w: 7.3, h: 5.5 } });
         } else if (v.visitPhotos && v.visitPhotos.length > 0) {
-          let pg = [{x:6.5,y:1.6,w:2.9,h:2.4},{x:9.6,y:1.6,w:2.9,h:2.4},{x:6.5,y:4.25,w:2.9,h:2.4},{x:9.6,y:4.25,w:2.9,h:2.4}];
+          let pg = [{x:5.5,y:1.5,w:3.5,h:2.6},{x:9.3,y:1.5,w:3.5,h:2.6},{x:5.5,y:4.3,w:3.5,h:2.6},{x:9.3,y:4.3,w:3.5,h:2.6}];
           v.visitPhotos.slice(0, 4).forEach((img, idx) => {
             let b = cleanB64(img);
-            if (b) s.addImage({ data: "base64," + b, x: pg[idx].x, y: pg[idx].y, w: pg[idx].w, h: pg[idx].h, sizing: { type: 'contain' } });
+            if (b) s.addImage({ data: "base64," + b, x: pg[idx].x, y: pg[idx].y, w: pg[idx].w, h: pg[idx].h, sizing: { type: 'contain', w: pg[idx].w, h: pg[idx].h } });
           });
         }
       });
     }
 
     await pres.writeFile({ fileName: `ZTE_Report_${reportType}_${reportYear}.pptx` });
-    alert(`Success!`);
+    alert(`Success! File generated.`);
     execPowerBiImages = []; execHighlightsImages = [];
     document.getElementById('execPowerBiPreview').innerHTML = ''; document.getElementById('execHighlightsPreview').innerHTML = '';
   } catch (err) {
@@ -866,6 +867,17 @@ async function generatePPTX() {
   }
 }
 
+function switchToSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+  const idx = { 'dashboard': 0, 'newVisit': 1, 'archive': 2, 'reports': 3 };
+  document.querySelectorAll('.nav-item')[idx[id]].classList.add('active');
+  if (id === 'archive') renderArchive();
+  if (id === 'reports') updateReportSelectors();
+}
+
+async function initApp() { await initIndexedDB(); await loadVisitsFromDB(); renderDashboard(); }
 document.getElementById('visitForm').addEventListener('submit', saveVisit);
 window.addEventListener('DOMContentLoaded', initApp);
 </script>
