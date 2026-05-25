@@ -28,6 +28,7 @@
             line-height: 1.5;
         }
 
+        /* Institutional Top Bar */
         .header {
             background-color: var(--primary-bg);
             color: #ffffff;
@@ -41,6 +42,7 @@
         .header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: 0.5px; }
         .brand-subtitle { font-size: 0.85rem; color: var(--accent-cyan); font-weight: 400; }
 
+        /* Modular Tab Navigation */
         .nav-bar { background-color: #ffffff; display: flex; border-bottom: 1px solid var(--border-color); overflow-x: auto; }
 
         .nav-tab {
@@ -52,6 +54,7 @@
         .nav-tab:hover { color: var(--accent-cyan); background-color: #f8fafc; }
         .nav-tab.active { color: var(--accent-cyan); border-bottom-color: var(--accent-cyan); background-color: #f0f9ff; }
 
+        /* Layout Structure */
         .main-container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
         .app-section { display: none; }
         .app-section.active { display: block; animation: slideUp 0.30s ease-out; }
@@ -61,9 +64,10 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
+        /* Dashboard & KPI Cards */
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 1.5rem;
             margin-bottom: 2rem;
         }
@@ -79,6 +83,7 @@
         .content-card { background: #ffffff; border-radius: 8px; padding: 2rem; box-shadow: var(--card-shadow); margin-bottom: 2rem; }
         .content-card h2 { font-size: 1.4rem; color: var(--primary-bg); margin-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
 
+        /* Form Grid & Inputs */
         .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
         @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; } }
 
@@ -94,6 +99,7 @@
 
         input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent-cyan); box-shadow: 0 0 0 3px rgba(0, 160, 210, 0.15); }
 
+        /* Structured Checkboxes */
         .checkbox-container-grid {
             display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 0.75rem; background: #f8fafc; padding: 1rem; border-radius: 6px; border: 1px solid var(--border-color);
@@ -102,6 +108,7 @@
         .checkbox-label { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; cursor: pointer; font-size: 0.85rem; }
         .checkbox-label input[type="checkbox"] { width: 18px; height: 18px; accent-color: var(--accent-cyan); cursor: pointer; }
 
+        /* Image Upload & Dynamic Gallery */
         .upload-zone { border: 2px dashed #cbd5e1; background: #f8fafc; padding: 2rem; border-radius: 6px; text-align: center; cursor: pointer; transition: all 0.2s; }
         .upload-zone:hover { border-color: var(--accent-cyan); background: #f0f9ff; }
         .file-hidden { display: none; }
@@ -111,15 +118,17 @@
         .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
         .gallery-item .remove-btn { position: absolute; top: 4px; right: 4px; background: rgba(231, 76, 60, 0.9); color: white; border: none; width: 24px; height: 24px; border-radius: 50%; cursor: pointer; font-size: 0.8rem; }
 
+        /* Action Buttons */
         .btn-wrapper { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 1.5rem; }
         .action-btn { padding: 0.75rem 1.5rem; font-size: 0.95rem; font-weight: 600; border-radius: 6px; cursor: pointer; border: none; }
         .btn-submit { background-color: var(--accent-cyan); color: white; }
         .btn-export { background-color: #e67e22; color: white; }
         .btn-danger { background-color: #e74c3c; color: white; }
 
+        /* Data Archive Table */
         .table-responsive { width: 100%; overflow-x: auto; margin-top: 1rem; }
         table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        th { background-color: var(--primary-bg); color: white; padding: 0.75rem 1rem; }
+        th { background-color: var(--primary-bg); color: white; padding: 0.75rem 1rem; text-align: left; }
         td { padding: 0.75rem 1rem; border-bottom: 1px solid var(--border-color); }
     </style>
 </head>
@@ -180,7 +189,7 @@
                         </div>
                         <div class="form-group">
                             <label for="storeLocation">Store Location *</label>
-                            <input type="text" id="storeLocation" placeholder="e.g. London, Rome, Berlin" required>
+                            <input type="text" id="storeLocation" placeholder="e.g. Milan Arese, Bari, Bologna" required>
                         </div>
                     </div>
 
@@ -198,7 +207,7 @@
                     <div class="form-group" style="margin-bottom: 1.5rem;">
                         <label>Strategic Visit Objectives *</label>
                         <div class="checkbox-container-grid">
-                            <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Focus on Flagship"> Focus on Flagship</label>
+                            <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="focus su top di gamma"> focus su top di gamma</label>
                             <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Sell-Out Increase"> Sell-Out Increase</label>
                             <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Retail Channel Alignment"> Retail Channel Alignment</label>
                             <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Brand Awareness Improvement"> Brand Awareness Improvement</label>
@@ -256,7 +265,7 @@
                             <input type="number" id="metricSellout" min="0" value="0">
                         </div>
                         <div class="form-group">
-                            <label for="metricTarget">Target (Units)</label>
+                            <label for="metricTarget">Target Asigned (Units)</label>
                             <input type="number" id="metricTarget" min="0" value="0">
                         </div>
                     </div>
@@ -343,7 +352,8 @@
 
     <script>
         let localIndexedDB;
-        const databaseConfig = { name: "ZTE_LFM_FieldManagement_DB_v81", version: 1 };
+        // Linked back to the original database name so old records load automatically
+        const databaseConfig = { name: "ZTE_LFM_FieldManagement_DB", version: 1 };
         let activeVisitPhotos = [];
         let activePowerBiPhoto = null;
 
@@ -370,7 +380,7 @@
             document.querySelectorAll(".app-section").forEach(s => s.classList.remove("active"));
             document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
             document.getElementById(targetId).classList.add("active");
-            event.currentTarget.classList.add("active");
+            if(event && event.currentTarget) event.currentTarget.classList.add("active");
             if(targetId === 'archive-section' || targetId === 'dashboard-section') refreshDataEngine();
         }
 
@@ -408,9 +418,11 @@
 
         function setupImageHandlers() {
             document.getElementById("inputPhotos").addEventListener("change", async function() {
-                const gallery = document.getElementById("visitPhotosPreviewGallery");
                 for (let f of this.files) {
-                    if(activeVisitPhotos.length >= 4) break;
+                    if(activeVisitPhotos.length >= 4) {
+                        alert("Max 4 photos allowed per layout slot.");
+                        break;
+                    }
                     const b64 = await convertAndCompressFile(f);
                     activeVisitPhotos.push(b64);
                     rebuildVisitPhotosPreview();
@@ -426,6 +438,7 @@
         }
 
         function removeVisitPhoto(idx) { activeVisitPhotos.splice(idx, 1); rebuildVisitPhotosPreview(); }
+        
         function rebuildVisitPhotosPreview() {
             const gallery = document.getElementById("visitPhotosPreviewGallery");
             gallery.innerHTML = "";
@@ -433,11 +446,15 @@
                 gallery.innerHTML += `<div class="gallery-item"><img src="${b64}"><button type="button" class="remove-btn" onclick="removeVisitPhoto(${i})">X</button></div>`;
             });
         }
-        function removePowerBIPhoto() { activePowerBiPhoto = null; document.getElementById("powerBIPreviewGallery").innerHTML = ""; }
+        
+        function removePowerBIPhoto() { activePowerBiPhoto = null; document.getElementById("powerBIPreviewGallery").innerHTML = ""; document.getElementById("inputPowerBI").value = ""; }
 
         document.getElementById("lfmMasterForm").onsubmit = function(e) {
             e.preventDefault();
+            if (!localIndexedDB) return alert("Database connection unavailable.");
+            
             const getChecked = (n) => Array.from(document.querySelectorAll(`input[name="${n}"]:checked`)).map(el => el.value);
+            
             const record = {
                 uid: "rec_" + Date.now(),
                 storeChain: document.getElementById("storeChain").value,
@@ -458,17 +475,23 @@
                 notes: document.getElementById("visitNotes").value,
                 timestamp: Date.now()
             };
+            
             const tx = localIndexedDB.transaction(["fieldVisits"], "readwrite");
             tx.objectStore("fieldVisits").put(record).onsuccess = () => {
-                alert("Report saved successfully."); clearForm(); switchModule("dashboard-section");
+                alert("Report saved successfully."); 
+                clearForm(); 
+                switchModule("dashboard-section");
             };
         };
 
         function clearForm() {
             document.getElementById("lfmMasterForm").reset();
             activeVisitPhotos = []; activePowerBiPhoto = null;
-            document.querySelectorAll(".gallery-preview").forEach(g => g.innerHTML = "");
+            document.getElementById("visitPhotosPreviewGallery").innerHTML = "";
+            document.getElementById("powerBIPreviewGallery").innerHTML = "";
             document.getElementById("calculatedWeek").value = "";
+            document.getElementById("inputPhotos").value = "";
+            document.getElementById("inputPowerBI").value = "";
         }
 
         function refreshDataEngine() {
@@ -483,7 +506,7 @@
         function updateDashboardKPIs(recs) {
             document.getElementById("kpi-total-visits").innerText = recs.length;
             let p=0, a=0, s=0, so=0, t=0;
-            recs.forEach(r => { p+=r.promotersFormed; a+=r.ambassadorsEngaged; s+=r.staffTrained; so+=r.selloutUnits; t+=r.targetUnits; });
+            recs.forEach(r => { p+=(r.promotersFormed||0); a+=(r.ambassadorsEngaged||0); s+=(r.staffTrained||0); so+=(r.selloutUnits||0); t+=(r.targetUnits||0); });
             document.getElementById("kpi-total-promoters").innerText = p;
             document.getElementById("kpi-total-ambassadors").innerText = a;
             document.getElementById("kpi-total-staff").innerText = s;
@@ -494,12 +517,16 @@
         function populateArchiveTable(recs) {
             const body = document.getElementById("archiveTableBody");
             body.innerHTML = "";
+            if(recs.length === 0) {
+                body.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-light);">No records stored locally.</td></tr>`;
+                return;
+            }
             recs.sort((a,b) => b.timestamp - a.timestamp).forEach(r => {
-                body.innerHTML += `<tr><td><strong>${r.storeChain}</strong></td><td>${r.storeLocation}</td><td>${r.visitDate}</td><td>${r.operatingWeek}</td><td>${r.selloutUnits}</td><td>${r.targetUnits}</td><td><button class="action-btn btn-danger" style="padding:0.3rem" onclick="deleteRecord('${r.uid}')">Del</button></td></tr>`;
+                body.innerHTML += `<tr><td><strong>${r.storeChain}</strong></td><td>${r.storeLocation}</td><td>${r.visitDate}</td><td><span style="font-weight:bold; color:var(--accent-cyan);">${r.operatingWeek}</span></td><td>${r.selloutUnits}</td><td>${r.targetUnits}</td><td><button class="action-btn btn-danger" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteRecord('${r.uid}')">Del</button></td></tr>`;
             });
         }
 
-        function deleteRecord(uid) { if(confirm("Delete this record?")) localIndexedDB.transaction(["fieldVisits"], "readwrite").objectStore("fieldVisits").delete(uid).onsuccess = () => refreshDataEngine(); }
+        function deleteRecord(uid) { if(confirm("Permanently delete this record?")) localIndexedDB.transaction(["fieldVisits"], "readwrite").objectStore("fieldVisits").delete(uid).onsuccess = () => refreshDataEngine(); }
 
         function buildPeriodOptions(scope) {
             const detail = document.getElementById("reportPeriodDetail");
@@ -512,10 +539,11 @@
         async function processPPTXGeneration() {
             const scope = document.getElementById("reportScope").value;
             const period = document.getElementById("reportPeriodDetail").value;
-            if(!scope || !period) return alert("Select report parameters.");
+            if(!scope || !period) return alert("Please select report scope and period parameters.");
 
             const recs = await new Promise(res => localIndexedDB.transaction(["fieldVisits"]).objectStore("fieldVisits").getAll().onsuccess = (e) => res(e.target.result));
             const filtered = recs.filter(r => {
+                if(!r.visitDate) return false;
                 if(scope === "weekly") return r.operatingWeek === period;
                 const m = r.visitDate.split("-")[1];
                 if(scope === "monthly") return m === period;
@@ -524,42 +552,49 @@
                 return false;
             });
 
-            if(filtered.length === 0) return alert("No records found for this period.");
+            if(filtered.length === 0) return alert("No matching records found for the selected period.");
 
             const pptx = new PptxGenJS();
             pptx.layout = "LAYOUT_16x9";
 
+            // SLIDE 1: STRATEGIC COVER
             const cover = pptx.addSlide();
             cover.addShape(pptx.ShapeType.rect, { x:0, y:0, w:"100%", h:"100%", fill:{ color:"0d1628" } });
-            cover.addText("ZTE & nubia Field Management", { x:1, y:2.5, fontSize:36, bold:true, color:"ffffff" });
-            cover.addText("FIELD TRAINING ACTIVITY REPORT", { x:1, y:3.4, fontSize:18, color:"00a0d2", bold:true });
-            cover.addText(`Scope: ${scope.toUpperCase()} | Period: ${period} | Year: 2026`, { x:1, y:4.2, fontSize:12, color:"94a3b8" });
+            cover.addText("ZTE & nubia Field Management", { x:1.0, y:2.5, fontSize:36, bold:true, color:"ffffff" });
+            cover.addText("FIELD TRAINING ACTIVITY REPORT", { x:1.0, y:3.4, fontSize:18, color:"00a0d2", bold:true });
+            cover.addText(`Scope: ${scope.toUpperCase()} | Period: ${period} | Year: 2026`, { x:1.0, y:4.2, fontSize:12, color:"94a3b8" });
 
+            // SLIDE LOOPS PER VISIT
             filtered.forEach(r => {
                 const s = pptx.addSlide();
+                // Slide Banner Header
                 s.addShape(pptx.ShapeType.rect, { x:0, y:0, w:"100%", h:0.8, fill:{ color:"0d1628" } });
                 s.addText(`${r.storeChain.toUpperCase()} - ${r.storeLocation.toUpperCase()}`, { x:0.5, y:0.15, fontSize:18, bold:true, color:"ffffff" });
                 s.addText(`${r.operatingWeek} | ${r.visitDate}`, { x:8.5, y:0.22, fontSize:11, color:"00a0d2", align:"right", bold:true });
 
-                s.addShape(pptx.ShapeType.rect, { x:0.5, y:1.1, w:4.5, h:1.5, fill:{ color:"f1f5f9" }, line:{ color:"cbd5e1" } });
+                // KPI Recaps Block
+                s.addShape(pptx.ShapeType.rect, { x:0.5, y:1.1, w:4.5, h:1.5, fill:{ color:"f1f5f9" }, line:{ color:"cbd5e1", width:1 } });
                 s.addText(`PROMOTERS TRAINED: ${r.promotersFormed}\nAMBASSADORS COACHED: ${r.ambassadorsEngaged}\nSTORE STAFF TRAINED: ${r.staffTrained}`, { x:0.7, y:1.2, fontSize:10, bold:true, color:"1e293b" });
                 s.addText(`SELL-OUT: ${r.selloutUnits} units / TARGET: ${r.targetUnits} units`, { x:0.7, y:2.1, fontSize:10, bold:true, color:"00a0d2" });
 
-                let details = `OBJECTIVES:\n- ${r.objectives.join("\n- ")}\n\nCONTENTS:\n- ${r.contents.join("\n- ")}\n\nPRODUCT FOCUS:\n- ${r.productFocus.join("\n- ")}`;
+                // Checkboxes textual conversion
+                let details = `OBJECTIVES:\n- ${r.objectives.join("\n- ") || "None"}\n\nCONTENTS:\n- ${r.contents.join("\n- ") || "None"}\n\nPRODUCT FOCUS:\n- ${r.productFocus.join("\n- ") || "None"}`;
                 s.addText(details, { x:0.5, y:2.8, w:4.5, h:2.8, fontSize:9, color:"334155" });
 
+                // Footnote field logs
                 if(r.notes) {
-                    s.addShape(pptx.ShapeType.rect, { x:0.5, y:5.8, w:4.5, h:1.2, fill:{ color:"fafafa" }, line:{ color:"cbd5e1" } });
+                    s.addShape(pptx.ShapeType.rect, { x:0.5, y:5.8, w:4.5, h:1.2, fill:{ color:"fafafa" }, line:{ color:"cbd5e1", width:1 } });
                     s.addText(`FIELD NOTES:\n${r.notes}`, { x:0.6, y:5.9, fontSize:8.5, color:"475569" });
                 }
 
+                // 2x2 Unified Grid Layout for Images
                 let pics = [...(r.photos || [])];
                 if(r.powerBiScreen) pics.push(r.powerBiScreen);
                 const coords = [ {x:5.4, y:1.1}, {x:9.0, y:1.1}, {x:5.4, y:4.0}, {x:9.0, y:4.0} ];
                 pics.slice(0, 4).forEach((p, i) => s.addImage({ data:p, x:coords[i].x, y:coords[i].y, w:3.4, h:2.6 }));
             });
 
-            pptx.writeFile({ fileName: `ZTE_FieldReport_${period}.pptx` });
+            pptx.writeFile({ fileName: `ZTE_FieldReport_${scope}_${period}_2026.pptx` });
         }
     </script>
 </body>
