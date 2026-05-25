@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ZTE - LFM Training on Field professional tools</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>ZTE - LFM Field Training Executive Suite</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/gh/Stuk/jszip@v3.10.1/dist/jszip.min.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@v3.12.0/dist/pptxgen.bundle.js"></script>
     
@@ -14,7 +14,7 @@
             --accent-cyan: #00a0d2;
             --nubia-red: #e61e28;
             --edit-orange: #f59e0b;
-            --bg-body: #f1f5f9;
+            --bg-body: #f4f7f9;
             --white: #ffffff;
             --text-dark: #1e293b;
             --text-muted: #64748b;
@@ -33,128 +33,123 @@
         .header {
             background-color: var(--primary-blue);
             color: var(--white);
-            padding: 1.5rem 3rem;
+            padding: 1.2rem 3rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 4px solid var(--accent-cyan);
         }
 
-        .header h1 { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
-        .brand-subtitle { font-size: 0.8rem; color: var(--accent-cyan); font-weight: 400; opacity: 0.8; }
+        .header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+        .brand-subtitle { font-size: 0.75rem; color: var(--accent-cyan); font-weight: 500; }
 
-        .nav-bar { background-color: var(--white); display: flex; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .nav-bar { background-color: var(--white); display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .nav-tab {
-            flex: 1; padding: 1.2rem; text-align: center; background: none; border: none;
-            border-bottom: 3px solid transparent; font-size: 0.85rem; font-weight: 600;
-            color: var(--text-muted); cursor: pointer; transition: all 0.3s;
+            flex: 1; padding: 1.1rem; text-align: center; background: none; border: none;
+            border-bottom: 3px solid transparent; font-size: 0.8rem; font-weight: 700;
+            color: var(--text-muted); cursor: pointer; transition: 0.3s;
             text-transform: uppercase; letter-spacing: 1px;
         }
-        .nav-tab:hover { color: var(--accent-cyan); background-color: #fafafa; }
+        .nav-tab:hover { color: var(--accent-cyan); background-color: #fcfcfc; }
         .nav-tab.active { color: var(--primary-blue); border-bottom-color: var(--accent-cyan); background-color: #f0f9ff; }
 
-        .main-container { max-width: 1300px; margin: 2.5rem auto; padding: 0 2rem; }
+        .main-container { max-width: 1400px; margin: 2rem auto; padding: 0 2rem; }
         .app-section { display: none; }
-        .app-section.active { display: block; animation: fadeIn 0.4s ease; }
+        .app-section.active { display: block; animation: fadeIn 0.3s ease-out; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         .dashboard-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 1.5rem;
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
         }
 
         .kpi-card {
-            background: var(--white); border-radius: 4px; padding: 1.8rem;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); border-top: 3px solid var(--accent-cyan);
+            background: var(--white); border-radius: 6px; padding: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-top: 4px solid var(--accent-cyan);
             text-align: center;
         }
 
-        .kpi-card h3 { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.8rem; letter-spacing: 1px; }
-        .kpi-card .value { font-size: 2.2rem; font-weight: 700; color: var(--primary-blue); }
+        .kpi-card h3 { font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.7rem; font-weight: 700; }
+        .kpi-card .value { font-size: 2rem; font-weight: 700; color: var(--primary-blue); }
 
-        .content-card { background: var(--white); border-radius: 4px; padding: 2.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
-        .content-card h2 { font-size: 1.3rem; color: var(--primary-blue); margin-bottom: 2rem; font-weight: 700; text-transform: uppercase; border-left: 4px solid var(--accent-cyan); padding-left: 15px; }
+        .content-card { background: var(--white); border-radius: 8px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.04); margin-bottom: 2rem; }
+        .content-card h2 { font-size: 1.2rem; color: var(--primary-blue); margin-bottom: 1.8rem; font-weight: 700; text-transform: uppercase; border-left: 5px solid var(--accent-cyan); padding-left: 15px; }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
         .form-group { display: flex; flex-direction: column; }
-        label { font-size: 0.8rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 0.6rem; text-transform: uppercase; }
+        label { font-size: 0.75rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 0.5rem; text-transform: uppercase; }
 
         input, select, textarea {
-            padding: 0.9rem; border: 1px solid var(--border); border-radius: 4px;
-            font-size: 0.9rem; font-family: 'Montserrat', sans-serif; transition: 0.2s;
+            padding: 0.8rem; border: 1px solid var(--border); border-radius: 4px;
+            font-size: 0.85rem; font-family: 'Montserrat', sans-serif;
         }
-        input:focus { outline: none; border-color: var(--accent-cyan); box-shadow: 0 0 0 3px rgba(0,160,210,0.1); }
+        input:focus { outline: none; border-color: var(--accent-cyan); }
 
         .checkbox-container-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 0.8rem; background: #f8fafc; padding: 1.2rem; border: 1px solid var(--border);
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 0.8rem; background: #f9fafb; padding: 1rem; border: 1px solid var(--border); border-radius: 4px;
         }
-        .checkbox-label { display: flex; align-items: center; gap: 0.6rem; font-weight: 500; font-size: 0.8rem; cursor: pointer; }
+        .checkbox-label { display: flex; align-items: center; gap: 0.6rem; font-weight: 600; font-size: 0.75rem; cursor: pointer; }
 
-        .upload-zone { border: 2px dashed var(--border); background: #fcfcfc; padding: 2.5rem; text-align: center; cursor: pointer; border-radius: 4px; transition: 0.2s; }
-        .upload-zone:hover { border-color: var(--accent-cyan); background: #f0f9ff; }
+        .upload-zone { border: 2px dashed var(--border); background: #fafafa; padding: 2rem; text-align: center; cursor: pointer; border-radius: 6px; transition: 0.2s; }
+        .upload-zone:hover { border-color: var(--accent-cyan); background: #f0faff; }
         .file-hidden { display: none; }
 
-        .gallery-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .gallery-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1rem; margin-top: 1rem; }
         .gallery-item { position: relative; aspect-ratio: 16/9; border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
         .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
-        .gallery-item .remove-btn { position: absolute; top: 5px; right: 5px; background: var(--nubia-red); color: white; border: none; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 0.7rem; font-weight: bold; }
+        .gallery-item .remove-btn { position: absolute; top: 4px; right: 4px; background: var(--nubia-red); color: white; border: none; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 0.6rem; font-weight: bold; }
 
         .btn-wrapper { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; }
-        .action-btn { padding: 1rem 2rem; font-size: 0.85rem; font-weight: 700; border-radius: 4px; cursor: pointer; border: none; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
+        .action-btn { padding: 0.9rem 1.8rem; font-size: 0.75rem; font-weight: 700; border-radius: 4px; cursor: pointer; border: none; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; }
         .btn-submit { background-color: var(--primary-blue); color: white; }
-        .btn-submit:hover { background-color: #1e293b; transform: translateY(-1px); }
-        .btn-export { background-color: var(--accent-cyan); color: white; }
+        .btn-submit:hover { background-color: #162444; }
         .btn-edit { background-color: var(--edit-orange); color: white; }
-        .btn-danger { background-color: #f1f5f9; color: #ef4444; }
-        .btn-danger:hover { background-color: #fee2e2; }
+        .btn-danger { background-color: #fef2f2; color: var(--nubia-red); }
 
-        .table-responsive { width: 100%; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th { background-color: #f8fafc; color: var(--primary-blue); padding: 1.2rem; text-align: left; border-bottom: 2px solid var(--border); font-weight: 700; text-transform: uppercase; }
-        td { padding: 1.2rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        
-        .week-header { background-color: #e2e8f0; font-weight: 700; padding: 0.8rem 1.2rem; color: var(--primary-blue); letter-spacing: 1px; }
-        .actions-cell { display: flex; gap: 0.5rem; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+        th { background-color: #f8fafc; color: var(--primary-blue); padding: 1rem; text-align: left; border-bottom: 2px solid var(--border); font-weight: 700; text-transform: uppercase; }
+        td { padding: 1rem; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        .week-header { background-color: #edf2f7; font-weight: 700; padding: 0.7rem 1rem; color: var(--primary-blue); }
     </style>
 </head>
 <body>
 
     <header class="header">
         <div>
-            <h1>ZTE - LFM Training on Field professional tools</h1>
-            <div class="brand-subtitle">EXECUTIVE DATA MANAGEMENT ENVIRONMENT v9.5</div>
+            <h1>ZTE - LFM Field Training professional suite</h1>
+            <div class="brand-subtitle">EXECUTIVE DATA MANAGEMENT ENVIRONMENT v9.6</div>
         </div>
     </header>
 
     <nav class="nav-bar">
-        <button class="nav-tab active" onclick="switchModule('dashboard-section')">DASHBOARD</button>
-        <button class="nav-tab" onclick="switchModule('form-section')" id="tab-new-visit">NEW VISIT</button>
-        <button class="nav-tab" onclick="switchModule('archive-section')">ARCHIVE</button>
-        <button class="nav-tab" onclick="switchModule('report-section')">EXECUTIVE REPORT</button>
+        <button class="nav-tab active" onclick="switchModule('dashboard-section')">Dashboard</button>
+        <button class="nav-tab" onclick="switchModule('form-section')" id="tab-new-visit">New Visit</button>
+        <button class="nav-tab" onclick="switchModule('archive-section')">Archive</button>
+        <button class="nav-tab" onclick="switchModule('report-section')">Generate PPTX</button>
     </nav>
 
     <main class="main-container">
 
         <section id="dashboard-section" class="app-section active">
             <div class="dashboard-grid">
-                <div class="kpi-card"><h3>Total Visits</h3><div id="kpi-total-visits" class="value">0</div></div>
-                <div class="kpi-card"><h3>Staff Coached</h3><div id="kpi-total-staff" class="value">0</div></div>
+                <div class="kpi-card"><h3>Total Sessions</h3><div id="kpi-total-visits" class="value">0</div></div>
+                <div class="kpi-card"><h3>Staff Reached</h3><div id="kpi-total-staff" class="value">0</div></div>
                 <div class="kpi-card"><h3>Sell-Out Units</h3><div id="kpi-total-sellout" class="value">0</div></div>
                 <div class="kpi-card"><h3>Avg Progress</h3><div id="kpi-target-progress" class="value">0%</div></div>
             </div>
             <div class="content-card">
-                <h2>Operational Readiness</h2>
-                <p style="color: var(--text-muted);">Ambiente sicuro con persistenza dati locale via IndexedDB. Tutte le metriche vengono ricalcolate dinamicamente ad ogni inserimento o modifica.</p>
+                <h2>Field Readiness Status</h2>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">Tutti i dati sono salvati localmente. Pronti per l'esportazione direzionale.</p>
             </div>
         </section>
 
         <section id="form-section" class="app-section">
             <div class="content-card">
-                <h2 id="form-title">Field Training Record</h2>
+                <h2 id="form-title">Field Training Entry</h2>
                 <form id="lfmMasterForm">
                     <input type="hidden" id="editUid" value="">
 
@@ -162,43 +157,41 @@
                         <div class="form-group">
                             <label>Retail Chain *</label>
                             <select id="storeChain" required>
-                                <option value="">-- Select --</option>
+                                <option value="">-- Select Chain --</option>
                                 <option value="Mediaworld">Mediaworld</option>
                                 <option value="Unieuro">Unieuro</option>
                                 <option value="Euronics">Euronics</option>
                                 <option value="Expert">Expert</option>
                                 <option value="Comet">Comet</option>
                                 <option value="Bruno">Bruno</option>
+                                <option value="Online Training">Online Training</option>
                                 <option value="Other">Other</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Location *</label>
-                            <input type="text" id="storeLocation" placeholder="e.g. Milano Arese" required>
+                            <label>Location / Store *</label>
+                            <input type="text" id="storeLocation" placeholder="e.g. Milan Arese" required>
                         </div>
                         <div class="form-group">
-                            <label>Visit Date *</label>
+                            <label>Date *</label>
                             <input type="date" id="visitDate" required onchange="calculateWeekNumber(this.value)">
                         </div>
                         <div class="form-group">
-                            <label>ISO Week</label>
-                            <input type="text" id="calculatedWeek" readonly style="background-color: #f8fafc; font-weight: 700;">
-                        </div>
-                        <div class="form-group">
-                            <label>Visit Mode *</label>
+                            <label>Training Mode *</label>
                             <select id="visitMode" required>
-                                <option value="">-- Select --</option>
+                                <option value="">-- Select Mode --</option>
                                 <option value="In Person">In Person</option>
                                 <option value="Online">Online</option>
                                 <option value="In Store">In Store</option>
                             </select>
                         </div>
+                        <input type="hidden" id="calculatedWeek">
                     </div>
 
                     <div class="form-group" style="margin-bottom: 2rem;">
-                        <label>Strategic Objectives *</label>
+                        <label>Strategic Objectives</label>
                         <div class="checkbox-container-grid">
-                            <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="focus su top di gamma"> focus su top di gamma</label>
+                            <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Focus Top of Range"> focus su top di gamma</label>
                             <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Sell-Out Acceleration"> Sell-Out Acceleration</label>
                             <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Stock Level Check"> Stock Level Check</label>
                             <label class="checkbox-label"><input type="checkbox" name="visitObjectives" value="Brand Awareness"> Brand Awareness</label>
@@ -206,7 +199,7 @@
                     </div>
 
                     <div class="form-group" style="margin-bottom: 2rem;">
-                        <label>Product Focus & Categories *</label>
+                        <label>Product Focus (Multiple allowed)</label>
                         <div class="checkbox-container-grid">
                             <label class="checkbox-label"><input type="checkbox" name="productFocus" value="nubia AIR Series"> nubia AIR Series</label>
                             <label class="checkbox-label"><input type="checkbox" name="productFocus" value="nubia NEO Series"> nubia NEO Series</label>
@@ -223,32 +216,33 @@
                         <div class="form-group"><label>Target Units</label><input type="number" id="metricTarget" value="0"></div>
                     </div>
 
-                    <div class="form-group" style="margin-bottom: 2rem;">
-                        <label>Field Photos (Max 4 for PPT Grid)</label>
-                        <div class="upload-zone" onclick="document.getElementById('inputPhotos').click()">
-                            <p>Clicca per selezionare fino a 4 foto per questa visita</p>
-                            <input type="file" id="inputPhotos" class="file-hidden" multiple accept="image/*">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Field Photos (Max 4)</label>
+                            <div class="upload-zone" onclick="document.getElementById('inputPhotos').click()">
+                                <p style="font-size:0.8rem; font-weight:600;">Seleziona Foto Visita</p>
+                                <input type="file" id="inputPhotos" class="file-hidden" multiple accept="image/*">
+                            </div>
+                            <div id="visitPhotosPreviewGallery" class="gallery-preview"></div>
                         </div>
-                        <div id="visitPhotosPreviewGallery" class="gallery-preview"></div>
+                        <div class="form-group">
+                            <label>Power BI Screenshot</label>
+                            <div class="upload-zone" onclick="document.getElementById('inputPowerBI').click()">
+                                <p style="font-size:0.8rem; font-weight:600;">Carica Screenshot Analitico</p>
+                                <input type="file" id="inputPowerBI" class="file-hidden" accept="image/*">
+                            </div>
+                            <div id="powerBIPreviewGallery" class="gallery-preview"></div>
+                        </div>
                     </div>
 
-                    <div class="form-group" style="margin-bottom: 2rem;">
-                        <label>Analytical Power BI Screenshot</label>
-                        <div class="upload-zone" onclick="document.getElementById('inputPowerBI').click()">
-                            <p>Clicca per caricare lo screenshot della dashboard Power BI</p>
-                            <input type="file" id="inputPowerBI" class="file-hidden" accept="image/*">
-                        </div>
-                        <div id="powerBIPreviewGallery" class="gallery-preview"></div>
-                    </div>
-
-                    <div class="form-group" style="margin-bottom: 2rem;">
-                        <label>Notes</label>
-                        <textarea id="visitNotes" rows="3" placeholder="Rilevazioni qualitative e feedback..."></textarea>
+                    <div class="form-group">
+                        <label>Qualitative Notes</label>
+                        <textarea id="visitNotes" rows="3" placeholder="Feedback dai negozi, criticità, suggerimenti..."></textarea>
                     </div>
 
                     <div class="btn-wrapper">
-                        <button type="button" class="action-btn btn-danger" onclick="clearForm()">Reset Form</button>
-                        <button type="submit" id="btnSubmitForm" class="action-btn btn-submit">Save Visit</button>
+                        <button type="button" class="action-btn btn-danger" onclick="clearForm()">Reset</button>
+                        <button type="submit" id="btnSubmitForm" class="action-btn btn-submit">Save Record</button>
                     </div>
                 </form>
             </div>
@@ -256,8 +250,8 @@
 
         <section id="archive-section" class="app-section">
             <div class="content-card">
-                <h2>Visit Log Archive</h2>
-                <div class="table-responsive">
+                <h2>Activity Archive</h2>
+                <div style="overflow-x: auto;">
                     <table id="archiveTable">
                         <thead>
                             <tr>
@@ -265,8 +259,8 @@
                                 <th>Location</th>
                                 <th>Date</th>
                                 <th>Mode</th>
-                                <th>Sell-Out</th>
-                                <th>Target</th>
+                                <th>SO</th>
+                                <th>TGT</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -278,23 +272,23 @@
 
         <section id="report-section" class="app-section">
             <div class="content-card">
-                <h2>Executive PPTX Generator</h2>
+                <h2>PPTX Generation Panel</h2>
                 <div class="form-grid">
                     <div class="form-group">
-                        <label>Scope *</label>
+                        <label>Scope</label>
                         <select id="reportScope" onchange="buildPeriodOptions(this.value)">
                             <option value="">-- Select --</option>
-                            <option value="weekly">Weekly Summary</option>
-                            <option value="monthly">Monthly Overview</option>
+                            <option value="weekly">Weekly Recap</option>
+                            <option value="monthly">Monthly Recap</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Interval *</label>
+                        <label>Period</label>
                         <select id="reportPeriodDetail"></select>
                     </div>
                 </div>
                 <div class="btn-wrapper" style="justify-content: flex-start;">
-                    <button type="button" class="action-btn btn-export" onclick="processPPTXGeneration()">Compile Executive Report</button>
+                    <button type="button" class="action-btn btn-submit" onclick="processPPTXGeneration()">Export Executive Presentation</button>
                 </div>
             </div>
         </section>
@@ -306,6 +300,8 @@
         const databaseConfig = { name: "ZTE_LFM_FieldManagement_DB", version: 1 };
         let activeVisitPhotos = [];
         let activePowerBiPhoto = null;
+
+        const ZTE_PALETTE = ["0d1628", "00a0d2", "e61e28", "64748b", "f59e0b", "10b981"];
 
         document.addEventListener("DOMContentLoaded", () => {
             initIndexedDB();
@@ -330,17 +326,7 @@
             document.querySelectorAll(".app-section").forEach(s => s.classList.remove("active"));
             document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
             document.getElementById(targetId).classList.add("active");
-            
-            if(targetId === 'form-section') {
-                document.getElementById('tab-new-visit').classList.add('active');
-            } else if(window.event && window.event.currentTarget) {
-                window.event.currentTarget.classList.add("active");
-            }
-            
             if(targetId === 'archive-section' || targetId === 'dashboard-section') refreshDataEngine();
-            if(targetId !== 'form-section' && document.getElementById("editUid").value !== "") {
-                clearForm();
-            }
         }
 
         function calculateWeekNumber(dateVal) {
@@ -383,7 +369,6 @@
                     rebuildPreview();
                 }
             });
-
             document.getElementById("inputPowerBI").addEventListener("change", async function() {
                 if(this.files.length > 0) {
                     activePowerBiPhoto = await convertAndCompressFile(this.files[0], 1200);
@@ -402,30 +387,17 @@
 
         function renderPowerBiPreview() {
             const gallery = document.getElementById("powerBIPreviewGallery");
-            if (activePowerBiPhoto) {
-                gallery.innerHTML = `<div class="gallery-item"><img src="${activePowerBiPhoto}"><button type="button" class="remove-btn" onclick="removePowerBIPhoto()">X</button></div>`;
-            } else {
-                gallery.innerHTML = "";
-            }
+            gallery.innerHTML = activePowerBiPhoto ? `<div class="gallery-item"><img src="${activePowerBiPhoto}"><button type="button" class="remove-btn" onclick="removePowerBIPhoto()">X</button></div>` : "";
         }
         
         function removePhoto(i) { activeVisitPhotos.splice(i, 1); rebuildPreview(); }
-        
-        function removePowerBIPhoto() { 
-            activePowerBiPhoto = null; 
-            renderPowerBiPreview();
-            document.getElementById("inputPowerBI").value = ""; 
-        }
+        function removePowerBIPhoto() { activePowerBiPhoto = null; renderPowerBiPreview(); }
 
         document.getElementById("lfmMasterForm").onsubmit = function(e) {
             e.preventDefault();
-            
-            // Forza estrazione corretta dei checkbox
             const checkedObjectives = Array.from(document.querySelectorAll('input[name="visitObjectives"]:checked')).map(el => el.value);
             const checkedProducts = Array.from(document.querySelectorAll('input[name="productFocus"]:checked')).map(el => el.value);
-            
-            // Gestione Uid univoca per sovrascrittura o creazione nuova
-            const currentUid = document.getElementById("editUid").value.trim() || "rec_" + Date.now();
+            const currentUid = document.getElementById("editUid").value || "rec_" + Date.now();
             
             const record = {
                 uid: currentUid,
@@ -447,75 +419,45 @@
                 timestamp: Date.now()
             };
 
-            const tx = localIndexedDB.transaction(["fieldVisits"], "readwrite");
-            const store = tx.objectStore("fieldVisits");
-            
-            store.put(record).onsuccess = () => {
-                alert(document.getElementById("editUid").value ? "Record di modifica salvato nel Database locale!" : "Nuova visita inserita correttamente!");
+            localIndexedDB.transaction(["fieldVisits"], "readwrite").objectStore("fieldVisits").put(record).onsuccess = () => {
+                alert("Dati sincronizzati correttamente.");
                 clearForm(); 
-                
-                // Forza l'aggiornamento strutturale prima del cambio tab
-                localIndexedDB.transaction(["fieldVisits"]).objectStore("fieldVisits").getAll().onsuccess = (ev) => {
-                    const data = ev.target.result;
-                    updateKPIs(data);
-                    populateArchive(data);
-                    switchModule("archive-section");
-                };
+                switchModule("archive-section");
             };
         };
 
         function clearForm() {
             document.getElementById("lfmMasterForm").reset();
             document.getElementById("editUid").value = "";
-            document.getElementById("form-title").innerText = "Field Training Record";
-            document.getElementById("btnSubmitForm").innerText = "Save Visit";
-            activeVisitPhotos = []; 
-            activePowerBiPhoto = null;
-            rebuildPreview();
-            renderPowerBiPreview();
-            document.getElementById('tab-new-visit').innerText = "NEW VISIT";
+            document.getElementById("form-title").innerText = "Field Training Entry";
+            document.getElementById("btnSubmitForm").innerText = "Save Record";
+            activeVisitPhotos = []; activePowerBiPhoto = null;
+            rebuildPreview(); renderPowerBiPreview();
         }
 
         function editRec(uid) {
             localIndexedDB.transaction(["fieldVisits"]).objectStore("fieldVisits").get(uid).onsuccess = (e) => {
                 const r = e.target.result;
                 if(!r) return;
-
                 document.getElementById("editUid").value = r.uid;
                 document.getElementById("storeChain").value = r.storeChain;
                 document.getElementById("storeLocation").value = r.storeLocation;
                 document.getElementById("visitDate").value = r.visitDate;
                 document.getElementById("calculatedWeek").value = r.operatingWeek;
                 document.getElementById("visitMode").value = r.visitMode || "";
-                
-                document.querySelectorAll('input[name="visitObjectives"]').forEach(cb => {
-                    cb.checked = r.objectives ? r.objectives.includes(cb.value) : false;
-                });
-                document.querySelectorAll('input[name="productFocus"]').forEach(cb => {
-                    cb.checked = r.productFocus ? r.productFocus.includes(cb.value) : false;
-                });
-                
-                document.getElementById("countPromoters").value = r.promotersFormed || 0;
-                document.getElementById("countAmbassadors").value = r.ambassadorsEngaged || 0;
-                document.getElementById("countStaff").value = r.staffTrained || 0;
-                document.getElementById("metricSellout").value = r.selloutUnits || 0;
-                document.getElementById("metricTarget").value = r.targetUnits || 0;
+                document.querySelectorAll('input[name="visitObjectives"]').forEach(cb => cb.checked = r.objectives.includes(cb.value));
+                document.querySelectorAll('input[name="productFocus"]').forEach(cb => cb.checked = r.productFocus.includes(cb.value));
+                document.getElementById("countPromoters").value = r.promotersFormed;
+                document.getElementById("countAmbassadors").value = r.ambassadorsEngaged;
+                document.getElementById("countStaff").value = r.staffTrained;
+                document.getElementById("metricSellout").value = r.selloutUnits;
+                document.getElementById("metricTarget").value = r.targetUnits;
                 document.getElementById("visitNotes").value = r.notes || "";
-
-                activeVisitPhotos = r.photos || [];
-                rebuildPreview();
-                
-                activePowerBiPhoto = r.powerBiScreen || null;
-                renderPowerBiPreview();
-
-                document.getElementById("form-title").innerText = "Edit Visit Record";
-                document.getElementById("btnSubmitForm").innerText = "Update Visit";
-                document.getElementById('tab-new-visit').innerText = "EDIT VISIT";
-                
-                document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
-                document.getElementById('tab-new-visit').classList.add('active');
-                document.querySelectorAll(".app-section").forEach(s => s.classList.remove("active"));
-                document.getElementById('form-section').classList.add('active');
+                activeVisitPhotos = r.photos || []; rebuildPreview();
+                activePowerBiPhoto = r.powerBiScreen || null; renderPowerBiPreview();
+                document.getElementById("form-title").innerText = "Edit Session Data";
+                document.getElementById("btnSubmitForm").innerText = "Update Record";
+                switchModule('form-section');
             };
         }
 
@@ -531,13 +473,7 @@
         function updateKPIs(recs) {
             document.getElementById("kpi-total-visits").innerText = recs.length;
             let p=0, a=0, s=0, so=0, t=0;
-            recs.forEach(r => { 
-                p += (r.promotersFormed || 0); 
-                a += (r.ambassadorsEngaged || 0); 
-                s += (r.staffTrained || 0); 
-                so += (r.selloutUnits || 0); 
-                t += (r.targetUnits || 0); 
-            });
+            recs.forEach(r => { p+=(r.promotersFormed||0); a+=(r.ambassadorsEngaged||0); s+=(r.staffTrained||0); so+=(r.selloutUnits||0); t+=(r.targetUnits||0); });
             document.getElementById("kpi-total-staff").innerText = p+a+s;
             document.getElementById("kpi-total-sellout").innerText = so;
             document.getElementById("kpi-target-progress").innerText = t > 0 ? Math.round((so/t)*100)+"%" : "0%";
@@ -546,36 +482,33 @@
         function populateArchive(recs) {
             const body = document.getElementById("archiveTableBody");
             body.innerHTML = "";
-            
             recs.sort((a,b) => {
                 let wA = parseInt(a.operatingWeek.replace("W","") || 0);
                 let wB = parseInt(b.operatingWeek.replace("W","") || 0);
-                if(wB !== wA) return wB - wA;
-                return new Date(b.visitDate) - new Date(a.visitDate);
+                return wB !== wA ? wB - wA : new Date(b.visitDate) - new Date(a.visitDate);
             });
-
             let currentWeek = null;
             recs.forEach(r => {
                 if(r.operatingWeek !== currentWeek) {
                     currentWeek = r.operatingWeek;
-                    body.innerHTML += `<tr><td colspan="7" class="week-header">WEEKLY OPERATIONS: ${currentWeek}</td></tr>`;
+                    body.innerHTML += `<tr><td colspan="7" class="week-header">OPERATING WEEK: ${currentWeek}</td></tr>`;
                 }
                 body.innerHTML += `<tr>
                     <td><strong>${r.storeChain}</strong></td>
                     <td>${r.storeLocation}</td>
                     <td>${r.visitDate}</td>
-                    <td><span style="background:#e2e8f0; padding:2px 6px; border-radius:4px; font-size:0.7rem; font-weight:600;">${r.visitMode || 'N/A'}</span></td>
+                    <td><span style="font-size:0.65rem; background:#eee; padding:2px 5px; border-radius:3px;">${r.visitMode || 'N/A'}</span></td>
                     <td>${r.selloutUnits}</td>
                     <td>${r.targetUnits}</td>
-                    <td class="actions-cell">
-                        <button type="button" class="action-btn btn-edit" style="padding:0.4rem" onclick="editRec('${r.uid}')">Edit</button>
-                        <button type="button" class="action-btn btn-danger" style="padding:0.4rem" onclick="deleteRec('${r.uid}')">Del</button>
+                    <td style="display:flex; gap:5px;">
+                        <button type="button" class="action-btn btn-edit" style="padding:0.3rem 0.6rem;" onclick="editRec('${r.uid}')">Edit</button>
+                        <button type="button" class="action-btn btn-danger" style="padding:0.3rem 0.6rem;" onclick="deleteRec('${r.uid}')">Del</button>
                     </td>
                 </tr>`;
             });
         }
 
-        function deleteRec(uid) { if(confirm("Confermi l'eliminazione del report?")) localIndexedDB.transaction(["fieldVisits"], "readwrite").objectStore("fieldVisits").delete(uid).onsuccess = () => refreshDataEngine(); }
+        function deleteRec(uid) { if(confirm("Confirm deletion?")) localIndexedDB.transaction(["fieldVisits"], "readwrite").objectStore("fieldVisits").delete(uid).onsuccess = () => refreshDataEngine(); }
 
         async function buildPeriodOptions(scope) {
             const detail = document.getElementById("reportPeriodDetail");
@@ -586,7 +519,7 @@
                 weeks.forEach(w => detail.innerHTML += `<option value="${w}">${w}</option>`);
             } else if(scope === "monthly") {
                 const months = [...new Set(recs.map(r => r.visitDate.split("-")[1]))].sort();
-                months.forEach(m => detail.innerHTML += `<option value="${m}">Month ${m}</option>`);
+                months.forEach(m => detail.innerHTML += `<option value="${m}">Mese ${m}</option>`);
             }
         }
 
@@ -594,98 +527,122 @@
             const scope = document.getElementById("reportScope").value;
             const period = document.getElementById("reportPeriodDetail").value;
             const recs = await new Promise(res => localIndexedDB.transaction(["fieldVisits"]).objectStore("fieldVisits").getAll().onsuccess = (e) => res(e.target.result));
-            
             const filtered = recs.filter(r => scope === "weekly" ? r.operatingWeek === period : r.visitDate.split("-")[1] === period);
-            if(filtered.length === 0) return alert("Nessun dato trovato per questo periodo.");
+            if(filtered.length === 0) return alert("Nessun dato.");
 
             const pptx = new PptxGenJS();
             pptx.layout = "LAYOUT_16x9";
+            
+            // MASTER SLIDE DEFINITION
             pptx.defineSlideMaster({
                 title: "ZTE_MASTER",
                 background: { color: "ffffff" },
                 objects: [
-                    { rect: { x: 0, y: 0, w: "100%", h: 0.6, fill: { color: "0d1628" } } },
-                    { text: { text: "ZTE - LFM Training on Field professional tools", options: { x: 0.4, y: 0.15, fontSize: 14, color: "ffffff", bold: true, fontFace: "Montserrat" } } }
+                    { rect: { x: 0, y: 0, w: "100%", h: 0.5, fill: { color: "0d1628" } } },
+                    { text: { text: "ZTE - LFM Field Training Activity Report", options: { x: 0.4, y: 0.1, fontSize: 11, color: "ffffff", bold: true, fontFace: "Montserrat" } } }
                 ]
             });
 
+            // 1. COVER
             const cover = pptx.addSlide();
             cover.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: "100%", h: "100%", fill: { color: "0d1628" } });
-            cover.addText("EXECUTIVE FIELD SUMMARY", { x: 0.5, y: 2.2, fontSize: 44, bold: true, color: "ffffff", fontFace: "Montserrat" });
-            cover.addText(`${scope.toUpperCase()} - ${period} | 2026`, { x: 0.5, y: 3.1, fontSize: 20, color: "00a0d2", fontFace: "Montserrat" });
+            cover.addText("FIELD PERFORMANCE\nSUMMARY", { x: 0.5, y: 2.0, fontSize: 48, bold: true, color: "ffffff", fontFace: "Montserrat" });
+            cover.addText(`${scope.toUpperCase()} RECAP | ${period} - 2026`, { x: 0.5, y: 3.8, fontSize: 18, color: "00a0d2", fontFace: "Montserrat", bold: true });
 
-            let totSO = 0, totT = 0, p=0, a=0, s=0;
+            // AGGREGATION LOGIC
+            let totSO=0, totT=0, p=0, a=0, s=0;
             let productStats = {};
             let chainStats = {};
+            let modeStats = {};
 
             filtered.forEach(r => {
                 totSO += (r.selloutUnits || 0); totT += (r.targetUnits || 0);
                 p += (r.promotersFormed || 0); a += (r.ambassadorsEngaged || 0); s += (r.staffTrained || 0);
-                if(r.productFocus) r.productFocus.forEach(pf => productStats[pf] = (productStats[pf]||0) + 1);
+                
+                // Mode frequency
+                const mode = r.visitMode || "N/A";
+                modeStats[mode] = (modeStats[mode]||0) + 1;
+
+                // Chain Sell-out
                 chainStats[r.storeChain] = (chainStats[r.storeChain]||0) + (r.selloutUnits || 0);
+
+                // Product mentions frequency (logic: 1 visit = 1 session per product)
+                if(r.productFocus) r.productFocus.forEach(pf => productStats[pf] = (productStats[pf]||0) + 1);
             });
 
-            const kpiSlide = pptx.addSlide({ masterName: "ZTE_MASTER" });
-            kpiSlide.addText("EXECUTIVE METRICS", { x: 0.5, y: 0.8, fontSize: 28, bold: true, color: "0d1628", fontFace: "Montserrat" });
-            
-            const boxes = [
+            // 2. EXECUTIVE DASHBOARD
+            const dash = pptx.addSlide({ masterName: "ZTE_MASTER" });
+            dash.addText("EXECUTIVE OVERVIEW", { x: 0.5, y: 0.8, fontSize: 24, bold: true, color: "0d1628", fontFace: "Montserrat" });
+            const kpiItems = [
                 { l: "TOTAL VISITS", v: filtered.length, x: 0.5 },
-                { l: "SELL-OUT UNITS", v: totSO, x: 3.0 },
-                { l: "RECIPIENTS", v: p+a+s, x: 5.5 },
-                { l: "ACHIEVEMENT", v: totT > 0 ? Math.round((totSO/totT)*100)+"%" : "0%", x: 8.0 }
+                { l: "STAFF TRAINED", v: p+a+s, x: 3.0 },
+                { l: "SELL-OUT UNITS", v: totSO, x: 5.5 },
+                { l: "TARGET ACH.", v: totT>0 ? Math.round((totSO/totT)*100)+"%" : "0%", x: 8.0 }
             ];
-            boxes.forEach(b => {
-                kpiSlide.addShape(pptx.ShapeType.rect, { x: b.x, y: 1.5, w: 2.2, h: 1.5, fill: { color: "f8fafc" }, line: { color: "00a0d2", width: 1 } });
-                kpiSlide.addText(b.v.toString(), { x: b.x, y: 1.8, w: 2.2, fontSize: 32, bold: true, color: "0d1628", align: "center", fontFace: "Montserrat" });
-                kpiSlide.addText(b.l, { x: b.x, y: 2.5, w: 2.2, fontSize: 10, color: "64748b", align: "center", fontFace: "Montserrat", bold: true });
+            kpiItems.forEach(k => {
+                dash.addShape(pptx.ShapeType.rect, { x: k.x, y: 1.5, w: 2.2, h: 1.5, fill: { color: "f8fafc" }, line: { color: "00a0d2", width: 1 } });
+                dash.addText(k.v.toString(), { x: k.x, y: 1.8, w: 2.2, fontSize: 36, bold: true, color: "0d1628", align: "center", fontFace: "Montserrat" });
+                dash.addText(k.l, { x: k.x, y: 2.6, w: 2.2, fontSize: 10, bold: true, color: "64748b", align: "center", fontFace: "Montserrat" });
             });
 
-            const prodSlide = pptx.addSlide({ masterName: "ZTE_MASTER" });
-            prodSlide.addText("PRODUCT FOCUS & CHANNEL MIX", { x: 0.5, y: 0.8, fontSize: 24, bold: true, color: "0d1628", fontFace: "Montserrat" });
+            // 3. ANALYTICS: MODES & PRODUCTS
+            const analytics = pptx.addSlide({ masterName: "ZTE_MASTER" });
+            analytics.addText("STRATEGIC MIX", { x: 0.5, y: 0.8, fontSize: 24, bold: true, color: "0d1628", fontFace: "Montserrat" });
             
-            let prodNames = Object.keys(productStats);
-            let prodCounts = Object.values(productStats);
-            if(prodNames.length > 0) {
-                prodSlide.addChart(pptx.ChartType.bar, [{ name: "Mentions", labels: prodNames, values: prodCounts }], {
-                    x: 0.5, y: 1.5, w: 4.5, h: 3.5, barDir: "bar", chartColors: ["00a0d2"], showValue: true, fontFace: "Montserrat"
+            // Mode Pie
+            let mLabels = Object.keys(modeStats);
+            let mVals = Object.values(modeStats);
+            if(mLabels.length > 0) {
+                analytics.addText("VISIT MODES DISTRIBUTION", { x: 0.5, y: 1.4, fontSize: 12, bold: true, color: "64748b", fontFace: "Montserrat" });
+                analytics.addChart(pptx.ChartType.pie, [{ name: "Modes", labels: mLabels, values: mVals }], {
+                    x: 0.5, y: 1.8, w: 4.5, h: 3.0, showLegend: true, legendPos: "b", chartColors: ZTE_PALETTE, fontFace: "Montserrat"
                 });
             }
 
-            let chains = Object.keys(chainStats);
-            let chainValues = Object.values(chainStats);
-            if(chains.length > 0) {
-                prodSlide.addChart(pptx.ChartType.pie, [{ name: "SO", labels: chains, values: chainValues }], {
-                    x: 5.5, y: 1.5, w: 4.0, h: 3.5, showLegend: true, legendPos: "b", chartColors: ["0d1628", "00a0d2", "e61e28", "64748b"], fontFace: "Montserrat"
+            // Product Mix Bar
+            let pLabels = Object.keys(productStats);
+            let pVals = Object.values(productStats);
+            if(pLabels.length > 0) {
+                analytics.addText("PRODUCT CATEGORY FOCUS (SESSIONS)", { x: 5.5, y: 1.4, fontSize: 12, bold: true, color: "64748b", fontFace: "Montserrat" });
+                analytics.addChart(pptx.ChartType.bar, [{ name: "Sessions", labels: pLabels, values: pVals }], {
+                    x: 5.3, y: 1.8, w: 4.5, h: 3.0, barDir: "bar", chartColors: ["00a0d2"], showValue: true, fontFace: "Montserrat"
                 });
             }
 
+            // 4. CHANNEL MIX
+            const channels = pptx.addSlide({ masterName: "ZTE_MASTER" });
+            channels.addText("CHANNEL PERFORMANCE", { x: 0.5, y: 0.8, fontSize: 24, bold: true, color: "0d1628", fontFace: "Montserrat" });
+            let cLabels = Object.keys(chainStats);
+            let cVals = Object.values(chainStats);
+            if(cLabels.length > 0) {
+                channels.addChart(pptx.ChartType.bar, [{ name: "Sell-Out", labels: cLabels, values: cVals }], {
+                    x: 1.0, y: 1.5, w: 8.0, h: 4.0, barDir: "col", chartColors: ["0d1628"], showValue: true, fontFace: "Montserrat"
+                });
+            }
+
+            // 5. DETAIL SLIDES
             filtered.forEach(r => {
                 const s = pptx.addSlide({ masterName: "ZTE_MASTER" });
-                s.addText(`${r.storeChain} - ${r.storeLocation}`, { x: 0.5, y: 0.8, fontSize: 20, bold: true, color: "0d1628", fontFace: "Montserrat" });
-                s.addText(`Date: ${r.visitDate} | Week: ${r.operatingWeek} | Mode: ${r.visitMode || 'N/A'}`, { x: 0.5, y: 1.1, fontSize: 12, color: "00a0d2", fontFace: "Montserrat", bold: true });
+                s.addText(`${r.storeChain} | ${r.storeLocation}`, { x: 0.5, y: 0.8, fontSize: 20, bold: true, color: "0d1628", fontFace: "Montserrat" });
+                s.addText(`${r.visitDate} • Mode: ${r.visitMode || 'N/A'} • ${r.operatingWeek}`, { x: 0.5, y: 1.1, fontSize: 12, color: "00a0d2", fontFace: "Montserrat", bold: true });
                 
-                s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.6, w: 4.5, h: 1.2, fill: { color: "f8fafc" }, line: { color: "e2e8f0", width: 1 } });
-                s.addText(`KPIs: SO ${r.selloutUnits || 0} | TGT ${r.targetUnits || 0} | Staff ${(r.promotersFormed||0)+(r.ambassadorsEngaged||0)+(r.staffTrained||0)}`, { x: 0.7, y: 1.8, fontSize: 11, bold: true, fontFace: "Montserrat" });
+                s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.6, w: 4.5, h: 1.2, fill: { color: "f8fafc" } });
+                s.addText(`SO: ${r.selloutUnits} / TGT: ${r.targetUnits}\nStaff Reached: ${(r.promotersFormed||0)+(r.ambassadorsEngaged||0)+(r.staffTrained||0)}`, { x: 0.7, y: 1.8, fontSize: 11, bold: true, fontFace: "Montserrat" });
                 
-                if(r.productFocus) s.addText(`STRATEGY FOCUS:\n- ${r.productFocus.join("\n- ")}`, { x: 0.5, y: 3.0, w: 4.5, fontSize: 10, fontFace: "Montserrat" });
-                
-                if(r.notes) s.addText(`NOTES: ${r.notes}`, { x: 0.5, y: 4.8, w: 4.5, fontSize: 9, italic: true, color: "64748b", fontFace: "Montserrat" });
+                s.addText(`FOCUS: ${r.productFocus ? r.productFocus.join(", ") : 'N/A'}`, { x: 0.5, y: 3.2, w: 4.5, fontSize: 10, bold: true, fontFace: "Montserrat" });
+                if(r.notes) s.addText(`INSIGHTS: ${r.notes}`, { x: 0.5, y: 4.5, w: 4.5, fontSize: 9, italic: true, color: "64748b", fontFace: "Montserrat" });
 
-                const coords = [{x:5.4, y:1.5}, {x:8.0, y:1.5}, {x:5.4, y:3.5}, {x:8.0, y:3.5}];
-                if (r.photos && r.photos.length > 0) {
-                    r.photos.slice(0, 4).forEach((img, idx) => {
-                        s.addImage({ data: img, x: coords[idx].x, y: coords[idx].y, w: 2.4, h: 1.8 });
-                    });
-                }
+                const grid = [{x:5.4, y:1.5}, {x:7.8, y:1.5}, {x:5.4, y:3.3}, {x:7.8, y:3.3}];
+                if (r.photos) r.photos.slice(0, 4).forEach((img, idx) => s.addImage({ data: img, x: grid[idx].x, y: grid[idx].y, w: 2.3, h: 1.7 }));
 
                 if (r.powerBiScreen) {
-                    const biSlide = pptx.addSlide({ masterName: "ZTE_MASTER" });
-                    biSlide.addText(`${r.storeChain} - ${r.storeLocation} | POWER BI ANALYTICS`, { x: 0.5, y: 0.8, fontSize: 18, bold: true, color: "0d1628", fontFace: "Montserrat" });
-                    biSlide.addImage({ data: r.powerBiScreen, x: 1.0, y: 1.4, w: 8.0, h: 4.0 }); 
+                    const bi = pptx.addSlide({ masterName: "ZTE_MASTER" });
+                    bi.addText(`DATA INTELLIGENCE | ${r.storeChain}`, { x: 0.5, y: 0.8, fontSize: 18, bold: true, color: "0d1628", fontFace: "Montserrat" });
+                    bi.addImage({ data: r.powerBiScreen, x: 0.5, y: 1.4, w: 9.0, h: 4.2 });
                 }
             });
 
-            pptx.writeFile({ fileName: `ZTE_LFM_Report_${period}.pptx` });
+            pptx.writeFile({ fileName: `ZTE_ExecutiveReport_${period}.pptx` });
         }
     </script>
 </body>
