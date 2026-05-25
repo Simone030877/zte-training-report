@@ -1,732 +1,553 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZTE - LFM Training on Field professional tools</title>
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="https://cdn.jsdelivr.net/gh/Stuk/jszip@v3.10.1/dist/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@v3.12.0/dist/pptxgen.bundle.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Urbanist:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  
-  <style>
-    :root { --primary: #0d1628; --accent: #00a0d2; --secondary: #f39c12; --success: #22c55e; --gray: #64748b; --bg: #f1f5f9; }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Urbanist', sans-serif; background: var(--bg); color: var(--primary); line-height: 1.6; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZTE - LFM Field Professional Tool v6.0</title>
+    <script src="https://cdn.jsdelivr.net/gh/Stuk/jszip@v3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@v3.12.0/dist/pptxgen.bundle.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Urbanist:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     
-    /* Header & Navigation */
-    .header { background: var(--primary); color: #fff; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--accent); position: relative; z-index: 1001; }
-    .header h1 { font-size: 1.4rem; font-weight: 700; font-family: 'Montserrat'; letter-spacing: 1px; }
-    .sync-badge { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 1.2rem; background: rgba(255,255,255,0.1); border-radius: 8px; font-size: 0.85rem; font-weight: 600; border: 1px solid rgba(255,255,255,0.2); }
-    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); }
+    <style>
+        :root { --primary: #0d1628; --accent: #00a0d2; --secondary: #f39c12; --success: #22c55e; --gray: #64748b; --light-bg: #f1f5f9; --white: #ffffff; }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Urbanist', sans-serif; background: var(--light-bg); color: var(--primary); line-height: 1.5; overflow-x: hidden; }
 
-    .nav { background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; overflow-x: auto; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-    .nav-item { flex: 1; min-width: 140px; padding: 1.2rem; text-align: center; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.3s; font-weight: 700; color: var(--gray); text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
-    .nav-item.active { border-bottom-color: var(--accent); color: var(--accent); background: #f0f9ff; }
-    
-    .container { max-width: 1200px; margin: 0 auto; padding: 2.5rem 1.5rem; }
-    .section { display: none; }
-    .section.active { display: block; animation: fadeIn 0.4s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    
-    /* UI Cards */
-    .card, .form-container, .archive-container, .reports-container { background: #fff; border-radius: 16px; padding: 2.5rem; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 2rem; }
-    h2 { margin-bottom: 2rem; color: var(--primary); font-size: 2rem; font-family: 'Montserrat'; font-weight: 700; }
-    
-    /* Forms Layout */
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
-    .form-col { display: flex; flex-direction: column; }
-    .full-width { grid-column: 1 / -1; }
-    
-    label { font-weight: 700; margin-bottom: 0.6rem; color: #334155; font-size: 0.95rem; }
-    input, select, textarea { padding: 0.9rem; border: 1px solid #cbd5e1; border-radius: 10px; font-family: inherit; font-size: 1rem; transition: 0.2s; background: #fff; }
-    input:focus, select:focus, textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(0, 160, 210, 0.1); }
-    
-    .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; background: #f8fafc; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0; }
-    .checkbox-group label { display: flex; align-items: center; gap: 0.8rem; font-weight: 600; color: #475569; margin: 0; cursor: pointer; }
-    .checkbox-group input { width: 20px; height: 20px; accent-color: var(--accent); cursor: pointer; }
-    
-    /* Dashboard Stats */
-    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; }
-    .stat-card { padding: 2.2rem; border-radius: 16px; color: #fff; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-    .stat-card.dark { background: linear-gradient(135deg, #0d1628 0%, #1e293b 100%); }
-    .stat-card.accent { background: linear-gradient(135deg, #00a0d2 0%, #0084ad 100%); }
-    .stat-card.success { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
-    .stat-card.orange { background: linear-gradient(135deg, #f39c12 0%, #d68910 100%); }
-    .stat-val { font-size: 3rem; font-weight: 800; font-family: 'Montserrat'; line-height: 1; margin-top: 0.5rem; }
-    .stat-lab { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; opacity: 0.9; letter-spacing: 1.5px; }
+        /* UI Components */
+        .header { background: var(--primary); color: var(--white); padding: 1.2rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--accent); position: sticky; top: 0; z-index: 1000; }
+        .header h1 { font-family: 'Montserrat', sans-serif; font-size: 1.3rem; font-weight: 700; letter-spacing: 1px; }
+        
+        .nav { background: var(--white); display: flex; box-shadow: 0 2px 10px rgba(0,0,0,0.05); overflow-x: auto; sticky: top; top: 60px; z-index: 999; }
+        .nav-item { flex: 1; min-width: 120px; padding: 1rem; text-align: center; cursor: pointer; border-bottom: 3px solid transparent; transition: 0.3s; font-weight: 700; color: var(--gray); text-transform: uppercase; font-size: 0.8rem; }
+        .nav-item.active { border-bottom-color: var(--accent); color: var(--accent); background: #f0f9ff; }
 
-    /* Archive Grouping */
-    .week-group { margin-bottom: 3.5rem; }
-    .week-header { background: var(--primary); color: #fff; padding: 1.2rem 1.8rem; border-radius: 12px; margin-bottom: 1.5rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; border-left: 8px solid var(--accent); font-family: 'Montserrat'; }
-    .visit-card { background: #fff; border: 1px solid #e2e8f0; padding: 1.8rem; border-radius: 14px; margin-bottom: 1.2rem; transition: 0.3s; position: relative; }
-    .visit-card:hover { border-color: var(--accent); transform: translateY(-3px); box-shadow: 0 15px 30px rgba(0,0,0,0.08); }
-    .visit-main { display: flex; justify-content: space-between; align-items: flex-start; }
-    .visit-info h4 { font-size: 1.3rem; color: var(--primary); font-weight: 800; }
-    .visit-meta { font-size: 0.9rem; color: var(--gray); font-weight: 600; margin-top: 4px; }
-    .visit-badges { display: flex; gap: 0.8rem; margin-top: 1.2rem; flex-wrap: wrap; }
-    .badge { padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.8rem; font-weight: 700; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; text-transform: uppercase; }
-    .badge-primary { background: #f0f9ff; color: var(--accent); border-color: #bae6fd; }
+        .container { max-width: 1200px; margin: 2rem auto; padding: 0 1.5rem; }
+        .section { display: none; animation: fadeIn 0.4s ease-out; }
+        .section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Media & Uploads */
-    .photos-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
-    .photo-item { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 1; border: 3px solid #f1f5f9; }
-    .photo-item img { width: 100%; height: 100%; object-fit: cover; }
-    .delete-btn { position: absolute; top: 6px; right: 6px; background: #ef4444; color: #fff; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .card { background: var(--white); border-radius: 12px; padding: 2rem; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; margin-bottom: 2rem; }
+        h2 { font-family: 'Montserrat'; font-weight: 700; margin-bottom: 1.5rem; color: var(--primary); }
 
-    /* Reporting Engine */
-    .report-selectors { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem; background: #f8fafc; padding: 2rem; border-radius: 16px; border: 1px solid #e2e8f0; }
-    .exec-visuals-box { background: #f0f9ff; border: 2px dashed var(--accent); border-radius: 16px; padding: 2.5rem; margin-bottom: 2.5rem; display: none; }
-    .btn-pptx { background: #f39c12; width: 100%; font-size: 1.2rem; padding: 1.5rem; color: #fff; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 12px; }
-    .btn-pptx:hover { background: #d68910; transform: scale(1.01); }
+        /* Form Layout */
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        label { font-weight: 700; font-size: 0.85rem; color: var(--primary); }
+        input, select, textarea { padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.95rem; }
+        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(0, 160, 210, 0.1); }
 
-    .action-group { display: flex; gap: 0.8rem; }
-    .btn-icon { background: #f1f5f9; border: none; width: 40px; height: 40px; border-radius: 10px; cursor: pointer; transition: 0.2s; color: var(--gray); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
-    .btn-icon.edit:hover { background: #e0f2fe; color: var(--accent); }
-    .btn-icon.delete:hover { background: #fee2e2; color: #ef4444; }
+        .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.8rem; background: #f8fafc; padding: 1.2rem; border-radius: 8px; border: 1px solid #e2e8f0; }
+        .checkbox-group label { display: flex; align-items: center; gap: 0.6rem; font-weight: 500; cursor: pointer; color: var(--primary); }
+        .checkbox-group input { width: 18px; height: 18px; accent-color: var(--accent); }
 
-    @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; } .container { padding: 1rem; } .nav-item { min-width: 100px; padding: 1rem 0.5rem; font-size: 0.75rem; } }
-  </style>
+        /* Archive Styles */
+        .week-group { margin-bottom: 2.5rem; }
+        .week-header { background: var(--primary); color: var(--white); padding: 0.8rem 1.2rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 700; font-family: 'Montserrat'; display: flex; justify-content: space-between; align-items: center; }
+        .visit-row { background: var(--white); border: 1px solid #e2e8f0; padding: 1.2rem; border-radius: 10px; margin-bottom: 0.8rem; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .visit-row:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+        .visit-info h4 { font-weight: 800; font-size: 1.1rem; }
+        .visit-meta { font-size: 0.8rem; color: var(--gray); font-weight: 600; }
+        .badge-container { display: flex; gap: 0.5rem; margin-top: 0.6rem; flex-wrap: wrap; }
+        .badge { padding: 0.2rem 0.7rem; border-radius: 20px; font-size: 0.7rem; font-weight: 700; background: #f1f5f9; border: 1px solid #e2e8f0; text-transform: uppercase; }
+
+        /* Dashboard */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.2rem; margin-bottom: 2rem; }
+        .stat-card { padding: 1.5rem; border-radius: 12px; color: var(--white); }
+        .stat-card.blue { background: linear-gradient(135deg, #0d1628 0%, #1e293b 100%); }
+        .stat-card.cyan { background: linear-gradient(135deg, #00a0d2 0%, #0084ad 100%); }
+        .stat-card.orange { background: linear-gradient(135deg, #f39c12 0%, #d68910 100%); }
+        .stat-card .val { font-size: 2.2rem; font-weight: 800; font-family: 'Montserrat'; display: block; }
+        .stat-card .lab { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; opacity: 0.8; letter-spacing: 1px; }
+
+        /* Photos Management */
+        .photo-preview-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 0.8rem; margin-top: 1rem; }
+        .photo-item { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; border: 2px solid #e2e8f0; }
+        .photo-item img { width: 100%; height: 100%; object-fit: cover; }
+        .remove-photo { position: absolute; top: 4px; right: 4px; background: rgba(239, 68, 68, 0.9); color: white; border: none; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 12px; }
+
+        .btn { padding: 0.8rem 1.5rem; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; transition: 0.2s; font-family: inherit; }
+        .btn-primary { background: var(--accent); color: var(--white); }
+        .btn-primary:hover { background: #0084ad; }
+        .btn-pptx { background: var(--secondary); color: var(--white); width: 100%; font-size: 1.1rem; margin-top: 1rem; }
+
+        @media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+    </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>ZTE - LFM TRAINING PERFORMANCE</h1>
-  <div class="header-right">
-    <div class="sync-badge" id="syncBadge">
-      <span class="dot"></span>
-      <span id="syncText">Database Online</span>
-    </div>
-  </div>
+    <h1>ZTE PROFESSIONAL FIELD SUITE</h1>
+    <div class="sync-badge"><span class="dot"></span> <span>DB: ZTEReportDBv3</span></div>
 </div>
 
 <div class="nav">
-  <div class="nav-item active" onclick="switchToSection('dashboard')">Dashboard</div>
-  <div class="nav-item" onclick="switchToSection('newVisit')">New Visit</div>
-  <div class="nav-item" onclick="switchToSection('archive')">Archive</div>
-  <div class="nav-item" onclick="switchToSection('reports')">Reporting Engine</div>
+    <div class="nav-item active" onclick="showTab('dashboard')">Dashboard</div>
+    <div class="nav-item" onclick="showTab('new-visit')">New Visit</div>
+    <div class="nav-item" onclick="showTab('archive')">Archive</div>
+    <div class="nav-item" onclick="showTab('reports')">Reporting</div>
 </div>
 
 <div class="container">
-  
-  <div class="section active" id="dashboard">
-    <div id="dashboardContent"></div>
-    <div class="card">
-        <h3>Operational Excellence Tool</h3>
-        <p style="color:var(--gray);">Welcome to the field monitoring suite. Use the "New Visit" tab to log training sessions and "Archive" to review previous weeks. Configure filters in the Reporting Engine tab to download automated executive presentations.</p>
-    </div>
-  </div>
-
-  <div class="section" id="newVisit">
-    <div class="form-container">
-      <h2 id="formTitle">Log Training Survey</h2>
-      <form id="visitForm">
-        <div class="form-row">
-          <div class="form-col">
-            <label>Retail Chain *</label>
-            <select id="storeName" required>
-              <option value="">-- Select Store --</option>
-              <option>Mediaworld</option><option>Unieuro</option><option>Euronics</option>
-              <option>Expert</option><option>Comet</option><option>Bruno</option>
-              <option>DG Group</option><option>Online Training Session</option><option>Other</option>
-            </select>
-          </div>
-          <div class="form-col">
-            <label>City / Location *</label>
-            <input type="text" id="storeLocation" placeholder="e.g. Rome" required>
-          </div>
+    <section id="dashboard" class="section active">
+        <div id="statsContainer" class="stat-grid"></div>
+        <div class="card">
+            <h2>Tool Status</h2>
+            <p id="welcomeMsg">Caricamento dati...</p>
         </div>
+    </section>
 
-        <div class="form-row">
-          <div class="form-col">
-            <label>Visit Date *</label>
-            <input type="date" id="visitDate" required>
-            <small id="weekDisplay" style="color: var(--accent); font-weight: 800; margin-top: 0.6rem; text-transform: uppercase;"></small>
-          </div>
-          <div class="form-col">
-            <label>Delivery Mode</label>
-            <select id="deliveryMode">
-                <option>In Person</option>
-                <option>Online Session</option>
-                <option>On the Job</option>
-            </select>
-          </div>
-        </div>
+    <section id="new-visit" class="section">
+        <div class="form-container">
+            <h2 id="formTitle">Record Training Session</h2>
+            <form id="visitForm">
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Retail Chain *</label>
+                        <select id="storeName" required>
+                            <option value="">-- Select Store --</option>
+                            <option>Mediaworld</option><option>Unieuro</option><option>Euronics</option>
+                            <option>Expert</option><option>Comet</option><option>Bruno</option>
+                            <option>DG Group</option><option>Online Training Session</option><option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>City / Location *</label>
+                        <input type="text" id="storeLocation" placeholder="e.g. Rome" required>
+                    </div>
+                </div>
 
-        <div class="form-row">
-          <div class="form-col">
-            <label>Sell-out (Units Recorded)</label>
-            <input type="number" id="sellout" value="0" min="0">
-          </div>
-          <div class="form-col">
-            <label>Assigned Target (Units)</label>
-            <input type="number" id="target" value="0" min="0">
-          </div>
-        </div>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Visit Date *</label>
+                        <input type="date" id="visitDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Delivery Mode</label>
+                        <select id="deliveryMode">
+                            <option>In Person</option><option>Online Session</option><option>On the Job</option>
+                        </select>
+                    </div>
+                </div>
 
-        <div class="form-row">
-            <div class="form-col"><label>Staff Trained (Store Staff)</label><input type="number" id="staffCount" value="0" min="0"></div>
-            <div class="form-col"><label>Promoter Trained</label><input type="number" id="promoterCount" value="0" min="0"></div>
-        </div>
-        <div class="form-row">
-            <div class="form-col"><label>Ambassador Trained</label><input type="number" id="ambassadorCount" value="0" min="0"></div>
-            <div class="form-col"></div>
-        </div>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Sell-out (Units)</label>
+                        <input type="number" id="sellout" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Target (Units)</label>
+                        <input type="number" id="target" value="0">
+                    </div>
+                </div>
 
-        <div class="form-col full-width" style="margin-bottom:2.5rem;">
-            <label>Strategic Objectives *</label>
-            <div class="checkbox-group">
-                <label><input type="checkbox" name="objective" value="focus su top di gamma"> Focus on Flagship</label>
-                <label><input type="checkbox" name="objective" value="Increase sales"> Increase Sales</label>
-                <label><input type="checkbox" name="objective" value="Brand awareness"> Brand Awareness</label>
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Staff Trained (Store)</label>
+                        <input type="number" id="staffCount" value="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Promoter Trained</label>
+                        <input type="number" id="promoterCount" value="0">
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Ambassador Trained</label>
+                    <input type="number" id="ambassadorCount" value="0" style="width: 49%;">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Strategic Objectives *</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="objective" value="focus su top di gamma"> Focus on Flagship</label>
+                        <label><input type="checkbox" name="objective" value="Increase sales"> Increase Sales</label>
+                        <label><input type="checkbox" name="objective" value="Brand awareness"> Brand Awareness</label>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 1.5rem;">
+                    <label>Product Focus *</label>
+                    <div class="checkbox-group">
+                        <label><input type="checkbox" name="product" value="nubia AIR Lineup"> nubia AIR Lineup</label>
+                        <label><input type="checkbox" name="product" value="nubia Neo lineup"> nubia Neo lineup</label>
+                        <label><input type="checkbox" name="product" value="Blade V80/V70 lineup"> Blade V80/V70 lineup</label>
+                        <label><input type="checkbox" name="product" value="Blade A36"> Blade A36</label>
+                    </div>
+                </div>
+
+                <div class="grid">
+                    <div class="form-group">
+                        <label>Store Photos (Max 4)</label>
+                        <input type="file" id="visitPhotos" multiple accept="image/*">
+                        <div id="photosPreview" class="photo-preview-grid"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Power BI Screenshot</label>
+                        <input type="file" id="powerBiPhoto" accept="image/*">
+                        <div id="pbiPreview" class="photo-preview-grid"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Observer Notes</label>
+                    <textarea id="notes" rows="3" placeholder="Feedback or issues..."></textarea>
+                </div>
+
+                <div style="display:flex; gap:1rem; margin-top:2rem;">
+                    <button type="submit" class="btn btn-primary" id="saveBtn" style="flex:2;">SAVE SESSION</button>
+                    <button type="reset" class="btn btn-secondary" style="flex:1;">RESET</button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <section id="archive" class="section">
+        <div class="archive-container">
+            <h2>Weekly History</h2>
+            <div id="archiveList"></div>
+        </div>
+    </section>
+
+    <section id="reports" class="section">
+        <div class="card">
+            <h2>PPTX Reporting Engine</h2>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Report Level</label>
+                    <select id="repType" onchange="updateRepFilters()">
+                        <option value="weekly">Weekly Detailed</option>
+                        <option value="monthly">Monthly Summary</option>
+                        <option value="quarterly">Quarterly Strategic</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Target Period</label>
+                    <select id="repPeriod"></select>
+                </div>
             </div>
+            <button class="btn btn-pptx" onclick="generateCorporatePPTX()">
+                <i class="fa-solid fa-file-powerpoint"></i> GENERATE EXECUTIVE DECK
+            </button>
         </div>
-
-        <div class="form-col full-width" style="margin-bottom:2.5rem;">
-            <label>Product Focus & Categories *</label>
-            <div class="checkbox-group">
-                <label><input type="checkbox" name="contents" value="nubia AIR Lineup"> nubia AIR Lineup</label>
-                <label><input type="checkbox" name="contents" value="nubia Neo lineup"> nubia Neo lineup</label>
-                <label><input type="checkbox" name="contents" value="Blade V80/V70 lineup"> Blade V80/V70 lineup</label>
-                <label><input type="checkbox" name="contents" value="Blade A36"> Blade A36</label>
-                <label><input type="checkbox" name="contents" value="Corporate Info"> Corporate Info</label>
-            </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-col">
-            <label>In-Store Visuals</label>
-            <input type="file" id="visitPhotos" multiple accept="image/*">
-            <div id="photosPreview" class="photos-preview"></div>
-          </div>
-          <div class="form-col">
-            <label>Power BI Screenshot</label>
-            <input type="file" id="powerBiPhoto" accept="image/*">
-            <div id="powerBiPreview" class="photos-preview"></div>
-          </div>
-        </div>
-
-        <div class="form-col full-width" style="margin-top:1rem;">
-          <label>Field Observer Notes</label>
-          <textarea id="notes" placeholder="Detailed feedback, issues encountered or specific praise..."></textarea>
-        </div>
-
-        <div class="form-actions" style="margin-top:2.5rem; display:flex; gap:1.5rem;">
-          <button type="submit" class="btn btn-primary" id="saveBtn" style="flex:2; padding:1.2rem;">Save Session Record</button>
-          <button type="reset" class="btn btn-secondary" style="flex:1;">Clear Form</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <div class="section" id="archive">
-    <div class="archive-container">
-      <h2>Historical Session Archive</h2>
-      <div id="archiveList"></div>
-    </div>
-  </div>
-
-  <div class="section" id="reports">
-    <div class="reports-container">
-      <h2>Global Reporting Engine</h2>
-      <p style="color:var(--gray); margin-bottom:2rem;">Configure filters to export a specific period. The system will automatically aggregate data and generate professional slide decks.</p>
-      
-      <div class="report-selectors">
-        <div class="form-col">
-          <label>Aggregation Level</label>
-          <select id="reportType" onchange="updateReportUI()">
-            <option value="weekly">Weekly Detailed Deck</option>
-            <option value="monthly">Monthly Executive Summary</option>
-            <option value="quarterly">Quarterly Strategic Review</option>
-          </select>
-        </div>
-
-        <div class="form-col" id="filterPeriodContainer">
-          <label id="filterPeriodLabel">Select Target Week</label>
-          <select id="reportPeriodSelect"></select>
-        </div>
-
-        <div class="form-col">
-          <label>Executive Title Override</label>
-          <input type="text" id="reportPeriodText" placeholder="e.g. May 2026 Analysis">
-        </div>
-      </div>
-
-      <div class="exec-visuals-box" id="execModule">
-        <h3><i class="fa-solid fa-crown" style="color:var(--secondary); margin-right:10px;"></i> Executive Highlights</h3>
-        <p style="font-size:0.9rem; color:var(--gray); margin-bottom:1.5rem;">Append global dashboards or excellence photos manually for the executive report.</p>
-        <div class="form-row">
-          <div class="form-col">
-            <label>Master PBI Dashboards (Max 2)</label>
-            <input type="file" id="execDashFiles" multiple accept="image/*">
-            <div id="execDashPreview" class="photos-preview"></div>
-          </div>
-          <div class="form-col">
-            <label>High-Impact Highlights (Max 8)</label>
-            <input type="file" id="execHighFiles" multiple accept="image/*">
-            <div id="execHighPreview" class="photos-preview"></div>
-          </div>
-        </div>
-      </div>
-
-      <button class="btn-pptx" onclick="generatePPTX()">
-        <i class="fa-solid fa-file-powerpoint"></i> Generate Professional Slide Deck
-      </button>
-    </div>
-  </div>
-
+    </section>
 </div>
 
 <script>
-// ==========================================
-// --- CORE DB & INITIALIZATION ---
-// ==========================================
-const CONFIG = { dbName: 'ZTEReportDBv3', dbVersion: 1 };
-let db, visits = [];
+    const DB_CONFIG = { name: 'ZTEReportDBv3', version: 1 };
+    let db, visits = [];
 
-async function init() {
-  db = await new Promise((res, rej) => {
-    const req = indexedDB.open(CONFIG.dbName, CONFIG.dbVersion);
-    req.onupgradeneeded = e => {
-        let database = e.target.result;
-        if(!database.objectStoreNames.contains('visits')) database.createObjectStore('visits', { keyPath: 'id' });
-    };
-    req.onsuccess = e => res(e.target.result);
-    req.onerror = rej;
-  });
-  await loadData();
-  renderDashboard();
-}
-
-async function loadData() {
-  visits = await new Promise(res => {
-    const tx = db.transaction('visits', 'readonly');
-    tx.objectStore('visits').getAll().onsuccess = e => res(e.target.result);
-  });
-}
-
-// ==========================================
-// --- UTILITIES ---
-// ==========================================
-function getWeekNumber(d) {
-  d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
-  d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
-  return Math.ceil((((d - new Date(Date.UTC(d.getUTCFullYear(), 0, 1))) / 86400000) + 1) / 7);
-}
-
-function getQuarter(d) { return Math.floor((d.getMonth() + 3) / 3); }
-
-document.getElementById('visitDate').onchange = function() {
-    if(this.value) document.getElementById('weekDisplay').innerText = "CALENDAR WEEK " + getWeekNumber(new Date(this.value));
-};
-
-function blobToBase64(file) {
-  return new Promise(res => {
-    const r = new FileReader();
-    r.onload = () => res(r.result);
-    r.readAsDataURL(file);
-  });
-}
-
-// ==========================================
-// --- UI DYNAMIC LOGIC ---
-// ==========================================
-function switchToSection(id) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  if(event && event.target.classList.contains('nav-item')) event.target.classList.add('active');
-  
-  if(id === 'archive') renderArchive();
-  if(id === 'dashboard') renderDashboard();
-  if(id === 'reports') populatePeriodFilters();
-}
-
-function populatePeriodFilters() {
-    const type = document.getElementById('reportType').value;
-    const select = document.getElementById('reportPeriodSelect');
-    select.innerHTML = "";
-    if(visits.length === 0) return;
-
-    if(type === 'weekly') {
-        document.getElementById('filterPeriodLabel').innerText = "Select Target Week";
-        const weeks = [...new Set(visits.map(v => {
-            const d = new Date(v.visitDate);
-            return `Week ${getWeekNumber(d)} - ${d.getFullYear()}`;
-        }))].sort().reverse();
-        weeks.forEach(w => select.options.add(new Option(w, w)));
-    } else if(type === 'monthly') {
-        document.getElementById('filterPeriodLabel').innerText = "Select Target Month";
-        const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        const availableMonths = [...new Set(visits.map(v => {
-            const d = new Date(v.visitDate);
-            return `${months[d.getMonth()]} ${d.getFullYear()}`;
-        }))].sort().reverse();
-        availableMonths.forEach(m => select.options.add(new Option(m, m)));
-    } else if(type === 'quarterly') {
-        document.getElementById('filterPeriodLabel').innerText = "Select Target Quarter";
-        const quarters = [...new Set(visits.map(v => {
-            const d = new Date(v.visitDate);
-            return `Q${getQuarter(d)} - ${d.getFullYear()}`;
-        }))].sort().reverse();
-        quarters.forEach(q => select.options.add(new Option(q, q)));
+    // --- DB MANAGEMENT ---
+    async function initDB() {
+        return new Promise((res, rej) => {
+            const req = indexedDB.open(DB_CONFIG.name, DB_CONFIG.version);
+            req.onupgradeneeded = e => {
+                const d = e.target.result;
+                if (!d.objectStoreNames.contains('visits')) d.createObjectStore('visits', { keyPath: 'id' });
+            };
+            req.onsuccess = e => { db = e.target.result; res(); };
+            req.onerror = rej;
+        });
     }
-}
 
-function updateReportUI() {
-    const type = document.getElementById('reportType').value;
-    document.getElementById('execModule').style.display = (type === 'monthly' || type === 'quarterly') ? 'block' : 'none';
-    populatePeriodFilters();
-}
-
-function renderDashboard() {
-    const container = document.getElementById('dashboardContent');
-    if(visits.length === 0) {
-        container.innerHTML = `<div class='form-container' style='text-align:center;'><h3>Database is Empty</h3><p>Record your first visit to populate system statistics.</p></div>`;
-        return;
+    async function fetchData() {
+        visits = await new Promise(res => {
+            const tx = db.transaction('visits', 'readonly');
+            tx.objectStore('visits').getAll().onsuccess = e => res(e.target.result);
+        });
+        updateDashboard();
     }
-    const sell = visits.reduce((a,b)=>a+(parseInt(b.sellout)||0), 0);
-    const target = visits.reduce((a,b)=>a+(parseInt(b.target)||0), 0);
-    const perc = target > 0 ? (sell/target*100).toFixed(1) : 0;
-    
-    const staff = visits.reduce((a,b)=>a+(parseInt(b.staffCount)||0), 0);
-    const promoter = visits.reduce((a,b)=>a+(parseInt(b.promoterCount)||0), 0);
-    const ambassador = visits.reduce((a,b)=>a+(parseInt(b.ambassadorCount)||parseInt(b.ambassadorsCount)||0), 0);
-    const totalTrained = staff + promoter + ambassador;
 
-    container.innerHTML = `
-        <div class="dashboard-grid">
-            <div class="stat-card dark"><div class="stat-lab">Visits Count</div><div class="stat-val">${visits.length}</div></div>
-            <div class="stat-card accent"><div class="stat-lab">Global Sell-out</div><div class="stat-val">${sell}</div></div>
-            <div class="stat-card success"><div class="stat-lab">Achievement</div><div class="stat-val">${perc}%</div></div>
-            <div class="stat-card orange"><div class="stat-lab">Total Trained</div><div class="stat-val">${totalTrained}</div></div>
-        </div>
-    `;
-}
+    // --- UI LOGIC ---
+    function showTab(id) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        const nav = Array.from(document.querySelectorAll('.nav-item')).find(n => n.innerText.toLowerCase().includes(id.split('-')[0]));
+        if(nav) nav.classList.add('active');
+        if(id === 'archive') renderArchive();
+        if(id === 'reports') updateRepFilters();
+    }
 
-// ==========================================
-// --- ARCHIVE & CRUD ---
-// ==========================================
-function renderArchive() {
-  const list = document.getElementById('archiveList');
-  if(visits.length === 0) { list.innerHTML = "<p>No data available in archive.</p>"; return; }
+    function getWeek(d) {
+        const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        date.setUTCDate(date.getUTCDate() + 4 - (date.getUTCDay() || 7));
+        const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+        return Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+    }
 
-  const sorted = [...visits].sort((a,b) => new Date(b.visitDate) - new Date(a.visitDate));
-  const grouped = sorted.reduce((acc, v) => {
-    const key = `WEEK ${getWeekNumber(new Date(v.visitDate))} - ${new Date(v.visitDate).getFullYear()}`;
-    if(!acc[key]) acc[key] = [];
-    acc[key].push(v);
-    return acc;
-  }, {});
+    function updateDashboard() {
+        const container = document.getElementById('statsContainer');
+        if (!visits.length) {
+            document.getElementById('welcomeMsg').innerText = "Nessun dato in archivio. Registra la prima visita.";
+            return;
+        }
+        const sOut = visits.reduce((a, b) => a + (parseInt(b.sellout) || 0), 0);
+        const trained = visits.reduce((a, b) => a + (parseInt(b.staffCount) || 0) + (parseInt(b.promoterCount) || 0) + (parseInt(b.ambassadorCount) || 0), 0);
+        
+        container.innerHTML = `
+            <div class="stat-card blue"><span class="lab">Visits</span><span class="val">${visits.length}</span></div>
+            <div class="stat-card cyan"><span class="lab">Sell-out</span><span class="val">${sOut}</span></div>
+            <div class="stat-card orange"><span class="lab">Headcount</span><span class="val">${trained}</span></div>
+        `;
+        document.getElementById('welcomeMsg').innerText = "Sistema sincronizzato. Database pronto per l'esportazione.";
+    }
 
-  let html = "";
-  for(const week in grouped) {
-    html += `<div class="week-group"><div class="week-header"><span>${week}</span><span>${grouped[week].length} SESSIONS</span></div>`;
-    grouped[week].forEach(v => {
-      let vAmb = parseInt(v.ambassadorCount) || parseInt(v.ambassadorsCount) || 0;
-      let vProm = parseInt(v.promoterCount) || 0;
-      let vStaff = parseInt(v.staffCount) || 0;
-      
-      html += `
-        <div class="visit-card">
-          <div class="visit-main">
-            <div class="visit-info">
-              <h4>${v.storeName} - ${v.storeLocation}</h4>
-              <div class="visit-meta">${v.visitDate} | ${v.deliveryMode || 'In Person'}</div>
-            </div>
-            <div class="action-group">
-              <button class="btn-icon edit" onclick="editVisit('${v.id}')"><i class="fa-solid fa-pen"></i></button>
-              <button class="btn-icon delete" onclick="deleteVisit('${v.id}')"><i class="fa-solid fa-trash"></i></button>
-            </div>
-          </div>
-          <div class="visit-badges">
-            <span class="badge badge-primary">Sell-out: ${v.sellout} / ${v.target}</span>
-            <span class="badge">Staff: ${vStaff}</span>
-            <span class="badge">Promoter: ${vProm}</span>
-            <span class="badge">Ambassador: ${vAmb}</span>
-          </div>
-        </div>`;
+    function renderArchive() {
+        const list = document.getElementById('archiveList');
+        list.innerHTML = "";
+        const sorted = [...visits].sort((a,b) => new Date(b.date) - new Date(a.date));
+        const grouped = sorted.reduce((acc, v) => {
+            const key = `WEEK ${getWeek(new Date(v.date))} - ${new Date(v.date).getFullYear()}`;
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(v);
+            return acc;
+        }, {});
+
+        for (const week in grouped) {
+            let html = `<div class="week-group"><div class="week-header"><span>${week}</span><span>${grouped[week].length} SESSIONS</span></div>`;
+            grouped[week].forEach(v => {
+                html += `
+                <div class="visit-row">
+                    <div class="visit-info">
+                        <h4>${v.store}</h4>
+                        <p class="visit-meta">${v.location} | ${v.date}</p>
+                        <div class="badge-container">
+                            <span class="badge badge-primary">S/O: ${v.sellout}</span>
+                            <span class="badge">STAFF: ${v.staffCount}</span>
+                            <span class="badge">PROM: ${v.promoterCount}</span>
+                            <span class="badge">AMB: ${v.ambassadorCount}</span>
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:0.5rem;">
+                        <button class="btn-icon edit" onclick="editVisit('${v.id}')"><i class="fa-solid fa-pen"></i></button>
+                        <button class="btn-icon delete" onclick="deleteVisit('${v.id}')"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>`;
+            });
+            html += `</div>`;
+            list.innerHTML += html;
+        }
+    }
+
+    // --- FORM & IMAGE HANDLERS ---
+    const blobToBase64 = (file) => new Promise(res => {
+        const r = new FileReader();
+        r.onload = () => res(r.result);
+        r.readAsDataURL(file);
     });
-    html += `</div>`;
-  }
-  list.innerHTML = html;
-}
 
-// ==========================================
-// --- FORM & IMAGE HANDLING ---
-// ==========================================
-document.getElementById('visitPhotos').onchange = async function() {
-    for(let f of this.files) {
-        const b64 = await blobToBase64(f);
-        const div = document.createElement('div');
-        div.className = 'photo-item';
-        div.innerHTML = `<img src="${b64}"><button class="delete-btn" type="button" onclick="this.parentElement.remove()">×</button>`;
-        document.getElementById('photosPreview').appendChild(div);
-    }
-};
-
-document.getElementById('powerBiPhoto').onchange = async function() {
-    if(!this.files[0]) return;
-    const b64 = await blobToBase64(this.files[0]);
-    document.getElementById('powerBiPreview').innerHTML = `<div class="photo-item"><img src="${b64}"><button class="delete-btn" type="button" onclick="this.parentElement.remove()">×</button></div>`;
-};
-
-document.getElementById('visitForm').onsubmit = async (e) => {
-    e.preventDefault();
-    const saveBtn = document.getElementById('saveBtn');
-    const id = saveBtn.dataset.editId || 'v_' + Date.now();
-    
-    const visit = {
-        id,
-        storeName: document.getElementById('storeName').value,
-        storeLocation: document.getElementById('storeLocation').value,
-        visitDate: document.getElementById('visitDate').value,
-        deliveryMode: document.getElementById('deliveryMode').value,
-        sellout: document.getElementById('sellout').value,
-        target: document.getElementById('target').value,
-        staffCount: document.getElementById('staffCount').value,
-        promoterCount: document.getElementById('promoterCount').value,
-        ambassadorCount: document.getElementById('ambassadorCount').value,
-        objectives: Array.from(document.querySelectorAll('input[name="objective"]:checked')).map(i => i.value),
-        contents: Array.from(document.querySelectorAll('input[name="contents"]:checked')).map(i => i.value),
-        photos: Array.from(document.querySelectorAll('#photosPreview img')).map(i => i.src),
-        powerBi: document.querySelector('#powerBiPreview img')?.src || null,
-        notes: document.getElementById('notes').value
+    document.getElementById('visitPhotos').onchange = async function() {
+        const grid = document.getElementById('photosPreview');
+        for (let f of this.files) {
+            const b64 = await blobToBase64(f);
+            grid.innerHTML += `<div class="photo-item"><img src="${b64}"><button type="button" class="remove-photo" onclick="this.parentElement.remove()">×</button></div>`;
+        }
     };
 
-    const tx = db.transaction('visits', 'readwrite');
-    tx.objectStore('visits').put(visit);
-    alert("Field Session Logged Successfully!");
-    
-    document.getElementById('visitForm').reset();
-    document.querySelectorAll('.photos-preview').forEach(p => p.innerHTML = "");
-    delete saveBtn.dataset.editId;
-    saveBtn.innerText = "Save Session Record";
-    
-    await loadData();
-    switchToSection('dashboard');
-};
+    document.getElementById('powerBiPhoto').onchange = async function() {
+        const grid = document.getElementById('pbiPreview');
+        if (!this.files[0]) return;
+        const b64 = await blobToBase64(this.files[0]);
+        grid.innerHTML = `<div class="photo-item"><img src="${b64}"><button type="button" class="remove-photo" onclick="this.parentElement.remove()">×</button></div>`;
+    };
 
-async function editVisit(id) {
-    const v = visits.find(x => x.id === id);
-    if(!v) return;
-    document.getElementById('storeName').value = v.storeName;
-    document.getElementById('storeLocation').value = v.storeLocation;
-    document.getElementById('visitDate').value = v.visitDate;
-    document.getElementById('deliveryMode').value = v.deliveryMode || 'In Person';
-    document.getElementById('sellout').value = v.sellout || 0;
-    document.getElementById('target').value = v.target || 0;
-    document.getElementById('staffCount').value = v.staffCount || 0;
-    document.getElementById('promoterCount').value = v.promoterCount || 0;
-    document.getElementById('ambassadorCount').value = v.ambassadorCount || v.ambassadorsCount || 0;
-    document.getElementById('notes').value = v.notes || "";
-    
-    document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
-    v.objectives?.forEach(o => { const el = document.querySelector(`input[value="${o}"]`); if(el) el.checked = true; });
-    v.contents?.forEach(c => { const el = document.querySelector(`input[value="${c}"]`); if(el) el.checked = true; });
-    
-    document.getElementById('photosPreview').innerHTML = "";
-    v.photos?.forEach(p => {
-        const div = document.createElement('div');
-        div.className = 'photo-item';
-        div.innerHTML = `<img src="${p}"><button class="delete-btn" type="button" onclick="this.parentElement.remove()">×</button>`;
-        document.getElementById('photosPreview').appendChild(div);
-    });
-    
-    if(v.powerBi) {
-        document.getElementById('powerBiPreview').innerHTML = `<div class="photo-item"><img src="${v.powerBi}"><button class="delete-btn" type="button" onclick="this.parentElement.remove()">×</button></div>`;
+    document.getElementById('visitForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('saveBtn');
+        const id = btn.dataset.editId || 'v_' + Date.now();
+        
+        const payload = {
+            id,
+            store: document.getElementById('storeName').value,
+            location: document.getElementById('storeLocation').value,
+            date: document.getElementById('visitDate').value,
+            delivery: document.getElementById('deliveryMode').value,
+            sellout: document.getElementById('sellout').value,
+            target: document.getElementById('target').value,
+            staffCount: document.getElementById('staffCount').value,
+            promoterCount: document.getElementById('promoterCount').value,
+            ambassadorCount: document.getElementById('ambassadorCount').value,
+            objectives: Array.from(document.querySelectorAll('input[name="objective"]:checked')).map(i => i.value),
+            products: Array.from(document.querySelectorAll('input[name="product"]:checked')).map(i => i.value),
+            photos: Array.from(document.querySelectorAll('#photosPreview img')).map(i => i.src),
+            powerBi: document.querySelector('#pbiPreview img')?.src || null,
+            notes: document.getElementById('notes').value
+        };
+
+        const tx = db.transaction('visits', 'readwrite');
+        tx.objectStore('visits').put(payload);
+        alert("Sessione salvata con successo!");
+        
+        document.getElementById('visitForm').reset();
+        document.getElementById('photosPreview').innerHTML = "";
+        document.getElementById('pbiPreview').innerHTML = "";
+        delete btn.dataset.editId;
+        btn.innerText = "SAVE SESSION";
+        
+        await fetchData();
+        showTab('dashboard');
+    };
+
+    async function editVisit(id) {
+        const v = visits.find(x => x.id === id);
+        if(!v) return;
+        document.getElementById('storeName').value = v.store;
+        document.getElementById('storeLocation').value = v.location;
+        document.getElementById('visitDate').value = v.date;
+        document.getElementById('sellout').value = v.sellout;
+        document.getElementById('target').value = v.target;
+        document.getElementById('staffCount').value = v.staffCount;
+        document.getElementById('promoterCount').value = v.promoterCount;
+        document.getElementById('ambassadorCount').value = v.ambassadorCount;
+        document.getElementById('notes').value = v.notes;
+        
+        document.querySelectorAll('input[type="checkbox"]').forEach(c => c.checked = false);
+        v.objectives?.forEach(o => { const el = document.querySelector(`input[value="${o}"]`); if(el) el.checked = true; });
+        v.products?.forEach(p => { const el = document.querySelector(`input[value="${p}"]`); if(el) el.checked = true; });
+        
+        document.getElementById('photosPreview').innerHTML = "";
+        v.photos?.forEach(p => {
+            document.getElementById('photosPreview').innerHTML += `<div class="photo-item"><img src="${p}"><button type="button" class="remove-photo" onclick="this.parentElement.remove()">×</button></div>`;
+        });
+        if(v.powerBi) {
+            document.getElementById('pbiPreview').innerHTML = `<div class="photo-item"><img src="${v.powerBi}"><button type="button" class="remove-photo" onclick="this.parentElement.remove()">×</button></div>`;
+        }
+
+        const btn = document.getElementById('saveBtn');
+        btn.dataset.editId = id;
+        btn.innerText = "UPDATE SESSION";
+        showTab('new-visit');
     }
 
-    const saveBtn = document.getElementById('saveBtn');
-    saveBtn.dataset.editId = id;
-    saveBtn.innerText = "Update Session Record";
-    switchToSection('newVisit');
-}
+    async function deleteVisit(id) {
+        if(!confirm("Cancellare definitivamente?")) return;
+        const tx = db.transaction('visits', 'readwrite');
+        tx.objectStore('visits').delete(id);
+        await fetchData();
+        renderArchive();
+    }
 
-async function deleteVisit(id) {
-    if(!confirm("Proceed with deletion? Data cannot be recovered.")) return;
-    const tx = db.transaction('visits', 'readwrite');
-    tx.objectStore('visits').delete(id);
-    await loadData();
-    renderArchive();
-}
+    // --- REPORTING FILTERS ---
+    function updateRepFilters() {
+        const type = document.getElementById('repType').value;
+        const select = document.getElementById('repPeriod');
+        select.innerHTML = "";
+        if(!visits.length) return;
 
-// ========================================================
-// --- MCKINSEY RE-ARCHITECTED PPTX ENGINE (DEEP CORRECTION) ---
-// ========================================================
-async function generatePPTX() {
-  const type = document.getElementById('reportType').value;
-  const selectedPeriod = document.getElementById('reportPeriodSelect').value;
-  const customTitle = document.getElementById('reportPeriodText').value || selectedPeriod;
-  
-  if(visits.length === 0) { alert("Database is empty."); return; }
+        let options = [];
+        if(type === 'weekly') {
+            options = [...new Set(visits.map(v => `Week ${getWeek(new Date(v.date))} - ${new Date(v.date).getFullYear()}`))];
+        } else if(type === 'monthly') {
+            const mNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+            options = [...new Set(visits.map(v => `${mNames[new Date(v.date).getMonth()]} ${new Date(v.date).getFullYear()}`))];
+        } else {
+            options = [...new Set(visits.map(v => `Q${Math.floor((new Date(v.date).getMonth() + 3) / 3)} - ${new Date(v.date).getFullYear()}`))];
+        }
+        options.sort().reverse().forEach(o => select.options.add(new Option(o, o)));
+    }
 
-  const filteredVisits = visits.filter(v => {
-      const d = new Date(v.visitDate);
-      if(type === 'weekly') return `Week ${getWeekNumber(d)} - ${d.getFullYear()}` === selectedPeriod;
-      if(type === 'monthly') {
-          const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-          return `${months[d.getMonth()]} ${d.getFullYear()}` === selectedPeriod;
-      }
-      if(type === 'quarterly') return `Q${getQuarter(d)} - ${d.getFullYear()}` === selectedPeriod;
-      return true;
-  });
+    // ==========================================
+    // --- MCKINSEY PPTX ENGINE (DEEP FIX) ---
+    // ==========================================
+    async function generateCorporatePPTX() {
+        const type = document.getElementById('repType').value;
+        const period = document.getElementById('repPeriod').value;
+        if(!period) { alert("Seleziona un periodo."); return; }
 
-  if(filteredVisits.length === 0) { alert("No records matched the selected period."); return; }
+        const filtered = visits.filter(v => {
+            const d = new Date(v.date);
+            if(type === 'weekly') return `Week ${getWeek(d)} - ${d.getFullYear()}` === period;
+            if(type === 'monthly') {
+                const mNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+                return `${mNames[d.getMonth()]} ${d.getFullYear()}` === period;
+            }
+            return `Q${Math.floor((d.getMonth() + 3) / 3)} - ${d.getFullYear()}` === period;
+        });
 
-  const pres = new PptxGenJS();
-  pres.layout = 'LAYOUT_16x9'; 
+        const pres = new PptxGenJS();
+        pres.layout = 'LAYOUT_16x9'; 
+        const THEME = { bg: '0D1628', cyan: '00A0D2', white: 'FFFFFF', gray: '94A3B8', slate: '1E293B' };
 
-  // PALETTE DEFINITION (Strict Corporate Slate-Dark)
-  const THEME = { 
-    bg: '0D1628', 
-    cyan: '00A0D2', 
-    white: 'FFFFFF', 
-    gray: '64748B', 
-    lightBg: 'F8FAFC',
-    textDark: '1E293B' 
-  };
+        // --- 1. COVER ---
+        let s1 = pres.addSlide(); s1.background = { color: THEME.bg };
+        s1.addText("FIELD PERFORMANCE ANALYTICS", { x: 0.8, y: 2.2, w: 12, fontSize: 40, bold: true, color: THEME.cyan, fontFace: 'Montserrat' });
+        s1.addText(`${period.toUpperCase()} | EXECUTIVE TRAINING REPORT`, { x: 0.8, y: 3.1, w: 12, fontSize: 16, color: THEME.gray, fontFace: 'Urbanist' });
+        s1.addShape(pres.ShapeType.rect, { x: 0.8, y: 3.7, w: 1.5, h: 0.04, fill: { color: THEME.cyan } });
 
-  // ----------------------------------------------------
-  // SLIDE 1: COVER (McKinsey Typography Fix)
-  // ----------------------------------------------------
-  let s1 = pres.addSlide(); 
-  s1.background = { color: THEME.bg };
-  
-  s1.addText("FIELD PERFORMANCE ANALYTICS", { 
-    x: 0.8, y: 2.2, w: 11, 
-    fontSize: 40, bold: true, 
-    color: THEME.cyan, fontFace: 'Montserrat' 
-  });
-  s1.addText(`${customTitle.toUpperCase()} | FIELD OPERATIONAL SUITE`, { 
-    x: 0.8, y: 3.1, w: 11, 
-    fontSize: 16, color: THEME.white, fontFace: 'Urbanist',
-    color: '94A3B8'
-  });
-  s1.addShape(pres.ShapeType.rect, { x: 0.8, y: 3.7, w: 1.5, h: 0.04, fill: { color: THEME.cyan } });
+        // Totals
+        let tS = 0, tT = 0, tStaff = 0, tProm = 0, tAmb = 0;
+        filtered.forEach(v => {
+            tS += parseInt(v.sellout || 0); tT += parseInt(v.target || 0);
+            tStaff += parseInt(v.staffCount || 0); tProm += parseInt(v.promoterCount || 0); tAmb += parseInt(v.ambassadorCount || 0);
+        });
+        const ach = tT > 0 ? (tS/tT*100).toFixed(1)+'%' : '0%';
 
-  // Data aggregations
-  let totS = 0, totT = 0, totStaff = 0, totProm = 0, totAmb = 0;
-  filteredVisits.forEach(v => {
-      totS += (parseInt(v.sellout)||0);
-      totT += (parseInt(v.target)||0);
-      totStaff += (parseInt(v.staffCount)||0);
-      totProm += (parseInt(v.promoterCount)||0);
-      totAmb += (parseInt(v.ambassadorCount)||parseInt(v.ambassadorsCount)||0);
-  });
-  const ach = totT > 0 ? (totS/totT*100).toFixed(1)+'%' : '0%';
+        // --- 2. SUMMARY METRICS ---
+        let s2 = pres.addSlide(); s2.background = { color: THEME.bg };
+        s2.addText(`${type.toUpperCase()} SUMMARY - CONSOLIDATED KPI`, { x: 0.6, y: 0.4, fontSize: 22, bold: true, color: THEME.white, fontFace: 'Montserrat' });
+        s2.addShape(pres.ShapeType.line, { x: 0.6, y: 0.9, w: 12.1, line: { color: THEME.cyan, width: 2 } });
 
-  // ----------------------------------------------------
-  // SLIDE 2: CONSOLIDATED METRICS (Clean Grid, No generic fonts)
-  // ----------------------------------------------------
-  let s2 = pres.addSlide();
-  s2.background = { color: THEME.bg };
-  
-  // Title Bar
-  s2.addText(`${type.toUpperCase()} RECAP - EXECUTIVE SUMMARY`, { x: 0.6, y: 0.4, fontSize: 22, bold: true, color: THEME.white, fontFace: 'Montserrat' });
-  s2.addShape(pres.ShapeType.line, { x: 0.6, y: 0.9, w: 12.1, line: { color: THEME.cyan, width: 2 } });
+        s2.addTable([
+            [{text: "KEY METRIC INDICATOR", options: {fill: THEME.slate, color: THEME.cyan, bold:true, fontFace:'Montserrat'}}, {text: "VALUE", options: {fill: THEME.slate, color: THEME.cyan, bold:true, align:'center', fontFace:'Montserrat'}}],
+            ["Total Sessions Recorded", filtered.length.toString()],
+            ["Total Store Staff Formed", tStaff.toString()],
+            ["Total Promoters Activated", tProm.toString()],
+            ["Total Brand Ambassadors Involved", tAmb.toString()],
+            ["Cumulative Sell-out Volume", `${tS} units`],
+            ["Average Achievement Rate", ach]
+        ], { x: 0.6, y: 1.6, w: 6.0, colW: [4.2, 1.8], fontSize: 11, fontFace: 'Urbanist', color: THEME.white, border: { pt: 0.5, color: '334155' }, margin: 10 });
 
-  // McKinsey Fixed Table Metrics
-  s2.addTable([
-    [{text: "KEY METRIC INDICATOR", options: {fill: '1E293B', color: THEME.cyan, bold:true, fontFace:'Montserrat'}}, {text: "CONSOLIDATED", options: {fill: '1E293B', color: THEME.cyan, bold:true, align:'center', fontFace:'Montserrat'}}],
-    ["Total Field Sessions Executed", filteredVisits.length.toString()],
-    ["Total Store Staff Formed", totStaff.toString()],
-    ["Total Promoters Activated", totProm.toString()],
-    ["Total Brand Ambassadors Involved", totAmb.toString()],
-    ["Cumulative Sell-out Volume", `${totS} units`],
-    ["Target Base Line", `${totT} units`],
-    ["Overall Target Achievement Rate", ach]
-  ], { 
-    x: 0.6, y: 1.6, w: 6.0, colW: [4.2, 1.8], 
-    fontSize: 11, fontFace: 'Urbanist', color: THEME.white,
-    border: { pt: 0.5, color: '334155' }, margin: 10
-  });
+        s2.addChart(pres.ChartType.doughnut, [
+            { name: 'Headcount', labels: ['Staff', 'Promoter', 'Ambassador'], values: [tStaff||1, tProm, tAmb] }
+        ], { x: 7.2, y: 1.6, w: 5.0, h: 4.2, showLegend: true, legendPos: 'b', chartColors: ['00A0D2', 'F39C12', '22C55E'] });
 
-  // Balanced Chart Layout beside table
-  s2.addChart(pres.ChartType.doughnut, [
-    { name: 'Headcount', labels: ['Staff', 'Promoter', 'Ambassador'], values: [totStaff || 1, totProm || 0, totAmb || 0] }
-  ], { 
-    x: 7.2, y: 1.6, w: 5.0, h: 4.2, 
-    showLegend: true, legendPos: 'b',
-    chartColors: ['00A0D2', 'F39C12', '22C55E']
-  });
+        // --- 3+. DETAILED STORE SLIDES ---
+        filtered.forEach(v => {
+            let s = pres.addSlide(); s.background = { color: THEME.bg };
+            s.addText(`${v.store.toUpperCase()} - ${v.location.toUpperCase()}`, { x: 0.6, y: 0.4, fontSize: 22, bold: true, color: THEME.white, fontFace: 'Montserrat' });
+            s.addText(v.date, { x: 11.2, y: 0.4, fontSize: 12, color: THEME.gray, fontFace: 'Urbanist', align: 'right' });
+            s.addShape(pres.ShapeType.line, { x: 0.6, y: 0.9, w: 12.1, line: { color: THEME.cyan, width: 1 } });
 
-  // ----------------------------------------------------
-  // SLIDE 3+: INSTORE TARGET PAGES (Strict Sizing Rules)
-  // ----------------------------------------------------
-  filteredVisits.forEach(v => {
-      let s = pres.addSlide();
-      s.background = { color: THEME.bg };
-      
-      // Store Header Title
-      s.addText(`${v.storeName.toUpperCase()} - ${v.storeLocation.toUpperCase()}`, { x: 0.6, y: 0.4, fontSize: 22, bold: true, color: THEME.white, fontFace: 'Montserrat' });
-      s.addText(v.visitDate, { x: 11.2, y: 0.4, fontSize: 12, color: THEME.gray, fontFace: 'Urbanist', align: 'right' });
-      s.addShape(pres.ShapeType.line, { x: 0.6, y: 0.9, w: 12.1, line: { color: THEME.cyan, width: 1 } });
+            const vAch = (parseInt(v.target)||0) > 0 ? (parseInt(v.sellout)/parseInt(v.target)*100).toFixed(1)+'%' : '0%';
 
-      let vAch = (parseInt(v.target)||0) > 0 ? (parseInt(v.sellout)/parseInt(v.target)*100).toFixed(1)+'%' : '0%';
-      let vAmb = parseInt(v.ambassadorCount) || parseInt(v.ambassadorsCount) || 0;
-      
-      // Fixed Left Data Block
-      s.addTable([
-          [{text: "METRIC", options: {fill: '1E293B', color: THEME.cyan, fontFace:'Montserrat', bold:true}}, {text: "VALUE", options: {fill: '1E293B', color: THEME.cyan, fontFace:'Montserrat', bold:true}}],
-          ["Recorded Sell-out", `${v.sellout} units`], 
-          ["Assigned Target", `${v.target} units`], 
-          ["Point Achievement", vAch],
-          ["Floor Staff Trained", v.staffCount.toString()], 
-          ["Promoter Present", (v.promoterCount||0).toString()], 
-          ["Ambassadors Present", vAmb.toString()]
-      ], { x: 0.6, y: 1.5, w: 4.8, colW: [3.0, 1.8], fontSize: 11, fontFace: 'Urbanist', color: THEME.white, border: {pt:0.5, color:'334155'}, margin: 8 });
+            // Fixed Data Block (Left)
+            s.addTable([
+                [{text: "KPI METRIC", options: {fill: THEME.slate, color: THEME.cyan, fontFace:'Montserrat', bold:true}}, {text: "VALUE", options: {fill: THEME.slate, color: THEME.cyan, fontFace:'Montserrat', bold:true}}],
+                ["Sell-out Volume", `${v.sellout} units`], ["Target Volume", `${v.target} units`], ["Achievement", vAch],
+                ["Staff Trained", v.staffCount.toString()], ["Promoters", v.promoterCount.toString()], ["Ambassadors", v.ambassadorCount.toString()]
+            ], { x: 0.6, y: 1.5, w: 4.8, colW: [3.0, 1.8], fontSize: 10, fontFace: 'Urbanist', color: THEME.white, border: {pt:0.5, color:'334155'}, margin: 8 });
 
-      // Observer Notes Container Placement
-      if(v.notes) {
-          s.addText("FIELD OBSERVER INTELLIGENCE:", { x: 0.6, y: 4.8, fontSize: 10, bold: true, color: THEME.cyan, fontFace: 'Montserrat' });
-          s.addText(v.notes, { 
-            x: 0.6, y: 5.1, w: 4.8, h: 1.4, 
-            fontSize: 10, fontFace: 'Urbanist', color: 'CBD5E1',
-            fill: { color: '101B30' }, margin: 10 
-          });
-      }
+            if(v.notes) {
+                s.addText("FIELD NOTES:", { x: 0.6, y: 4.8, fontSize: 9, bold: true, color: THEME.cyan, fontFace: 'Montserrat' });
+                s.addText(v.notes, { x: 0.6, y: 5.1, w: 4.8, h: 1.4, fontSize: 9, fontFace: 'Urbanist', color: THEME.gray, fill: { color: '101B30' }, margin: 8 });
+            }
 
-      // VISUAL PLACEMENT CORRECTION: Prevents huge/spaginated images
-      // Coordinates block strictly mapped to right 16:9 sector (X: 5.8 to 12.7)
-      if(v.powerBi) {
-          // If master chart exists, contain it in a safe 6.9 x 5.0 inch bounding box
-          s.addImage({ 
-            data: "base64," + v.powerBi.split(',')[1], 
-            x: 5.8, y: 1.5, w: 6.9, h: 5.0, 
-            sizing: { type: 'contain', w: 6.9, h: 5.0 } 
-          });
-      } else if(v.photos && v.photos.length > 0) {
-          // If store gallery exists, arrange up to 4 photos in a perfect micro-grid matrix, preserving proportions
-          let grid = [
-            { x: 5.8, y: 1.5, w: 3.3, h: 2.3 }, 
-            { x: 9.4, y: 1.5, w: 3.3, h: 2.3 }, 
-            { x: 5.8, y: 4.1, w: 3.3, h: 2.3 }, 
-            { x: 9.4, y: 4.1, w: 3.3, h: 2.3 }
-          ];
-          v.photos.slice(0, 4).forEach((img, idx) => {
-              s.addImage({ 
-                data: "base64," + img.split(',')[1], 
-                x: grid[idx].x, y: grid[idx].y, w: grid[idx].w, h: grid[idx].h, 
-                sizing: { type: 'contain', w: grid[idx].w, h: grid[idx].h } 
-              });
-          });
-      } else {
-          // Fallback placeholder to maintain structural consistency
-          s.addShape(pres.ShapeType.rect, { x: 5.8, y: 1.5, w: 6.9, h: 5.0, fill: { color: '101B30' } });
-          s.addText("NO VISUAL ASSETS CAPTURED FOR THIS SESSION", { x: 5.8, y: 3.8, w: 6.9, align:'center', fontSize: 12, color: THEME.gray, fontFace: 'Montserrat' });
-      }
-  });
+            // Visual Grid (Right) - LOCK DIMENSIONS
+            if(v.powerBi) {
+                s.addImage({ data: v.powerBi, x: 5.8, y: 1.5, w: 6.9, h: 5.0, sizing: { type: 'contain', w: 6.9, h: 5.0 } });
+            } else if(v.photos && v.photos.length > 0) {
+                const grid = [
+                    { x: 5.8, y: 1.5, w: 3.3, h: 2.3 }, { x: 9.4, y: 1.5, w: 3.3, h: 2.3 },
+                    { x: 5.8, y: 4.1, w: 3.3, h: 2.3 }, { x: 9.4, y: 4.1, w: 3.3, h: 2.3 }
+                ];
+                v.photos.slice(0, 4).forEach((img, idx) => {
+                    s.addImage({ data: img, x: grid[idx].x, y: grid[idx].y, w: grid[idx].w, h: grid[idx].h, sizing: { type: 'contain', w: grid[idx].w, h: grid[idx].h } });
+                });
+            } else {
+                s.addShape(pres.ShapeType.rect, { x: 5.8, y: 1.5, w: 6.9, h: 5.0, fill: { color: '101B30' } });
+                s.addText("NO VISUAL ASSETS CAPTURED", { x: 5.8, y: 3.8, w: 6.9, align:'center', fontSize: 12, color: THEME.gray, fontFace: 'Montserrat' });
+            }
+        });
 
-  // Export File Execution
-  await pres.writeFile({ fileName: `ZTE_LFM_Suite_Report_${customTitle.replace(/ /g,'_')}.pptx` });
-  alert("Professional Report Deck Compiled Successfully!");
-}
+        await pres.writeFile({ fileName: `ZTE_Report_${period.replace(/ /g,'_')}.pptx` });
+        alert("Report generato con successo.");
+    }
 
-window.onload = init;
+    window.onload = async () => { await initDB(); await fetchData(); };
 </script>
 </body>
 </html>
