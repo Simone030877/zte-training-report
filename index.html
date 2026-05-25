@@ -7,73 +7,105 @@
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="https://cdn.jsdelivr.net/gh/Stuk/jszip@v3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/gitbrent/PptxGenJS@v3.12.0/dist/pptxgen.bundle.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Urbanist:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Montserrat, sans-serif; background: #f5f5f5; color: #1a1a1a; line-height: 1.6; }
-    .header { background: #0d1628; color: #fff; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; }
-    .header h1 { font-size: 1.5rem; font-weight: 600; }
+    body { font-family: 'Urbanist', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f7fa; color: #1e293b; line-height: 1.6; }
+    
+    .header { background: #0d1628; color: #fff; padding: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; border-bottom: 4px solid #00a0d2; }
+    .header h1 { font-size: 1.5rem; font-weight: 700; font-family: 'Montserrat', sans-serif; }
     .header-right { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+    
     .sync-badge { display: flex; align-items: center; gap: 0.5rem; padding: 0.6rem 1.2rem; background: rgba(255,255,255,0.1); border-radius: 6px; font-size: 0.875rem; font-weight: 500; border: 1px solid rgba(255,255,255,0.2); }
-    .sync-badge.online { color: #27ae60; }
-    .sync-badge.offline { color: #e74c3c; }
+    .sync-badge.online { color: #22c55e; }
+    .sync-badge.offline { color: #ef4444; }
     .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-    .sync-badge.online .dot { background: #27ae60; }
-    .sync-badge.offline .dot { background: #e74c3c; }
-    .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.2s; font-family: inherit; white-space: nowrap; }
+    .sync-badge.online .dot { background: #22c55e; }
+    .sync-badge.offline .dot { background: #ef4444; }
+    
+    .btn { padding: 0.6rem 1.2rem; border: none; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; font-family: inherit; white-space: nowrap; }
     .btn-primary { background: #00a0d2; color: #fff; }
-    .btn-primary:hover { background: #0084ad; }
-    .btn-secondary { background: #fff; color: #0d1628; border: 1px solid #ddd; }
-    .btn-secondary:hover { background: #f9f9f9; }
-    .nav { background: #fff; border-bottom: 1px solid #eee; display: flex; gap: 0; padding: 0; overflow-x: auto; }
-    .nav-item { flex: 1; min-width: 120px; padding: 1rem; text-align: center; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; font-weight: 500; color: #666; white-space: nowrap; }
-    .nav-item.active { border-bottom-color: #00a0d2; color: #00a0d2; background: #f0f8fc; }
+    .btn-primary:hover { background: #0084ad; transform: translateY(-1px); }
+    .btn-secondary { background: #fff; color: #0d1628; border: 1px solid #cbd5e1; }
+    .btn-secondary:hover { background: #f8fafc; }
+    
+    .nav { background: #fff; border-bottom: 1px solid #e2e8f0; display: flex; gap: 0; padding: 0; overflow-x: auto; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .nav-item { flex: 1; min-width: 120px; padding: 1rem; text-align: center; cursor: pointer; border-bottom: 3px solid transparent; transition: all 0.2s; font-weight: 600; color: #64748b; white-space: nowrap; }
+    .nav-item.active { border-bottom-color: #00a0d2; color: #00a0d2; background: #f0f9ff; }
+    
     .container { max-width: 1200px; margin: 0 auto; padding: 2rem; }
     .section { display: none; }
-    .section.active { display: block; animation: fadeIn 0.3s; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .status-box { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 2rem; text-align: center; }
-    .status-box h2 { margin-bottom: 1rem; color: #00a0d2; }
-    .form-container { background: #fff; border-radius: 8px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .form-container h2 { margin-bottom: 2rem; color: #0d1628; font-size: 1.8rem; }
+    .section.active { display: block; animation: fadeIn 0.3s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    
+    .status-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 2rem; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.02); }
+    .status-box h2 { margin-bottom: 1rem; color: #00a0d2; font-family: 'Montserrat', sans-serif; }
+    
+    .form-container, .archive-container, .reports-container { background: #fff; border-radius: 12px; padding: 2rem; box-shadow: 0 4px 6px rgba(0,0,0,0.02); border: 1px solid #e2e8f0; }
+    h2 { margin-bottom: 2rem; color: #0d1628; font-size: 1.8rem; font-family: 'Montserrat', sans-serif; }
+    
     .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
     .form-col { display: flex; flex-direction: column; }
     .form-col.full-width { grid-column: 1 / -1; }
-    label { font-weight: 600; margin-bottom: 0.5rem; color: #0d1628; font-size: 0.95rem; }
-    input[type="text"], input[type="date"], input[type="number"], select, textarea { padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; font-size: 0.95rem; }
+    
+    label { font-weight: 700; margin-bottom: 0.5rem; color: #334155; font-size: 0.95rem; }
+    input[type="text"], input[type="date"], input[type="number"], select, textarea { padding: 0.75rem; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.95rem; background: #fff; transition: border-color 0.2s; }
     input:focus, select:focus, textarea:focus { outline: none; border-color: #00a0d2; box-shadow: 0 0 0 3px rgba(0, 160, 210, 0.1); }
     textarea { resize: vertical; min-height: 100px; }
-    .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
-    .checkbox-group label { display: flex; align-items: center; gap: 0.5rem; font-weight: 400; cursor: pointer; margin-bottom: 0; }
+    
+    .checkbox-group { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; background: #f8fafc; padding: 1.5rem; border-radius: 8px; border: 1px solid #e2e8f0; }
+    .checkbox-group label { display: flex; align-items: center; gap: 0.5rem; font-weight: 500; cursor: pointer; margin-bottom: 0; color: #475569; }
     .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: #00a0d2; }
+    
     .photo-upload { display: flex; flex-direction: column; gap: 1rem; }
-    .photo-upload input[type="file"] { padding: 1rem; border: 2px dashed #00a0d2; border-radius: 6px; background: #f0f8fc; cursor: pointer; }
+    .photo-upload input[type="file"] { padding: 1rem; border: 2px dashed #94a3b8; border-radius: 8px; background: #f8fafc; cursor: pointer; transition: all 0.2s; }
+    .photo-upload input[type="file"]:hover { border-color: #00a0d2; background: #f0f9ff; }
     .photos-preview { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem; }
-    .photo-item { position: relative; border-radius: 6px; overflow: hidden; aspect-ratio: 1; background: #f0f0f0; }
+    .photo-item { position: relative; border-radius: 8px; overflow: hidden; aspect-ratio: 1; background: #f1f5f9; border: 1px solid #e2e8f0; }
     .photo-item img { width: 100%; height: 100%; object-fit: cover; }
-    .photo-item .delete-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: #e74c3c; color: #fff; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+    .photo-item .delete-btn { position: absolute; top: 0.5rem; right: 0.5rem; background: #ef4444; color: #fff; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; font-weight: bold; }
     .photo-item:hover .delete-btn { opacity: 1; }
-    .form-actions { display: flex; gap: 1rem; flex-wrap: wrap; }
-    .archive-container { background: #fff; border-radius: 8px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .archive-container h2 { margin-bottom: 1rem; color: #0d1628; }
-    .btn-action { padding: 0.4rem 0.8rem; border: none; border-radius: 4px; font-size: 0.85rem; font-weight: 500; cursor: pointer; }
-    .btn-action.edit { background: #00a0d2; color: #fff; margin-right: 0.5rem; }
-    .btn-action.delete { background: #e74c3c; color: #fff; }
-    .dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
-    .stat-card { color: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
-    .stat-card.blue { background: linear-gradient(135deg, #00a0d2 0%, #0084ad 100%); }
-    .stat-value { font-size: 2.5rem; font-weight: 700; }
-    .stat-label { font-size: 0.85rem; opacity: 0.9; margin-bottom: 0.5rem; }
-    .reports-container { background: #fff; border-radius: 8px; padding: 2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .reports-container h2 { margin-bottom: 2rem; color: #0d1628; font-size: 1.8rem; }
+    
+    .form-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 1rem; }
+    
+    /* --- NUOVO STILE ARCHIVIO A GRUPPI SETTIMANALI --- */
+    .week-group { margin-bottom: 2.5rem; }
+    .week-header { background: #0d1628; color: #fff; padding: 0.8rem 1.5rem; border-radius: 8px; margin-bottom: 1rem; font-weight: 700; display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #00a0d2; font-family: 'Montserrat', sans-serif; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+    .visit-card { background: #fff; border: 1px solid #e2e8f0; padding: 1.5rem; border-radius: 8px; margin-bottom: 1rem; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .visit-card:hover { border-color: #00a0d2; box-shadow: 0 4px 12px rgba(0,160,210,0.1); transform: translateY(-2px); }
+    .visit-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1rem; }
+    .visit-title { font-weight: 700; font-size: 1.1rem; color: #0d1628; }
+    .visit-subtitle { font-size: 0.85rem; color: #64748b; margin-top: 0.2rem; }
+    .visit-stats { display: flex; gap: 1.5rem; flex-wrap: wrap; margin-bottom: 1rem; font-size: 0.9rem; color: #475569; }
+    .visit-stats span { background: #f8fafc; padding: 0.3rem 0.8rem; border-radius: 20px; border: 1px solid #e2e8f0; }
+    .visit-actions { display: flex; gap: 0.5rem; }
+    .btn-action { padding: 0.4rem 0.8rem; border: none; border-radius: 6px; font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .btn-action.edit { background: #f0f9ff; color: #00a0d2; border: 1px solid #bae6fd; }
+    .btn-action.edit:hover { background: #e0f2fe; }
+    .btn-action.delete { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; }
+    .btn-action.delete:hover { background: #fee2e2; }
+    
+    .dashboard-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin-bottom: 2rem; }
+    .stat-card { color: #fff; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+    .stat-card::after { content: ''; position: absolute; top: -50%; right: -50%; width: 100%; height: 100%; background: linear-gradient(to bottom right, rgba(255,255,255,0.2), transparent); transform: rotate(45deg); pointer-events: none; }
+    .stat-card.primary { background: linear-gradient(135deg, #0d1628 0%, #1e293b 100%); }
+    .stat-card.accent { background: linear-gradient(135deg, #00a0d2 0%, #0084ad 100%); }
+    .stat-card.success { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
+    .stat-value { font-size: 3rem; font-weight: 700; font-family: 'Montserrat', sans-serif; line-height: 1; }
+    .stat-label { font-size: 0.9rem; opacity: 0.9; margin-bottom: 0.5rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+    
     .report-selectors { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
     .selector-group { display: flex; flex-direction: column; }
-    .selector-group label { font-weight: 600; margin-bottom: 0.5rem; color: #0d1628; }
-    .selector-group select { padding: 0.75rem; border: 1px solid #ddd; border-radius: 6px; font-family: inherit; }
-    .report-actions { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
-    .executive-visuals-box { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; display: none; }
-    .executive-visuals-box h3 { font-size: 1.2rem; color: #0d1628; margin-bottom: 1rem; font-weight: 600; border-bottom: 2px solid #00a0d2; padding-bottom: 0.3rem; }
-    .exec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+    
+    .executive-visuals-box { background: #f8fafc; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 2rem; margin-bottom: 2rem; display: none; transition: all 0.3s; }
+    .executive-visuals-box h3 { font-size: 1.2rem; color: #0d1628; margin-bottom: 0.5rem; font-weight: 700; font-family: 'Montserrat', sans-serif; }
+    .exec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 1.5rem; }
+    
+    @media (max-width: 768px) { .form-row { grid-template-columns: 1fr; gap: 1.5rem; } .exec-grid { grid-template-columns: 1fr; } .header { flex-direction: column; } .header h1 { text-align: center; } }
   </style>
 </head>
 <body>
@@ -97,13 +129,14 @@
 </div>
 
 <div class="container">
+  
   <div class="section active" id="dashboard">
-    <div id="dashboardStatus"><div class="status-box"><h2>Loading...</h2></div></div>
+    <div id="dashboardStatus"><div class="status-box"><h2>Loading System...</h2></div></div>
   </div>
 
   <div class="section" id="newVisit">
     <div class="form-container">
-      <h2>New Visit</h2>
+      <h2>Record New Visit</h2>
       <form id="visitForm">
         <div class="form-row">
           <div class="form-col">
@@ -132,7 +165,7 @@
           <div class="form-col">
             <label for="visitDate">Visit Date *</label>
             <input type="date" id="visitDate" required>
-            <small id="weekDisplay" style="color: #666; margin-top: 0.3rem;">Week: --</small>
+            <small id="weekDisplay" style="color: #64748b; margin-top: 0.5rem; font-weight: 600;">Week: --</small>
           </div>
         </div>
 
@@ -140,7 +173,7 @@
           <div class="form-col full-width">
             <label>Objectives *</label>
             <div class="checkbox-group">
-              <label><input type="checkbox" name="objective" value="Focus on flagship"> focus su top di gamma</label>
+              <label><input type="checkbox" name="objective" value="focus su top di gamma"> focus su top di gamma</label>
               <label><input type="checkbox" name="objective" value="Increase sales"> Increase sales</label>
               <label><input type="checkbox" name="objective" value="Brand awareness"> Brand awareness</label>
             </div>
@@ -242,16 +275,16 @@
 
         <div class="form-row">
           <div class="form-col full-width">
-            <label for="notes">Notes</label>
-            <textarea id="notes" placeholder="Observations..."></textarea>
+            <label for="notes">Notes & Observations</label>
+            <textarea id="notes" placeholder="Enter specific feedback, issues, or positive remarks..."></textarea>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-col full-width">
             <div class="form-actions">
-              <button type="submit" class="btn btn-primary">Save Visit</button>
-              <button type="reset" class="btn btn-secondary">Reset</button>
+              <button type="submit" class="btn btn-primary" id="submitBtn">Save Visit</button>
+              <button type="reset" class="btn btn-secondary">Reset Form</button>
               <button type="button" class="btn btn-secondary" onclick="switchToSection('dashboard')">Cancel</button>
             </div>
           </div>
@@ -262,22 +295,22 @@
 
   <div class="section" id="archive">
     <div class="archive-container">
-      <h2>Archive</h2>
+      <h2>Database Archive</h2>
       <div id="archiveList"></div>
     </div>
   </div>
 
   <div class="section" id="reports">
     <div class="reports-container">
-      <h2>Generate Report</h2>
+      <h2>Generate Reporting Document</h2>
       <div class="report-selectors">
         <div class="selector-group">
           <label for="reportType">Report Type *</label>
           <select id="reportType" onchange="updateReportSelectors()">
             <option value="">-- Select --</option>
-            <option value="weekly">Weekly</option>
-            <option value="monthly">Monthly</option>
-            <option value="quarterly">Quarterly</option>
+            <option value="weekly">Weekly Detailed</option>
+            <option value="monthly">Monthly Executive</option>
+            <option value="quarterly">Quarterly Executive</option>
           </select>
         </div>
         <div class="selector-group">
@@ -291,44 +324,55 @@
       </div>
 
       <div class="executive-visuals-box" id="execVisualsContainer">
-        <h3>Executive Highlights (Optional)</h3>
-        <p style="font-size: 0.85rem; color: #475569; margin-bottom: 1rem;">Upload screenshots for the monthly/quarterly recap.</p>
+        <h3>Executive Highlights Module (Optional)</h3>
+        <p style="font-size: 0.9rem; color: #64748b; margin-bottom: 1rem;">Upload global Power BI dashboards and top highlights images below. These will be appended as dedicated slides in Monthly/Quarterly reports.</p>
         <div class="exec-grid">
           <div class="form-col">
-            <label>Global Dashboards (Max 2)</label>
-            <input type="file" id="execPowerBiFiles" multiple accept="image/*">
-            <div id="execPowerBiPreview" class="photos-preview"></div>
+            <label>Global Power BI Dashboards (Max 2)</label>
+            <div class="photo-upload">
+              <input type="file" id="execPowerBiFiles" multiple accept="image/*">
+              <div id="execPowerBiPreview" class="photos-preview"></div>
+            </div>
           </div>
           <div class="form-col">
-            <label>Highlights Photos (Max 8)</label>
-            <input type="file" id="execHighlightsFiles" multiple accept="image/*">
-            <div id="execHighlightsPreview" class="photos-preview"></div>
+            <label>Top Highlights Photos (Max 8)</label>
+            <div class="photo-upload">
+              <input type="file" id="execHighlightsFiles" multiple accept="image/*">
+              <div id="execHighlightsPreview" class="photos-preview"></div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="report-actions">
-        <button class="btn btn-primary" id="pptxBtn" onclick="generatePPTX()" style="background:#f39c12">Generate PPTX Report</button>
-        <button class="btn btn-secondary" onclick="switchToSection('dashboard')">Cancel</button>
+      <div class="report-actions" style="margin-top: 2rem;">
+        <button class="btn btn-primary" id="pptxBtn" onclick="generatePPTX()" style="font-size: 1.1rem; padding: 1rem 2rem; background: #f39c12;"><i class="fa-solid fa-file-powerpoint" style="margin-right: 8px;"></i> Generate PPTX Report</button>
       </div>
     </div>
   </div>
+
 </div>
 
 <script>
-const CONFIG = { dbName: 'ZTEReportDBv3', dbVersion: 1 };
-let db = null, isOnline = navigator.onLine, visits = [];
+// --- CORE CONFIGURATION & STATE ---
+const CONFIG = { dbName: 'ZTEReportDB_v5_Final', dbVersion: 1 };
+let db = null;
+let isOnline = navigator.onLine;
+let visits = [];
+
+// Temporary arrays for manual executive uploads
 let execPowerBiImages = [];
 let execHighlightsImages = [];
 
+// --- EVENT LISTENERS FOR ONLINE STATUS ---
 window.addEventListener('online', () => { isOnline = true; updateSyncStatus(); });
 window.addEventListener('offline', () => { isOnline = false; updateSyncStatus(); });
 
+// --- DATABASE INITIALIZATION ---
 async function initIndexedDB() {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(CONFIG.dbName, CONFIG.dbVersion);
     request.onerror = () => reject(request.error);
-    request.onsuccess = () => { db = request.result; resolve(db); };
+    request.onsuccess = (e) => { db = e.target.result; resolve(db); };
     request.onupgradeneeded = (e) => {
       const database = e.target.result;
       if (!database.objectStoreNames.contains('visits')) {
@@ -338,25 +382,26 @@ async function initIndexedDB() {
   });
 }
 
+// --- DATA LOADING ---
 async function loadVisitsFromDB() {
   return new Promise((resolve, reject) => {
     const tx = db.transaction('visits', 'readonly');
     const store = tx.objectStore('visits');
     const request = store.getAll();
     request.onerror = () => reject(request.error);
-    request.onsuccess = () => { visits = request.result; resolve(visits); };
+    request.onsuccess = (e) => { visits = e.target.result; resolve(visits); };
   });
 }
 
+// --- UI UTILS ---
 function updateSyncStatus() {
   const badge = document.getElementById('syncBadge');
   const text = document.getElementById('syncText');
-  badge.classList.toggle('online', isOnline);
-  badge.classList.toggle('offline', !isOnline);
-  text.textContent = isOnline ? 'Online' : 'Offline';
+  badge.className = `sync-badge ${isOnline ? 'online' : 'offline'}`;
+  text.textContent = isOnline ? 'System Online' : 'Offline Mode';
 }
 
-function handleGoogleAuth() { alert('Google Drive sync coming soon'); }
+function handleGoogleAuth() { alert('Google Drive sync module integration pending.'); }
 
 function getWeekNumber(date) {
   const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -368,10 +413,11 @@ function getWeekNumber(date) {
 
 document.getElementById('visitDate').addEventListener('change', function() {
   if(this.value) {
-    document.getElementById('weekDisplay').textContent = `Week: ${getWeekNumber(new Date(this.value))}`;
+    document.getElementById('weekDisplay').textContent = `Assigned to Week: ${getWeekNumber(new Date(this.value))}`;
   }
 });
 
+// --- IMAGE COMPRESSION & BASE64 CONVERSION ---
 function compressImage(file, maxWidth = 800) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -384,10 +430,13 @@ function compressImage(file, maxWidth = 800) {
         canvas.width = width; canvas.height = height;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
+        // Genera un JPEG leggero per non appesantire IndexedDB e il file PPTX
         canvas.toBlob((blob) => { resolve(blob); }, 'image/jpeg', 0.6);
       };
+      img.onerror = reject;
       img.src = e.target.result;
     };
+    reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
@@ -401,6 +450,7 @@ function blobToBase64(blob) {
   });
 }
 
+// --- FILE INPUT LISTENERS (VISIT FORM) ---
 document.getElementById('visitPhotos').addEventListener('change', async function() {
   const preview = document.getElementById('visitPhotosPreview');
   for(let file of this.files) {
@@ -428,10 +478,11 @@ document.getElementById('powerBiPhoto').addEventListener('change', async functio
   this.value = '';
 });
 
+// --- FILE INPUT LISTENERS (EXECUTIVE REPORT UPLOADS) ---
 document.getElementById('execPowerBiFiles').addEventListener('change', async function() {
   const preview = document.getElementById('execPowerBiPreview');
   for(let file of this.files) {
-    if(execPowerBiImages.length >= 2) break;
+    if(execPowerBiImages.length >= 2) { alert("Maximum 2 Power BI dashboards allowed."); break; }
     const compBlob = await compressImage(file, 1000);
     const b64 = await blobToBase64(compBlob);
     execPowerBiImages.push(b64);
@@ -450,7 +501,7 @@ document.getElementById('execPowerBiFiles').addEventListener('change', async fun
 document.getElementById('execHighlightsFiles').addEventListener('change', async function() {
   const preview = document.getElementById('execHighlightsPreview');
   for(let file of this.files) {
-    if(execHighlightsImages.length >= 8) break;
+    if(execHighlightsImages.length >= 8) { alert("Maximum 8 highlight photos allowed."); break; }
     const compBlob = await compressImage(file, 800);
     const b64 = await blobToBase64(compBlob);
     execHighlightsImages.push(b64);
@@ -466,129 +517,202 @@ document.getElementById('execHighlightsFiles').addEventListener('change', async 
   this.value = '';
 });
 
+// --- SAVING LOGIC (FULL FORM DATA) ---
 async function saveVisit(e) {
   e.preventDefault();
+  
+  // Basic Info
   const storeName = document.getElementById('storeName').value;
   const storeLocation = document.getElementById('storeLocation').value;
   const visitDate = document.getElementById('visitDate').value;
+  
+  if (!storeName || !storeLocation || !visitDate) { alert('Please fill all mandatory fields.'); return; }
+  
+  // Checkboxes Arrays
   const objectives = Array.from(document.querySelectorAll('input[name="objective"]:checked')).map(el => el.value);
   const contents = Array.from(document.querySelectorAll('input[name="contents"]:checked')).map(el => el.value);
   const productCategories = Array.from(document.querySelectorAll('input[name="productCategories"]:checked')).map(el => el.value);
   const reasonForVisit = Array.from(document.querySelectorAll('input[name="reasonForVisit"]:checked')).map(el => el.value);
   const deliveryMode = Array.from(document.querySelectorAll('input[name="deliveryMode"]:checked')).map(el => el.value);
   
-  if (!storeName || !storeLocation || !visitDate) { alert('Fill all required fields'); return; }
+  // Numerical Data
+  const promotersCount = parseInt(document.getElementById('promotersCount').value) || 0;
+  const ambassadorsCount = parseInt(document.getElementById('ambassadorsCount').value) || 0;
+  const staffCount = parseInt(document.getElementById('staffCount').value) || 0;
+  const sellout = parseInt(document.getElementById('sellout').value) || 0;
+  const target = parseInt(document.getElementById('target').value) || 0;
+  
+  // Text Data
+  const notes = document.getElementById('notes').value;
+  
+  // Images Data
+  const visitPhotos = Array.from(document.querySelectorAll('#visitPhotosPreview img')).map(img => img.src);
+  const powerBiScreenshot = document.querySelector('#powerBiPhotoPreview img') ? document.querySelector('#powerBiPhotoPreview img').src : null;
+  
+  // Temporal Mapping
+  const dateObj = new Date(visitDate);
+  const weekNumber = getWeekNumber(dateObj);
+  const month = dateObj.getMonth() + 1;
+  const year = dateObj.getFullYear();
+  const quarter = Math.ceil(month / 3);
+  
+  const submitBtn = document.getElementById('submitBtn');
+  const isEditMode = submitBtn.dataset.editingVisitId;
+  const visitId = isEditMode ? submitBtn.dataset.editingVisitId : 'visit_' + Date.now();
+  
+  const visitPayload = {
+    id: visitId,
+    storeName, storeLocation, visitDate, weekNumber, month, year, quarter,
+    objectives, contents, productCategories, reasonForVisit, deliveryMode,
+    promotersCount, ambassadorsCount, staffCount, sellout, target,
+    visitPhotos, powerBiScreenshot, notes,
+    lastModified: new Date().toISOString()
+  };
   
   try {
-    const submitBtn = document.querySelector('#visitForm button[type="submit"]');
-    const isEditMode = submitBtn.dataset.editingVisitId;
-    const visitId = isEditMode ? submitBtn.dataset.editingVisitId : 'visit_' + Date.now();
-    
-    const visitPhotosCompressed = Array.from(document.querySelectorAll('#visitPhotosPreview img')).map(img => img.src);
-    const previewPowerBi = document.querySelector('#powerBiPhotoPreview img');
-    const powerBiCompressed = previewPowerBi ? previewPowerBi.src : null;
-    
-    const dateObj = new Date(visitDate);
-    const weekNumber = getWeekNumber(dateObj);
-    const month = dateObj.getMonth() + 1;
-    const year = dateObj.getFullYear();
-    const quarter = Math.ceil(month / 3);
-    
-    const visit = {
-      id: visitId,
-      storeName, storeLocation, visitDate, weekNumber, month, year, quarter,
-      objectives, contents, productCategories, reasonForVisit, deliveryMode,
-      sellout: parseInt(document.getElementById('sellout').value) || 0,
-      target: parseInt(document.getElementById('target').value) || 0,
-      promotersCount: parseInt(document.getElementById('promotersCount').value) || 0,
-      ambassadorsCount: parseInt(document.getElementById('ambassadorsCount').value) || 0,
-      staffCount: parseInt(document.getElementById('staffCount').value) || 0,
-      visitPhotos: visitPhotosCompressed,
-      powerBiScreenshot: powerBiCompressed,
-      notes: document.getElementById('notes').value,
-      lastModified: new Date().toISOString()
-    };
-    
     const tx = db.transaction('visits', 'readwrite');
     const store = tx.objectStore('visits');
-    store.put(visit);
+    store.put(visitPayload);
     
-    alert(isEditMode ? 'Visit updated!' : 'Visit saved!');
+    alert(isEditMode ? 'Session Updated Successfully!' : 'New Session Recorded Successfully!');
     
+    // Reset Form
     document.getElementById('visitForm').reset();
     document.querySelectorAll('.photos-preview').forEach(el => el.innerHTML = '');
+    document.getElementById('weekDisplay').textContent = 'Week: --';
+    
     submitBtn.textContent = 'Save Visit';
     delete submitBtn.dataset.editingVisitId;
-    document.querySelector('.form-container h2').textContent = 'New Visit';
+    document.querySelector('.form-container h2').textContent = 'Record New Visit';
     
     await loadVisitsFromDB();
     renderDashboard();
     switchToSection('dashboard');
   } catch (error) {
-    console.error('Error:', error);
-    alert('Error: ' + error.message);
+    console.error('Save Error:', error);
+    alert('Error saving data: ' + error.message);
   }
 }
 
+// --- ARCHIVE RENDERING (WEEKLY GROUPING LOGIC) ---
 function renderArchive() {
   const archiveList = document.getElementById('archiveList');
-  if (visits.length === 0) { archiveList.innerHTML = '<p>No visits yet</p>'; return; }
+  if (visits.length === 0) { 
+    archiveList.innerHTML = '<div class="status-box"><p>No training sessions recorded yet.</p></div>'; 
+    return; 
+  }
   
-  let html = '<div style="display: grid; gap: 1.5rem;">';
-  visits.forEach(visit => {
-    let photosHtml = '';
-    if (visit.visitPhotos && visit.visitPhotos.length > 0) {
-      photosHtml = `<div style="margin-top: 1rem; border-top: 1px solid #eee; padding-top: 1rem;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem;">
-          ${visit.visitPhotos.map(photo => `<img src="${photo}" style="width: 100%; height: 80px; object-fit: cover; border-radius: 4px;">`).join('')}
-        </div>
-      </div>`;
-    }
+  // Ordina per data (più recenti prima)
+  const sortedVisits = [...visits].sort((a, b) => new Date(b.visitDate) - new Date(a.visitDate));
+  
+  // Raggruppa per stringa "Settimana X - Anno Y"
+  const groupedVisits = sortedVisits.reduce((acc, visit) => {
+    const key = `WEEK ${visit.weekNumber} - ${visit.year}`;
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(visit);
+    return acc;
+  }, {});
+
+  let html = '';
+  
+  for (const weekKey in groupedVisits) {
+    const weekVisits = groupedVisits[weekKey];
     
-    html += `<div style="border: 1px solid #ddd; padding: 1rem; border-radius: 6px;">
-      <strong>${visit.storeName}</strong> - ${visit.visitDate} (W${visit.weekNumber})
-      <br><small>📍 ${visit.storeLocation} | 📊 Sell-out: ${visit.sellout} | 👥 Promoters: ${visit.promotersCount} | Staff: ${visit.staffCount}</small>
-      ${photosHtml}
-      <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
-        <button class="btn-action edit" onclick="openEditModal('${visit.id}')">Edit</button>
-        <button class="btn-action delete" onclick="deleteVisit('${visit.id}')">Delete</button>
-      </div>
-    </div>`;
-  });
-  html += '</div>';
+    html += `
+      <div class="week-group">
+        <div class="week-header">
+          <span><i class="fa-regular fa-calendar" style="margin-right: 8px;"></i> ${weekKey}</span>
+          <span style="font-size: 0.9rem; background: rgba(255,255,255,0.2); padding: 2px 10px; border-radius: 20px;">
+            ${weekVisits.length} Session${weekVisits.length > 1 ? 's' : ''}
+          </span>
+        </div>
+    `;
+    
+    weekVisits.forEach(visit => {
+      let photosBadge = '';
+      if (visit.visitPhotos && visit.visitPhotos.length > 0) {
+        photosBadge = `<span style="color: #00a0d2;"><i class="fa-solid fa-camera"></i> ${visit.visitPhotos.length}</span>`;
+      }
+      if (visit.powerBiScreenshot) {
+        photosBadge += ` <span style="color: #f39c12;"><i class="fa-solid fa-chart-pie"></i> 1</span>`;
+      }
+
+      html += `
+        <div class="visit-card">
+          <div class="visit-header">
+            <div>
+              <div class="visit-title">${visit.storeName} - ${visit.storeLocation}</div>
+              <div class="visit-subtitle">${visit.visitDate}</div>
+            </div>
+            <div class="visit-actions">
+              <button class="btn-action edit" onclick="openEditModal('${visit.id}')"><i class="fa-solid fa-pen"></i></button>
+              <button class="btn-action delete" onclick="deleteVisit('${visit.id}')"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+          <div class="visit-stats">
+            <span><strong>Target:</strong> ${visit.sellout} / ${visit.target}</span>
+            <span><strong>Trained:</strong> ${(visit.staffCount || 0) + (visit.promotersCount || 0) + (visit.ambassadorsCount || 0)}</span>
+            ${photosBadge ? `<span>${photosBadge}</span>` : ''}
+          </div>
+        </div>
+      `;
+    });
+    
+    html += `</div>`; // Chiude week-group
+  }
+  
   archiveList.innerHTML = html;
 }
 
+// --- EDIT LOGIC (POPULATES ALL FIELDS) ---
 async function openEditModal(visitId) {
   const visit = visits.find(v => v.id === visitId);
   if (!visit) return;
   
+  // Reset form and UI
   document.getElementById('visitForm').reset();
   document.querySelectorAll('.photos-preview').forEach(el => el.innerHTML = '');
   
-  document.getElementById('storeName').value = visit.storeName;
-  document.getElementById('storeLocation').value = visit.storeLocation;
-  document.getElementById('visitDate').value = visit.visitDate;
+  // Base fields
+  document.getElementById('storeName').value = visit.storeName || '';
+  document.getElementById('storeLocation').value = visit.storeLocation || '';
+  document.getElementById('visitDate').value = visit.visitDate || '';
+  if(visit.visitDate) document.getElementById('weekDisplay').textContent = `Assigned to Week: ${getWeekNumber(new Date(visit.visitDate))}`;
   
-  document.querySelectorAll('input[name="objective"]').forEach(el => el.checked = visit.objectives?.includes(el.value));
-  document.querySelectorAll('input[name="contents"]').forEach(el => el.checked = visit.contents?.includes(el.value));
-  document.querySelectorAll('input[name="productCategories"]').forEach(el => el.checked = visit.productCategories?.includes(el.value));
-  document.querySelectorAll('input[name="reasonForVisit"]').forEach(el => el.checked = visit.reasonForVisit?.includes(el.value));
-  document.querySelectorAll('input[name="deliveryMode"]').forEach(el => el.checked = visit.deliveryMode?.includes(el.value));
+  // Numeric
+  document.getElementById('promotersCount').value = visit.promotersCount || 0;
+  document.getElementById('ambassadorsCount').value = visit.ambassadorsCount || 0;
+  document.getElementById('staffCount').value = visit.staffCount || 0;
+  document.getElementById('sellout').value = visit.sellout || 0;
+  document.getElementById('target').value = visit.target || 0;
+  document.getElementById('notes').value = visit.notes || '';
   
-  document.getElementById('promotersCount').value = visit.promotersCount;
-  document.getElementById('ambassadorsCount').value = visit.ambassadorsCount;
-  document.getElementById('staffCount').value = visit.staffCount;
-  document.getElementById('sellout').value = visit.sellout;
-  document.getElementById('target').value = visit.target;
-  document.getElementById('notes').value = visit.notes;
+  // Checkboxes
+  const checkBoxesConfig = [
+    { name: 'objective', data: visit.objectives },
+    { name: 'contents', data: visit.contents },
+    { name: 'productCategories', data: visit.productCategories },
+    { name: 'reasonForVisit', data: visit.reasonForVisit },
+    { name: 'deliveryMode', data: visit.deliveryMode }
+  ];
   
-  visit.visitPhotos?.forEach(base64 => {
-    const div = document.createElement('div');
-    div.className = 'photo-item';
-    div.innerHTML = `<img src="${base64}"><button type="button" class="delete-btn" onclick="this.parentElement.remove()">×</button>`;
-    document.getElementById('visitPhotosPreview').appendChild(div);
+  checkBoxesConfig.forEach(config => {
+    if(config.data && Array.isArray(config.data)) {
+      document.querySelectorAll(`input[name="${config.name}"]`).forEach(el => {
+        el.checked = config.data.includes(el.value);
+      });
+    }
   });
+  
+  // Load Images into preview
+  if(visit.visitPhotos && Array.isArray(visit.visitPhotos)) {
+    visit.visitPhotos.forEach(base64 => {
+      const div = document.createElement('div');
+      div.className = 'photo-item';
+      div.innerHTML = `<img src="${base64}"><button type="button" class="delete-btn" onclick="this.parentElement.remove()">×</button>`;
+      document.getElementById('visitPhotosPreview').appendChild(div);
+    });
+  }
   
   if (visit.powerBiScreenshot) {
     const div = document.createElement('div');
@@ -597,41 +721,68 @@ async function openEditModal(visitId) {
     document.getElementById('powerBiPhotoPreview').appendChild(div);
   }
   
-  const submitBtn = document.querySelector('#visitForm button[type="submit"]');
+  // Update UI State
+  document.querySelector('.form-container h2').textContent = 'Edit Training Session';
+  const submitBtn = document.getElementById('submitBtn');
   submitBtn.textContent = 'Update Visit';
   submitBtn.dataset.editingVisitId = visitId;
+  
   switchToSection('newVisit');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
+// --- DELETE LOGIC ---
 async function deleteVisit(visitId) {
-  if (!confirm('Delete this visit?')) return;
+  if (!confirm('Are you sure you want to permanently delete this session?')) return;
   const tx = db.transaction('visits', 'readwrite');
   tx.objectStore('visits').delete(visitId);
   await loadVisitsFromDB();
   renderArchive();
+  renderDashboard();
 }
 
+// --- DASHBOARD RENDERING ---
 function renderDashboard() {
-  const dashboardStatus = document.getElementById('dashboard');
+  const dashboardStatus = document.getElementById('dashboardStatus');
   if (visits.length === 0) {
-    dashboardStatus.innerHTML = `<div class="status-box"><h2>Welcome!</h2><p>No visits yet</p><button class="btn btn-primary" onclick="switchToSection('newVisit')">Create Your First Visit</button></div>`;
+    dashboardStatus.innerHTML = `
+      <div class="status-box">
+        <h2>Welcome to the ZTE Professional Suite</h2>
+        <p style="color: #64748b; margin-bottom: 2rem;">Your database is empty. Start by recording your first field training session.</p>
+        <button class="btn btn-primary" onclick="switchToSection('newVisit')">Create First Visit</button>
+      </div>`;
     return;
   }
+  
   const totalSellout = visits.reduce((sum, v) => sum + (v.sellout || 0), 0);
   const totalTarget = visits.reduce((sum, v) => sum + (v.target || 0), 0);
+  const totalStaff = visits.reduce((sum, v) => sum + (v.staffCount || 0) + (v.promotersCount || 0) + (v.ambassadorsCount || 0), 0);
   const percentage = totalTarget > 0 ? ((totalSellout / totalTarget) * 100).toFixed(1) : '0';
 
   dashboardStatus.innerHTML = `
-    <h2>Dashboard</h2>
+    <h2 style="margin-bottom: 1.5rem; color: #0d1628;">Analytics Overview</h2>
     <div class="dashboard-container">
-      <div class="stat-card blue"><div class="stat-label">Total Visits</div><div class="stat-value">${visits.length}</div></div>
-      <div class="stat-card blue"><div class="stat-label">Sell-out</div><div class="stat-value">${totalSellout}</div></div>
-      <div class="stat-card blue"><div class="stat-label">Target %</div><div class="stat-value">${percentage}%</div></div>
+      <div class="stat-card primary">
+        <div class="stat-label">Total Visits</div>
+        <div class="stat-value">${visits.length}</div>
+      </div>
+      <div class="stat-card accent">
+        <div class="stat-label">Volume Generated</div>
+        <div class="stat-value">${totalSellout}</div>
+      </div>
+      <div class="stat-card success">
+        <div class="stat-label">Target Achieved</div>
+        <div class="stat-value">${percentage}%</div>
+      </div>
+      <div class="stat-card" style="background: linear-gradient(135deg, #f39c12 0%, #d68910 100%);">
+        <div class="stat-label">Headcount Trained</div>
+        <div class="stat-value">${totalStaff}</div>
+      </div>
     </div>
-    <div><button class="btn btn-primary" onclick="switchToSection('newVisit')">Add New Visit</button> <button class="btn btn-secondary" onclick="switchToSection('archive')">View Archive</button> <button class="btn btn-secondary" onclick="switchToSection('reports')">Generate Report</button></div>
   `;
 }
 
+// --- REPORTS UI LOGIC ---
 function updateReportSelectors() {
   const reportType = document.getElementById('reportType').value;
   const periodSelect = document.getElementById('reportPeriod');
@@ -641,6 +792,7 @@ function updateReportSelectors() {
   periodSelect.innerHTML = '<option value="">-- Select --</option>';
   yearSelect.innerHTML = '<option value="">-- Select --</option>';
   
+  // Show manual upload section only for Long Term executive reports
   if (reportType === 'monthly' || reportType === 'quarterly') {
     execVisualsContainer.style.display = 'block';
   } else {
@@ -648,17 +800,21 @@ function updateReportSelectors() {
   }
   
   if (!reportType) return;
+  
   const periods = new Set();
   const years = new Set();
+  
   visits.forEach(v => {
     years.add(v.year);
     if (reportType === 'weekly') periods.add(v.weekNumber);
     else if (reportType === 'monthly') periods.add(v.month);
     else if (reportType === 'quarterly') periods.add(v.quarter);
   });
+  
   Array.from(years).sort((a, b) => b - a).forEach(year => {
     const opt = document.createElement('option'); opt.value = year; opt.textContent = year; yearSelect.appendChild(opt);
   });
+  
   Array.from(periods).sort((a, b) => b - a).forEach(period => {
     const opt = document.createElement('option'); opt.value = period;
     if (reportType === 'weekly') opt.textContent = `Week ${period}`;
@@ -674,55 +830,67 @@ function switchToSection(sectionId) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.getElementById(sectionId).classList.add('active');
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-  const navItemIndex = { 'dashboard': 0, 'newVisit': 1, 'archive': 2, 'reports': 3 };
-  if (navItemIndex[sectionId] !== undefined) document.querySelectorAll('.nav-item')[navItemIndex[sectionId]].classList.add('active');
+  
+  const navMap = { 'dashboard': 0, 'newVisit': 1, 'archive': 2, 'reports': 3 };
+  if (navMap[sectionId] !== undefined) {
+    document.querySelectorAll('.nav-item')[navMap[sectionId]].classList.add('active');
+  }
+  
   if (sectionId === 'archive') renderArchive();
   if (sectionId === 'reports') updateReportSelectors();
+  if (sectionId === 'dashboard') renderDashboard();
 }
 
 async function initApp() {
+  updateSyncStatus();
   await initIndexedDB();
   await loadVisitsFromDB();
   renderDashboard();
 }
 
-// --- GENERATORE DI REPORT PPTX McKinsey STYLE ---
+// ============================================================================
+// --- PPTX GENERATOR (MCKINSEY STYLE - FIXED RATIOS - ENGLISH ONLY) ---
+// ============================================================================
+
 async function generatePPTX() {
   const reportType = document.getElementById('reportType').value;
   const reportPeriod = document.getElementById('reportPeriod').value;
   const reportYear = parseInt(document.getElementById('reportYear').value);
   
-  if (!reportType || !reportPeriod || !reportYear) { alert('Select all filters'); return; }
+  if (!reportType || !reportPeriod || !reportYear) { alert('Please select all filters to generate the document.'); return; }
   
   let filteredVisits = visits.filter(v => v.year === reportYear);
   if (reportType === 'weekly') filteredVisits = filteredVisits.filter(v => v.weekNumber === parseInt(reportPeriod));
   else if (reportType === 'monthly') filteredVisits = filteredVisits.filter(v => v.month === parseInt(reportPeriod));
   else if (reportType === 'quarterly') filteredVisits = filteredVisits.filter(v => v.quarter === parseInt(reportPeriod));
   
-  if (filteredVisits.length === 0) { alert('No visits found.'); return; }
+  if (filteredVisits.length === 0) { alert('No visits found for the selected period.'); return; }
 
   const pptxBtn = document.getElementById('pptxBtn');
-  pptxBtn.textContent = "Generating...";
+  pptxBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generating...';
   pptxBtn.disabled = true;
 
   try {
     const pres = new PptxGenJS();
-    pres.layout = 'LAYOUT_16x9'; // 13.33 x 7.5 inches
+    pres.layout = 'LAYOUT_16x9'; // Slide 13.33 x 7.5 inches
     
-    const COLORS = { darkBg: '0D1628', accentCyan: '00A0D2', orange: 'F39C12', white: 'FFFFFF', gridBorder: '334155', textGray: '475569' };
+    const COLORS = { darkBg: '0D1628', accentCyan: '00A0D2', orange: 'F39C12', white: 'FFFFFF', textGray: '475569', gridBorder: 'CBD5E1' };
     let periodName = reportType === 'weekly' ? `WEEK ${reportPeriod}` : reportType === 'monthly' ? `MONTH ${reportPeriod}` : `Q${reportPeriod}`;
 
+    // HELPER: Cleaner Labels
     const cleanLabel = (str) => {
       if(!str) return "";
-      return str.replace("Focus on flagship", "Top Focus").replace("Display & Visual Merchandising Check", "Display Check");
+      let s = str.replace("focus su top di gamma", "Top Focus").replace("Display & Visual Merchandising Check", "Display Check");
+      return s.length > 22 ? s.substring(0, 20) + "..." : s;
     };
 
+    // HELPER: Base64 String Fix (IL BUG DELLA VIRGOLA RISOLTO)
     const cleanB64 = (str) => {
       if(!str) return null;
       return str.includes("base64,") ? str.split("base64,")[1].trim() : str.trim();
     };
 
-    // Aggregazioni
+    // --- AGGREGATIONS ---
     let totalSellout = 0, totalTarget = 0, totalStaff = 0, totalAmbassador = 0, totalPromoters = 0;
     let chainAggregates = {};
     let objCounts = {}, contentCounts = {}, productCounts = {};
@@ -749,135 +917,176 @@ async function generatePPTX() {
     let totalHeadcount = totalStaff + totalAmbassador + totalPromoters;
     let avgAchievement = totalTarget > 0 ? ((totalSellout / totalTarget) * 100).toFixed(1) + '%' : '0%';
 
-    // Slide 1: Cover
+    // ==========================================
+    // SLIDE 1: COVER
+    // ==========================================
     let s1 = pres.addSlide(); s1.background = { color: COLORS.darkBg };
     s1.addText("TRAINING ANALYTICS REPORT", { x: 0.8, y: 2.5, w: 11, fontSize: 44, bold: true, color: COLORS.accentCyan, fontFace: 'Montserrat' });
     s1.addText(`${periodName} ${reportYear} | FIELD OPERATIONS`, { x: 0.8, y: 3.4, w: 11, fontSize: 18, color: COLORS.white, fontFace: 'Montserrat' });
 
-    // Slide 2: Global Metrics
+    // ==========================================
+    // SLIDE 2: GLOBAL METRICS (FIXED WIDTH)
+    // ==========================================
     let s2 = pres.addSlide(); s2.background = { color: COLORS.white };
     s2.addText("EXECUTIVE RECAP - GLOBAL METRICS", { x: 0.5, y: 0.4, w: 12, fontSize: 24, bold: true, color: COLORS.darkBg });
     s2.addShape(pres.ShapeType.line, { x: 0.5, y: 0.9, w: 12.3, line: { color: COLORS.accentCyan, width: 2 } });
 
+    // TABELLA BLINDATA: Larghezza 5.5 pollici, Colonne definite 3.8 e 1.7
     s2.addTable([
-      [{ text: "METRIC", options: { fill: COLORS.darkBg, color: COLORS.white, bold: true } }, { text: "VALUE", options: { fill: COLORS.darkBg, color: COLORS.white, bold: true, align:'center' } }],
-      ["Total Visits", filteredVisits.length.toString()],
-      ["People Trained", totalHeadcount.toString()],
-      ["Sell-out Volume", `${totalSellout} units`],
-      ["Target Volume", `${totalTarget} units`],
-      ["Achievement Rate", avgAchievement]
-    ], { x: 0.5, y: 1.5, w: 5.5, fontSize: 12, color: COLORS.darkBg, border: { pt: 0.5, color: COLORS.textGray }, margin: 8 });
+      [{ text: "KPI METRIC", options: { fill: COLORS.darkBg, color: COLORS.white, bold: true } }, { text: "CONSOLIDATED VALUE", options: { fill: COLORS.darkBg, color: COLORS.white, bold: true, align:'center' } }],
+      ["Total Validated Visits", filteredVisits.length.toString()],
+      ["Overall Headcount Trained", totalHeadcount.toString()],
+      ["Recorded Sell-out Volume", `${totalSellout} units`],
+      ["Assigned Target Volume", `${totalTarget} units`],
+      ["Average Achievement Rate", avgAchievement]
+    ], { x: 0.5, y: 1.5, w: 5.5, colW: [3.8, 1.7], fontSize: 11, color: COLORS.darkBg, border: { pt: 0.5, color: COLORS.gridBorder }, margin: 8 });
 
+    // GRAFICO BLINDATO: 4.5 x 3.5 pollici
     if (totalHeadcount > 0) {
       s2.addChart(pres.ChartType.doughnut, [
-        { name: 'Trainees', labels: ['Staff', 'Amb.', 'Prom.'], values: [totalStaff, totalAmbassador, totalPromoters] }
-      ], { x: 7, y: 1.8, w: 4.5, h: 3.5, showLegend: true, legendPos: 'r', chartColors: ['00A0D2', 'F39C12', '27AE60'] });
+        { name: 'Trainees Breakdown', labels: ['Staff', 'Ambassadors', 'Promoters'], values: [totalStaff, totalAmbassador, totalPromoters] }
+      ], { x: 7, y: 1.5, w: 4.5, h: 3.5, showLegend: true, legendPos: 'r', chartColors: ['00A0D2', 'F39C12', '27AE60'] });
     }
 
-    // Slide 3: Operational Strategy
+    // ==========================================
+    // SLIDE 3: OPERATIONAL STRATEGY
+    // ==========================================
     let s3 = pres.addSlide(); s3.background = { color: COLORS.white };
     s3.addText("EXECUTIVE RECAP - OPERATIONAL STRATEGY", { x: 0.5, y: 0.4, w: 12, fontSize: 24, bold: true, color: COLORS.darkBg });
     s3.addShape(pres.ShapeType.line, { x: 0.5, y: 0.9, w: 12.3, line: { color: COLORS.orange, width: 2 } });
     
-    const buildColumn = (title, dataMap, x, headerColor) => {
+    const buildColumn = (title, dataMap, xCoordinate, headerColor) => {
       let rows = [[{ text: title.toUpperCase(), options: { fill: headerColor, color: COLORS.white, bold: true, align: 'center' } }]];
-      Object.keys(dataMap).forEach(k => rows.push([`${k} (${dataMap[k]})`]));
-      s3.addTable(rows, { x: x, y: 1.6, w: 3.9, fontSize: 10, border: { pt: 0.5, color: COLORS.textGray }, margin: 8 });
+      let keys = Object.keys(dataMap);
+      if(keys.length === 0) {
+          rows.push([{ text: "No metrics registered", options: { italic: true, color: COLORS.textGray } }]);
+      } else {
+          keys.forEach(k => rows.push([`${k} (${dataMap[k]})`]));
+      }
+      s3.addTable(rows, { x: xCoordinate, y: 1.4, w: 3.9, colW: [3.9], fontSize: 10, color: COLORS.darkBg, border: { pt: 0.5, color: COLORS.gridBorder }, margin: 8 });
     };
+    
     buildColumn("Strategic Objectives", objCounts, 0.5, COLORS.accentCyan);
     buildColumn("Content Pillars", contentCounts, 4.7, COLORS.orange);
     buildColumn("Product Categories", productCounts, 8.9, '27AE60');
 
-    // Slide 4: Chain Index
-    if (reportType !== 'weekly') {
+    // ==========================================
+    // LOGICA DI RAMIFICAZIONE
+    // ==========================================
+    
+    if (reportType === 'monthly' || reportType === 'quarterly') {
+      
+      // EXECUTIVE SLIDE: CHAIN INDEX
       let s4 = pres.addSlide(); s4.background = { color: COLORS.white };
       s4.addText("CHAIN PERFORMANCE INDEX", { x: 0.5, y: 0.4, w: 12, fontSize: 24, bold: true, color: COLORS.darkBg });
-      let rows = [[{ text: "CHAIN", options: { fill: COLORS.darkBg, bold: true, color: COLORS.white } }, "VISITS", "SELL-OUT", "TARGET", "ACHIEV %", "TRAINED"]];
+      s4.addShape(pres.ShapeType.line, { x: 0.5, y: 0.9, w: 12.3, line: { color: COLORS.accentCyan, width: 2 } });
+      
+      let rows = [[{ text: "RETAIL CHAIN", options: { fill: COLORS.darkBg, bold: true, color: COLORS.white } }, "VISITS", "SELL-OUT", "TARGET", "ACHIEVEMENT %", "STAFF TRAINED"]];
       Object.keys(chainAggregates).forEach(k => {
         let d = chainAggregates[k];
         let ach = d.target > 0 ? ((d.sellout / d.target) * 100).toFixed(1) + '%' : '0%';
         rows.push([k, d.visits.toString(), `${d.sellout} u.`, `${d.target} u.`, ach, d.staff.toString()]);
       });
-      s4.addTable(rows, { x: 0.5, y: 1.5, w: 12.3, fontSize: 11, border: { pt: 0.5, color: COLORS.textGray }, margin: 8 });
+      s4.addTable(rows, { x: 0.5, y: 1.4, w: 12.3, fontSize: 11, color: COLORS.darkBg, border: { pt: 0.5, color: COLORS.gridBorder }, margin: 8 });
 
-      // Manual Uploads
+      // EXECUTIVE MANUAL SLIDES: DASHBOARDS
       execPowerBiImages.forEach((img, i) => {
         let b = cleanB64(img);
         if (b) {
-          let s = pres.addSlide(); s.addText(`GLOBAL DASHBOARD ${i+1}`, { x: 0.5, y: 0.3, color: COLORS.accentCyan, fontSize: 20, bold:true });
+          let s = pres.addSlide(); s.background = { color: COLORS.white };
+          s.addText(`GLOBAL DASHBOARD OVERVIEW ${i+1}`, { x: 0.5, y: 0.3, color: COLORS.accentCyan, fontSize: 20, bold:true });
+          // Sizing fix: Blocca la larghezza a 12.3"
           s.addImage({ data: "base64," + b, x: 0.5, y: 1, w: 12.3, h: 5.5, sizing: { type: 'contain', w: 12.3, h: 5.5 } });
         }
       });
 
+      // EXECUTIVE MANUAL SLIDES: HIGHLIGHTS GALLERY
       if (execHighlightsImages.length > 0) {
+        // Griglia da 6 immagini per slide (ottimizzata in pollici)
         let grid = [
-          {x:0.5,y:1.2,w:3.5,h:2.6}, {x:4.9,y:1.2,w:3.5,h:2.6}, {x:9.3,y:1.2,w:3.5,h:2.6},
-          {x:0.5,y:4.2,w:3.5,h:2.6}, {x:4.9,y:4.2,w:3.5,h:2.6}, {x:9.3,y:4.2,w:3.5,h:2.6}
+          {x:0.5, y:1.2, w:3.8, h:2.6}, {x:4.7, y:1.2, w:3.8, h:2.6}, {x:8.9, y:1.2, w:3.8, h:2.6},
+          {x:0.5, y:4.2, w:3.8, h:2.6}, {x:4.7, y:4.2, w:3.8, h:2.6}, {x:8.9, y:4.2, w:3.8, h:2.6}
         ];
         let currentS = null;
         execHighlightsImages.forEach((img, index) => {
           if (index % 6 === 0) {
-            currentS = pres.addSlide();
-            currentS.addText("IN-STORE & ONLINE EXCELLENCE VISUALS", { x: 0.5, y: 0.4, fontSize: 24, bold: true, color: COLORS.darkBg });
+            currentS = pres.addSlide(); currentS.background = { color: COLORS.darkBg };
+            currentS.addText("IN-STORE & ONLINE EXCELLENCE VISUALS", { x: 0.5, y: 0.4, fontSize: 24, bold: true, color: COLORS.accentCyan });
           }
           let b = cleanB64(img);
           if (b) {
             let pos = grid[index % 6];
+            // Fix vitale per le foto deformate
             currentS.addImage({ data: "base64," + b, x: pos.x, y: pos.y, w: pos.w, h: pos.h, sizing: { type: 'contain', w: pos.w, h: pos.h } });
           }
         });
       }
+
     } else {
-      // Weekly Details
+      
+      // WEEKLY DETAILED SLIDES
       filteredVisits.forEach(v => {
-        let s = pres.addSlide();
-        s.addText(`${(v.storeName||'').toUpperCase()} - ${(v.storeLocation||'').toUpperCase()}`, { x: 0.5, y: 0.4, fontSize: 26, bold: true, color: COLORS.darkBg });
-        let ach = v.target > 0 ? ((v.sellout / v.target) * 100).toFixed(1) + '%' : '0%';
-        s.addTable([
-          [{text: "KPI Metrics", options: {fill: COLORS.darkBg, color: COLORS.white, bold:true}}, "Value"],
-          ["Sell-out", `${v.sellout||0} units`], ["Target", `${v.target||0} units`], ["Achiev.", ach], ["Staff", (v.staffCount||0).toString()], ["Amb.", (v.ambassadorsCount||0).toString()]
-        ], { x: 0.5, y: 1.5, w: 4.5, fontSize: 11, border: { pt: 0.5, color: COLORS.textGray }, margin: 8 });
+        let s = pres.addSlide(); s.background = { color: COLORS.white };
+        s.addText(`${(v.storeName||'').toUpperCase()} - ${(v.storeLocation||'').toUpperCase()}`, { x: 0.5, y: 0.4, fontSize: 24, bold: true, color: COLORS.darkBg });
         
+        let ach = v.target > 0 ? ((v.sellout / v.target) * 100).toFixed(1) + '%' : '0%';
+        
+        // Tabella stretta (Larghezza totale 4.5, divisa in due colonne)
+        s.addTable([
+          [{text: "OPERATIONAL KPI", options: {fill: COLORS.darkBg, color: COLORS.white, bold:true}}, {text: "VALUE", options: {fill: COLORS.darkBg, color: COLORS.white, align:'center'}}],
+          ["Sell-out Volume", `${v.sellout||0} units`], 
+          ["Target Volume", `${v.target||0} units`], 
+          ["Achievement %", ach], 
+          ["Store Staff Trained", (v.staffCount||0).toString()], 
+          ["Ambassadors Trained", (v.ambassadorsCount||0).toString()]
+        ], { x: 0.5, y: 1.5, w: 4.5, colW: [3.0, 1.5], fontSize: 11, color: COLORS.darkBg, border: { pt: 0.5, color: COLORS.gridBorder }, margin: 8 });
+        
+        // Note
         if (v.notes) {
-          s.addText("Observer Notes:", { x: 0.5, y: 4.8, fontSize: 11, bold: true, color: COLORS.orange });
-          s.addText(v.notes, { x: 0.5, y: 5.1, w: 4.5, h: 1.5, fontSize: 10, fill: 'F8FAFC', margin: 8 });
+          s.addText("FIELD OBSERVER NOTES:", { x: 0.5, y: 4.8, fontSize: 10, bold: true, color: COLORS.orange });
+          s.addText(v.notes, { x: 0.5, y: 5.1, w: 4.5, h: 1.5, fontSize: 9.5, fill: 'F8FAFC', color: COLORS.textGray, margin: 8 });
         }
 
+        // Zona Immagini: A destra. O c'è il Dashboard PBI, oppure la griglia foto.
         if (v.powerBiScreenshot) {
           let b = cleanB64(v.powerBiScreenshot);
-          if (b) s.addImage({ data: "base64," + b, x: 5.5, y: 1.5, w: 7.3, h: 5.5, sizing: { type: 'contain', w: 7.3, h: 5.5 } });
+          if (b) {
+              s.addImage({ data: "base64," + b, x: 5.5, y: 1.5, w: 7.3, h: 5.1, sizing: { type: 'contain', w: 7.3, h: 5.1 } });
+          }
         } else if (v.visitPhotos && v.visitPhotos.length > 0) {
-          let pg = [{x:5.5,y:1.5,w:3.5,h:2.6},{x:9.3,y:1.5,w:3.5,h:2.6},{x:5.5,y:4.3,w:3.5,h:2.6},{x:9.3,y:4.3,w:3.5,h:2.6}];
+          // Griglia da 4 foto: 2 sopra e 2 sotto, nei 7.3 pollici rimanenti
+          let pg = [
+              {x:5.5, y:1.5, w:3.5, h:2.4}, {x:9.3, y:1.5, w:3.5, h:2.4},
+              {x:5.5, y:4.2, w:3.5, h:2.4}, {x:9.3, y:4.2, w:3.5, h:2.4}
+          ];
           v.visitPhotos.slice(0, 4).forEach((img, idx) => {
             let b = cleanB64(img);
-            if (b) s.addImage({ data: "base64," + b, x: pg[idx].x, y: pg[idx].y, w: pg[idx].w, h: pg[idx].h, sizing: { type: 'contain', w: pg[idx].w, h: pg[idx].h } });
+            if (b) {
+                s.addImage({ data: "base64," + b, x: pg[idx].x, y: pg[idx].y, w: pg[idx].w, h: pg[idx].h, sizing: { type: 'contain', w: pg[idx].w, h: pg[idx].h } });
+            }
           });
         }
       });
     }
 
-    await pres.writeFile({ fileName: `ZTE_Report_${reportType}_${reportYear}.pptx` });
-    alert(`Success! File generated.`);
+    const fileName = await pres.writeFile({ fileName: `ZTE_Reporting_Deck_${reportType}_${reportYear}.pptx` });
+    
+    // Reset manual uploads
     execPowerBiImages = []; execHighlightsImages = [];
-    document.getElementById('execPowerBiPreview').innerHTML = ''; document.getElementById('execHighlightsPreview').innerHTML = '';
+    document.getElementById('execPowerBiPreview').innerHTML = '';
+    document.getElementById('execHighlightsPreview').innerHTML = '';
+    
+    pptxBtn.innerHTML = '<i class="fa-solid fa-file-powerpoint" style="margin-right: 8px;"></i> Generate PPTX Report';
+    pptxBtn.disabled = false;
+    
   } catch (err) {
-    alert("Error: " + err.message);
-  } finally {
-    pptxBtn.textContent = "Generate PPTX Report"; pptxBtn.disabled = false;
+    console.error("Master Generation Error: ", err);
+    alert("Report Generation failed: " + err.message);
+    pptxBtn.innerHTML = '<i class="fa-solid fa-file-powerpoint" style="margin-right: 8px;"></i> Generate PPTX Report';
+    pptxBtn.disabled = false;
   }
 }
 
-function switchToSection(id) {
-  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-  const idx = { 'dashboard': 0, 'newVisit': 1, 'archive': 2, 'reports': 3 };
-  document.querySelectorAll('.nav-item')[idx[id]].classList.add('active');
-  if (id === 'archive') renderArchive();
-  if (id === 'reports') updateReportSelectors();
-}
-
-async function initApp() { await initIndexedDB(); await loadVisitsFromDB(); renderDashboard(); }
 document.getElementById('visitForm').addEventListener('submit', saveVisit);
 window.addEventListener('DOMContentLoaded', initApp);
 </script>
