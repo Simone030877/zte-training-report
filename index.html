@@ -30,7 +30,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* HEADER ISTITUZIONALE */
         .header {
             background-color: var(--primary-blue);
             color: var(--white);
@@ -44,7 +43,6 @@
         .header h1 { font-size: 1.2rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
         .brand-subtitle { font-size: 0.8rem; color: var(--accent-cyan); font-weight: 400; opacity: 0.8; }
 
-        /* NAVIGAZIONE */
         .nav-bar { background-color: var(--white); display: flex; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .nav-tab {
             flex: 1; padding: 1.2rem; text-align: center; background: none; border: none;
@@ -61,7 +59,6 @@
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* CARDS & DASHBOARD */
         .dashboard-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -81,7 +78,6 @@
         .content-card { background: var(--white); border-radius: 4px; padding: 2.5rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); margin-bottom: 2rem; }
         .content-card h2 { font-size: 1.3rem; color: var(--primary-blue); margin-bottom: 2rem; font-weight: 700; text-transform: uppercase; border-left: 4px solid var(--accent-cyan); padding-left: 15px; }
 
-        /* FORMS */
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
         .form-group { display: flex; flex-direction: column; }
         label { font-size: 0.8rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 0.6rem; text-transform: uppercase; }
@@ -98,7 +94,6 @@
         }
         .checkbox-label { display: flex; align-items: center; gap: 0.6rem; font-weight: 500; font-size: 0.8rem; cursor: pointer; }
 
-        /* UPLOAD */
         .upload-zone { border: 2px dashed var(--border); background: #fcfcfc; padding: 2.5rem; text-align: center; cursor: pointer; border-radius: 4px; transition: 0.2s; }
         .upload-zone:hover { border-color: var(--accent-cyan); background: #f0f9ff; }
         .file-hidden { display: none; }
@@ -108,7 +103,6 @@
         .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
         .gallery-item .remove-btn { position: absolute; top: 5px; right: 5px; background: var(--nubia-red); color: white; border: none; width: 22px; height: 22px; border-radius: 50%; cursor: pointer; font-size: 0.7rem; font-weight: bold; }
 
-        /* BOTTONI */
         .btn-wrapper { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; }
         .action-btn { padding: 1rem 2rem; font-size: 0.85rem; font-weight: 700; border-radius: 4px; cursor: pointer; border: none; text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
         .btn-submit { background-color: var(--primary-blue); color: white; }
@@ -118,7 +112,6 @@
         .btn-danger { background-color: #f1f5f9; color: #ef4444; }
         .btn-danger:hover { background-color: #fee2e2; }
 
-        /* TABELLE */
         .table-responsive { width: 100%; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
         th { background-color: #f8fafc; color: var(--primary-blue); padding: 1.2rem; text-align: left; border-bottom: 2px solid var(--border); font-weight: 700; text-transform: uppercase; }
@@ -133,7 +126,7 @@
     <header class="header">
         <div>
             <h1>ZTE - LFM Training on Field professional tools</h1>
-            <div class="brand-subtitle">EXECUTIVE DATA MANAGEMENT ENVIRONMENT v9.4</div>
+            <div class="brand-subtitle">EXECUTIVE DATA MANAGEMENT ENVIRONMENT v9.5</div>
         </div>
     </header>
 
@@ -426,8 +419,13 @@
 
         document.getElementById("lfmMasterForm").onsubmit = function(e) {
             e.preventDefault();
-            const getChecked = (n) => Array.from(document.querySelectorAll(`input[name="${n}"]:checked`)).map(el => el.value);
-            const currentUid = document.getElementById("editUid").value || "rec_" + Date.now();
+            
+            // Forza estrazione corretta dei checkbox
+            const checkedObjectives = Array.from(document.querySelectorAll('input[name="visitObjectives"]:checked')).map(el => el.value);
+            const checkedProducts = Array.from(document.querySelectorAll('input[name="productFocus"]:checked')).map(el => el.value);
+            
+            // Gestione Uid univoca per sovrascrittura o creazione nuova
+            const currentUid = document.getElementById("editUid").value.trim() || "rec_" + Date.now();
             
             const record = {
                 uid: currentUid,
@@ -436,8 +434,8 @@
                 visitDate: document.getElementById("visitDate").value,
                 operatingWeek: document.getElementById("calculatedWeek").value,
                 visitMode: document.getElementById("visitMode").value,
-                objectives: getChecked("visitObjectives"),
-                productFocus: getChecked("productFocus"),
+                objectives: checkedObjectives,
+                productFocus: checkedProducts,
                 promotersFormed: parseInt(document.getElementById("countPromoters").value) || 0,
                 ambassadorsEngaged: parseInt(document.getElementById("countAmbassadors").value) || 0,
                 staffTrained: parseInt(document.getElementById("countStaff").value) || 0,
@@ -450,11 +448,19 @@
             };
 
             const tx = localIndexedDB.transaction(["fieldVisits"], "readwrite");
-            tx.objectStore("fieldVisits").put(record).onsuccess = () => {
-                alert(document.getElementById("editUid").value ? "Record aggiornato!" : "Visita salvata con successo!"); 
+            const store = tx.objectStore("fieldVisits");
+            
+            store.put(record).onsuccess = () => {
+                alert(document.getElementById("editUid").value ? "Record di modifica salvato nel Database locale!" : "Nuova visita inserita correttamente!");
                 clearForm(); 
-                refreshDataEngine();
-                switchModule("archive-section");
+                
+                // Forza l'aggiornamento strutturale prima del cambio tab
+                localIndexedDB.transaction(["fieldVisits"]).objectStore("fieldVisits").getAll().onsuccess = (ev) => {
+                    const data = ev.target.result;
+                    updateKPIs(data);
+                    populateArchive(data);
+                    switchModule("archive-section");
+                };
             };
         };
 
@@ -480,18 +486,20 @@
                 document.getElementById("storeLocation").value = r.storeLocation;
                 document.getElementById("visitDate").value = r.visitDate;
                 document.getElementById("calculatedWeek").value = r.operatingWeek;
-                
-                // Forza la lettura dinamica o assegna stringa vuota se mancava prima
                 document.getElementById("visitMode").value = r.visitMode || "";
                 
-                document.querySelectorAll('input[name="visitObjectives"]').forEach(cb => cb.checked = r.objectives.includes(cb.value));
-                document.querySelectorAll('input[name="productFocus"]').forEach(cb => cb.checked = r.productFocus.includes(cb.value));
+                document.querySelectorAll('input[name="visitObjectives"]').forEach(cb => {
+                    cb.checked = r.objectives ? r.objectives.includes(cb.value) : false;
+                });
+                document.querySelectorAll('input[name="productFocus"]').forEach(cb => {
+                    cb.checked = r.productFocus ? r.productFocus.includes(cb.value) : false;
+                });
                 
-                document.getElementById("countPromoters").value = r.promotersFormed;
-                document.getElementById("countAmbassadors").value = r.ambassadorsEngaged;
-                document.getElementById("countStaff").value = r.staffTrained;
-                document.getElementById("metricSellout").value = r.selloutUnits;
-                document.getElementById("metricTarget").value = r.targetUnits;
+                document.getElementById("countPromoters").value = r.promotersFormed || 0;
+                document.getElementById("countAmbassadors").value = r.ambassadorsEngaged || 0;
+                document.getElementById("countStaff").value = r.staffTrained || 0;
+                document.getElementById("metricSellout").value = r.selloutUnits || 0;
+                document.getElementById("metricTarget").value = r.targetUnits || 0;
                 document.getElementById("visitNotes").value = r.notes || "";
 
                 activeVisitPhotos = r.photos || [];
@@ -504,7 +512,6 @@
                 document.getElementById("btnSubmitForm").innerText = "Update Visit";
                 document.getElementById('tab-new-visit').innerText = "EDIT VISIT";
                 
-                // Sposta l'utente sul form attivando la tab corretta visualmente
                 document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
                 document.getElementById('tab-new-visit').classList.add('active');
                 document.querySelectorAll(".app-section").forEach(s => s.classList.remove("active"));
@@ -524,7 +531,13 @@
         function updateKPIs(recs) {
             document.getElementById("kpi-total-visits").innerText = recs.length;
             let p=0, a=0, s=0, so=0, t=0;
-            recs.forEach(r => { p+=r.promotersFormed; a+=r.ambassadorsEngaged; s+=r.staffTrained; so+=r.selloutUnits; t+=r.targetUnits; });
+            recs.forEach(r => { 
+                p += (r.promotersFormed || 0); 
+                a += (r.ambassadorsEngaged || 0); 
+                s += (r.staffTrained || 0); 
+                so += (r.selloutUnits || 0); 
+                t += (r.targetUnits || 0); 
+            });
             document.getElementById("kpi-total-staff").innerText = p+a+s;
             document.getElementById("kpi-total-sellout").innerText = so;
             document.getElementById("kpi-target-progress").innerText = t > 0 ? Math.round((so/t)*100)+"%" : "0%";
@@ -606,10 +619,10 @@
             let chainStats = {};
 
             filtered.forEach(r => {
-                totSO += r.selloutUnits; totT += r.targetUnits;
-                p += r.promotersFormed; a += r.ambassadorsEngaged; s += r.staffTrained;
+                totSO += (r.selloutUnits || 0); totT += (r.targetUnits || 0);
+                p += (r.promotersFormed || 0); a += (r.ambassadorsEngaged || 0); s += (r.staffTrained || 0);
                 if(r.productFocus) r.productFocus.forEach(pf => productStats[pf] = (productStats[pf]||0) + 1);
-                chainStats[r.storeChain] = (chainStats[r.storeChain]||0) + r.selloutUnits;
+                chainStats[r.storeChain] = (chainStats[r.storeChain]||0) + (r.selloutUnits || 0);
             });
 
             const kpiSlide = pptx.addSlide({ masterName: "ZTE_MASTER" });
@@ -652,7 +665,7 @@
                 s.addText(`Date: ${r.visitDate} | Week: ${r.operatingWeek} | Mode: ${r.visitMode || 'N/A'}`, { x: 0.5, y: 1.1, fontSize: 12, color: "00a0d2", fontFace: "Montserrat", bold: true });
                 
                 s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.6, w: 4.5, h: 1.2, fill: { color: "f8fafc" }, line: { color: "e2e8f0", width: 1 } });
-                s.addText(`KPIs: SO ${r.selloutUnits} | TGT ${r.targetUnits} | Staff ${r.promotersFormed+r.ambassadorsEngaged+r.staffTrained}`, { x: 0.7, y: 1.8, fontSize: 11, bold: true, fontFace: "Montserrat" });
+                s.addText(`KPIs: SO ${r.selloutUnits || 0} | TGT ${r.targetUnits || 0} | Staff ${(r.promotersFormed||0)+(r.ambassadorsEngaged||0)+(r.staffTrained||0)}`, { x: 0.7, y: 1.8, fontSize: 11, bold: true, fontFace: "Montserrat" });
                 
                 if(r.productFocus) s.addText(`STRATEGY FOCUS:\n- ${r.productFocus.join("\n- ")}`, { x: 0.5, y: 3.0, w: 4.5, fontSize: 10, fontFace: "Montserrat" });
                 
