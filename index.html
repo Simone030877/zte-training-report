@@ -78,7 +78,7 @@
         .content-card { background: var(--white); border-radius: 8px; padding: 2rem; box-shadow: 0 10px 30px rgba(0,0,0,0.04); margin-bottom: 2rem; }
         .content-card h2 { font-size: 1.2rem; color: var(--primary-blue); margin-bottom: 1.8rem; font-weight: 700; text-transform: uppercase; border-left: 5px solid var(--accent-cyan); padding-left: 15px; }
 
-        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
+        .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; margin-bottom: 1.5rem; }
         .form-group { display: flex; flex-direction: column; }
         label { font-size: 0.75rem; font-weight: 700; color: var(--primary-blue); margin-bottom: 0.5rem; text-transform: uppercase; }
 
@@ -120,7 +120,7 @@
     <header class="header">
         <div>
             <h1>ZTE - LFM Field Training professional suite</h1>
-            <div class="brand-subtitle">EXECUTIVE DATA MANAGEMENT ENVIRONMENT v9.7</div>
+            <div class="brand-subtitle">EXECUTIVE DATA MANAGEMENT ENVIRONMENT v9.8</div>
         </div>
     </header>
 
@@ -211,6 +211,7 @@
                         <div class="form-group"><label>Promoters Trained</label><input type="number" id="countPromoters" value="0"></div>
                         <div class="form-group"><label>Ambassadors Coached</label><input type="number" id="countAmbassadors" value="0"></div>
                         <div class="form-group"><label>Store Staff Trained</label><input type="number" id="countStaff" value="0"></div>
+                        <div class="form-group"><label>Current Store Stock</label><input type="number" id="metricStock" value="0"></div>
                         <div class="form-group"><label>Sell-Out Units</label><input type="number" id="metricSellout" value="0"></div>
                         <div class="form-group"><label>Target Units</label><input type="number" id="metricTarget" value="0"></div>
                     </div>
@@ -258,8 +259,7 @@
                                 <th>Location</th>
                                 <th>Date</th>
                                 <th>Mode</th>
-                                <th>SO</th>
-                                <th>TGT</th>
+                                <th>SO / TGT (STK)</th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -401,6 +401,7 @@
                 promotersFormed: parseInt(document.getElementById("countPromoters").value) || 0,
                 ambassadorsEngaged: parseInt(document.getElementById("countAmbassadors").value) || 0,
                 staffTrained: parseInt(document.getElementById("countStaff").value) || 0,
+                storeStock: parseInt(document.getElementById("metricStock").value) || 0,
                 selloutUnits: parseInt(document.getElementById("metricSellout").value) || 0,
                 targetUnits: parseInt(document.getElementById("metricTarget").value) || 0,
                 photos: activeVisitPhotos,
@@ -438,6 +439,7 @@
                 document.getElementById("countPromoters").value = r.promotersFormed;
                 document.getElementById("countAmbassadors").value = r.ambassadorsEngaged;
                 document.getElementById("countStaff").value = r.staffTrained;
+                document.getElementById("metricStock").value = r.storeStock || 0;
                 document.getElementById("metricSellout").value = r.selloutUnits;
                 document.getElementById("metricTarget").value = r.targetUnits;
                 document.getElementById("visitNotes").value = r.notes || "";
@@ -453,8 +455,7 @@
             if (!localIndexedDB) return;
             localIndexedDB.transaction(["fieldVisits"]).objectStore("fieldVisits").getAll().onsuccess = (e) => {
                 const recs = e.target.result;
-                updateKPIs(recs);
-                populateArchive(recs);
+                updateKPIs(recs); populateArchive(recs);
             };
         }
 
@@ -477,8 +478,8 @@
             });
             let currentWeek = null;
             recs.forEach(r => {
-                if(r.operatingWeek !== currentWeek) { currentWeek = r.operatingWeek; body.innerHTML += `<tr><td colspan="7" class="week-header">WEEK: ${currentWeek}</td></tr>`; }
-                body.innerHTML += `<tr><td><strong>${r.storeChain}</strong></td><td>${r.storeLocation}</td><td>${r.visitDate}</td><td><span style="font-size:0.65rem; background:#eee; padding:2px 5px;">${r.visitMode || 'N/A'}</span></td><td>${r.selloutUnits}</td><td>${r.targetUnits}</td><td style="display:flex; gap:5px;"><button type="button" class="action-btn btn-edit" style="padding:0.3rem 0.6rem;" onclick="editRec('${r.uid}')">Edit</button><button type="button" class="action-btn btn-danger" style="padding:0.3rem 0.6rem;" onclick="deleteRec('${r.uid}')">Del</button></td></tr>`;
+                if(r.operatingWeek !== currentWeek) { currentWeek = r.operatingWeek; body.innerHTML += `<tr><td colspan="6" class="week-header">WEEK: ${currentWeek}</td></tr>`; }
+                body.innerHTML += `<tr><td><strong>${r.storeChain}</strong></td><td>${r.storeLocation}</td><td>${r.visitDate}</td><td><span style="font-size:0.65rem; background:#eee; padding:2px 5px;">${r.visitMode || 'N/A'}</span></td><td>${r.selloutUnits} / ${r.targetUnits} (${r.storeStock||0})</td><td style="display:flex; gap:5px;"><button type="button" class="action-btn btn-edit" style="padding:0.3rem 0.6rem;" onclick="editRec('${r.uid}')">Edit</button><button type="button" class="action-btn btn-danger" style="padding:0.3rem 0.6rem;" onclick="deleteRec('${r.uid}')">Del</button></td></tr>`;
             });
         }
 
@@ -522,13 +523,16 @@
             cover.addText(`${scope.toUpperCase()} | ${period} - 2026`, { x: 0.5, y: 3.8, fontSize: 18, color: "00a0d2", fontFace: "Montserrat", bold: true });
 
             // AGGREGATION
-            let totSO=0, totT=0, pT=0, aT=0, sT=0;
+            let totSO=0, totT=0, totStock=0;
+            let pT=0, aT=0, sT=0; 
             let chainStats = {}, modeStats = {}, productReach = {};
             const categories = ["nubia AIR Series", "nubia NEO Series", "Blade V80/V70 Series", "Blade V36/V55 Series"];
             categories.forEach(c => productReach[c] = {p:0, a:0, s:0});
 
             filtered.forEach(r => {
-                totSO += (r.selloutUnits || 0); totT += (r.targetUnits || 0);
+                totSO += (r.selloutUnits || 0); 
+                totT += (r.targetUnits || 0);
+                totStock += (r.storeStock || 0);
                 const p = (r.promotersFormed||0), a = (r.ambassadorsEngaged||0), s = (r.staffTrained||0);
                 pT += p; aT += a; sT += s;
                 modeStats[r.visitMode || "N/A"] = (modeStats[r.visitMode || "N/A"]||0) + 1;
@@ -536,51 +540,89 @@
                 if(r.productFocus) r.productFocus.forEach(pf => { if(productReach[pf]) { productReach[pf].p += p; productReach[pf].a += a; productReach[pf].s += s; } });
             });
 
-            // 2. EXECUTIVE DASHBOARD
+            // 2. EXECUTIVE DASHBOARD WITH WEEKLY HC CATEGORIES
             const dash = pptx.addSlide({ masterName: "ZTE_MASTER" });
-            dash.addText("EXECUTIVE OVERVIEW", { x: 0.5, y: 0.8, fontSize: 24, bold: true, color: "0d1628", fontFace: "Montserrat" });
-            const kpiItems = [{ l: "SESSIONS", v: filtered.length, x: 0.5 }, { l: "PEOPLE REACHED", v: pT+aT+sT, x: 3.0 }, { l: "SELL-OUT UNITS", v: totSO, x: 5.5 }, { l: "ACHIEVEMENT", v: totT>0?Math.round((totSO/totT)*100)+"%":"0%", x: 8.0 }];
+            dash.addText("EXECUTIVE OVERVIEW", { x: 0.5, y: 0.7, fontSize: 24, bold: true, color: "0d1628", fontFace: "Montserrat" });
+            
+            const kpiItems = [
+                { l: "SESSIONS", v: filtered.length, x: 0.5 }, 
+                { l: "TOTAL HEADCOUNT", v: pT+aT+sT, x: 3.0 }, 
+                { l: "TOTAL SELL-OUT", v: totSO, x: 5.5 }, 
+                { l: "TARGET PROGRESS", v: totT>0?Math.round((totSO/totT)*100)+"%":"0%", x: 8.0 }
+            ];
             kpiItems.forEach(k => {
-                dash.addShape(pptx.ShapeType.rect, { x: k.x, y: 1.5, w: 2.2, h: 1.5, fill: { color: "f8fafc" }, line: { color: "00a0d2", width: 1 } });
-                dash.addText(k.v.toString(), { x: k.x, y: 1.8, w: 2.2, fontSize: 36, bold: true, color: "0d1628", align: "center", fontFace: "Montserrat" });
-                dash.addText(k.l, { x: k.x, y: 2.6, w: 2.2, fontSize: 10, bold: true, color: "64748b", align: "center", fontFace: "Montserrat" });
+                dash.addShape(pptx.ShapeType.rect, { x: k.x, y: 1.3, w: 2.2, h: 1.2, fill: { color: "f8fafc" }, line: { color: "00a0d2", width: 1 } });
+                dash.addText(k.v.toString(), { x: k.x, y: 1.5, w: 2.2, fontSize: 28, bold: true, color: "0d1628", align: "center", fontFace: "Montserrat" });
+                dash.addText(k.l, { x: k.x, y: 2.1, w: 2.2, fontSize: 9, bold: true, color: "64748b", align: "center", fontFace: "Montserrat" });
             });
+
+            // Headcount macro summary for the week/period
+            dash.addShape(pptx.ShapeType.rect, { x: 0.5, y: 2.8, w: 9.7, h: 1.1, fill: { color: "0d1628" } });
+            dash.addText(`PERIOD TOTAL PEOPLE TRAINED BY ROLE (${period}):`, { x: 0.8, y: 2.9, w: 9.0, fontSize: 11, bold: true, color: "00a0d2", fontFace: "Montserrat" });
+            dash.addText(`• Promoters: ${pT} Formed      • Ambassadors: ${aT} Coached      • Store Staff (Addetti Vendita): ${sT} Trained`, { x: 0.8, y: 3.4, w: 9.0, fontSize: 13, bold: true, color: "ffffff", fontFace: "Montserrat" });
+
+            // Stock context summary banner
+            dash.addShape(pptx.ShapeType.rect, { x: 0.5, y: 4.1, w: 9.7, h: 0.8, fill: { color: "f1f5f9" } });
+            dash.addText(`STOCK RELIABILITY INDEX: Total Assigned Target: ${totT} Units | Accumulated Sell-Out: ${totSO} Units | Total Active Stock Checked: ${totStock} Units`, { x: 0.8, y: 4.3, w: 9.0, fontSize: 10, bold: true, color: "64748b", fontFace: "Montserrat" });
+
 
             // 3. MIX & MODES
             const mix = pptx.addSlide({ masterName: "ZTE_MASTER" });
-            mix.addText("VISIT MODES & CHANNEL PERFORMANCE", { x: 0.5, y: 0.8, fontSize: 22, bold: true, color: "0d1628", fontFace: "Montserrat" });
-            mix.addChart(pptx.ChartType.pie, [{ name: "Modes", labels: Object.keys(modeStats), values: Object.values(modeStats) }], { x: 0.5, y: 1.5, w: 4.0, h: 4.0, showLegend: true, legendPos: "b", chartColors: ZTE_PALETTE });
-            mix.addChart(pptx.ChartType.bar, [{ name: "SO", labels: Object.keys(chainStats), values: Object.values(chainStats) }], { x: 5.0, y: 1.5, w: 4.5, h: 4.0, barDir: "bar", chartColors: ["00a0d2"], showValue: true });
+            mix.addText("VISIT MODES (SESSIONS) & CHANNEL PERFORMANCE", { x: 0.5, y: 0.8, fontSize: 22, bold: true, color: "0d1628", fontFace: "Montserrat" });
+            
+            // Donut chart instead of full pie
+            mix.addChart(pptx.ChartType.doughnut, [{ name: "Sessions", labels: Object.keys(modeStats), values: Object.values(modeStats) }], { 
+                x: 0.5, y: 1.5, w: 4.0, h: 4.0, showLegend: true, legendPos: "b", chartColors: ZTE_PALETTE, showValue: true, fontFace: "Montserrat" 
+            });
+            
+            // Channel Performance Chart with explicit Axis title scale definition
+            mix.addChart(pptx.ChartType.bar, [{ name: "Accumulated Sell-Out", labels: Object.keys(chainStats), values: Object.values(chainStats) }], { 
+                x: 5.0, y: 1.5, w: 5.2, h: 4.0, barDir: "col", chartColors: ["0d1628"], showValue: true, valAxisTitle: "Units Sold (Sell-Out Accumulation)", fontFace: "Montserrat", valAxisTitleFontSize: 9 
+            });
+
 
             // 4. TRAINING MATRIX (REACH PER PRODUCT)
             const matrix = pptx.addSlide({ masterName: "ZTE_MASTER" });
-            matrix.addText("TRAINING REACH MATRIX | PEOPLE BY CATEGORY", { x: 0.5, y: 0.8, fontSize: 22, bold: true, color: "0d1628", fontFace: "Montserrat" });
+            matrix.addText("TRAINING REACH MATRIX | STAFF TOTALS BY PRODUCT CATEGORY", { x: 0.5, y: 0.8, fontSize: 22, bold: true, color: "0d1628", fontFace: "Montserrat" });
             let tableData = [
-                [{text:"PRODUCT CATEGORY", options:{bold:true, fill:"0d1628", color:"ffffff"}}, {text:"PROMOTERS", options:{bold:true, fill:"0d1628", color:"ffffff"}}, {text:"AMBASSADORS", options:{bold:true, fill:"0d1628", color:"ffffff"}}, {text:"STORE STAFF", options:{bold:true, fill:"0d1628", color:"ffffff"}}, {text:"TOTAL", options:{bold:true, fill:"0d1628", color:"ffffff"}}]
+                [{text:"PRODUCT CATEGORY", options:{bold:true, fill:"0d1628", color:"ffffff"}}, {text:"PROMOTERS", options:{bold:true, fill:"0d1628", color:"ffffff"}}, {text:"AMBASSADORS", options:{bold:true, fill:"0d1628", color:"ffffff"}}, {text:"STORE STAFF (ADDETTI)", options:{bold:true, fill:"0d1628", color:"ffffff"}}, {text:"COMBINED TOTAL", options:{bold:true, fill:"0d1628", color:"ffffff"}}]
             ];
             categories.forEach(c => {
                 const d = productReach[c];
                 tableData.push([c, d.p.toString(), d.a.toString(), d.s.toString(), (d.p+d.a+d.s).toString()]);
             });
-            matrix.addTable(tableData, { x:0.5, y:1.5, w:9.0, border:{pt:1, color:"e2e8f0"}, fontFace:"Montserrat", fontSize:11, align:"center", rowH:0.6 });
+            matrix.addTable(tableData, { x:0.5, y:1.5, w:9.7, border:{pt:1, color:"e2e8f0"}, fontFace:"Montserrat", fontSize:10, align:"center", rowH:0.5 });
+
 
             // 5. DETAIL SLIDES
             filtered.forEach(r => {
                 const s = pptx.addSlide({ masterName: "ZTE_MASTER" });
                 s.addText(`${r.storeChain} | ${r.storeLocation}`, { x: 0.5, y: 0.8, fontSize: 20, bold: true, color: "0d1628", fontFace: "Montserrat" });
                 s.addText(`${r.visitDate} • Mode: ${r.visitMode} • ${r.operatingWeek}`, { x: 0.5, y: 1.1, fontSize: 12, color: "00a0d2", fontFace: "Montserrat", bold: true });
-                s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.6, w: 4.5, h: 1.4, fill: { color: "f8fafc" } });
+                
+                // Detailed data card (No abbreviations)
+                s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.6, w: 4.5, h: 1.8, fill: { color: "f8fafc" }, line: {color: "e2e8f0", width: 1} });
+                
                 const p = (r.promotersFormed||0), a = (r.ambassadorsEngaged||0), st = (r.staffTrained||0);
-                s.addText(`SO: ${r.selloutUnits} / TGT: ${r.targetUnits}\nStaff Reached: ${p+a+st}\nBreakdown: ${p}P, ${a}A, ${st}S`, { x: 0.7, y: 1.7, fontSize: 10, bold: true, fontFace: "Inter" });
-                s.addText(`FOCUS: ${r.productFocus ? r.productFocus.join(", ") : 'N/A'}`, { x: 0.5, y: 3.3, w: 4.5, fontSize: 9, fontFace: "Montserrat" });
-                if(r.notes) s.addText(`INSIGHTS: ${r.notes}`, { x: 0.5, y: 4.5, w: 4.5, fontSize: 9, italic: true, color: "64748b" });
+                const achievedPct = r.targetUnits > 0 ? Math.round((r.selloutUnits / r.targetUnits)*100)+"%" : "0%";
+                
+                s.addText(`MARKETPLACE SNAPSHOT:\n• Target Assigned: ${r.targetUnits} U\n• Sell-Out Generated: ${r.selloutUnits} U\n• Achievement Rate: ${achievedPct}\n• Active Store Stock: ${r.storeStock || 0} Units`, { x: 0.7, y: 1.7, w: 4.1, fontSize: 9, bold: true, fontFace: "Montserrat", color: "0d1628" });
+                
+                // Clear Explicit Staff Count Box
+                s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 3.6, w: 4.5, h: 1.2, fill: { color: "f0f9ff" } });
+                s.addText(`STAFF ENGAGED DETAILED HEADCOUNT:\n- Promoters Trained: ${p}\n- Field Ambassadors Coached: ${a}\n- Addetti Vendita (Store Staff): ${st}`, { x: 0.7, y: 3.7, w: 4.1, fontSize: 9, bold: true, fontFace: "Montserrat", color: "00a0d2" });
+                
+                s.addText(`PRODUCT FOCUS AREAS: ${r.productFocus ? r.productFocus.join(", ") : 'N/A'}`, { x: 0.5, y: 5.0, w: 4.5, fontSize: 9, fontFace: "Montserrat", bold: true });
+                if(r.notes) s.addText(`QUALITATIVE INSIGHTS: ${r.notes}`, { x: 0.5, y: 5.4, w: 4.5, fontSize: 8.5, italic: true, color: "64748b", fontFace: "Montserrat" });
+                
                 const grid = [{x:5.4, y:1.5}, {x:7.8, y:1.5}, {x:5.4, y:3.3}, {x:7.8, y:3.3}];
                 if (r.photos) r.photos.slice(0, 4).forEach((img, idx) => s.addImage({ data: img, x: grid[idx].x, y: grid[idx].y, w: 2.3, h: 1.7 }));
 
+                // Power BI slide matches the exact specific store location name
                 if (r.powerBiScreen) {
                     const bi = pptx.addSlide({ masterName: "ZTE_MASTER" });
-                    bi.addText(`DATA INTELLIGENCE | ${r.storeChain} ${r.storeLocation}`, { x: 0.5, y: 0.8, fontSize: 18, bold: true, color: "0d1628", fontFace: "Montserrat" });
-                    bi.addImage({ data: r.powerBiScreen, x: 0.5, y: 1.4, w: 9.0, h: 4.2 });
+                    bi.addText(`DATA INTELLIGENCE | ${r.storeChain.toUpperCase()} ${r.storeLocation.toUpperCase()}`, { x: 0.5, y: 0.8, fontSize: 18, bold: true, color: "0d1628", fontFace: "Montserrat" });
+                    bi.addImage({ data: r.powerBiScreen, x: 0.5, y: 1.4, w: 9.7, h: 4.2 });
                 }
             });
             pptx.writeFile({ fileName: `ZTE_LFM_ExecutiveReport_${period}.pptx` });
