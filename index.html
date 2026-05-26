@@ -106,7 +106,6 @@
         .btn-wrapper { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 2rem; }
         .action-btn { padding: 0.9rem 1.8rem; font-size: 0.75rem; font-weight: 700; border-radius: 4px; cursor: pointer; border: none; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; }
         .btn-submit { background-color: var(--primary-blue); color: white; }
-        .btn-submit:hover { background-color: #162444; }
         .btn-edit { background-color: var(--edit-orange); color: white; }
         .btn-danger { background-color: #fef2f2; color: var(--nubia-red); }
 
@@ -121,7 +120,7 @@
     <header class="header">
         <div>
             <h1>ZTE - LFM Field Training professional suite</h1>
-            <div class="brand-subtitle">EXECUTIVE DATA MANAGEMENT ENVIRONMENT v9.6</div>
+            <div class="brand-subtitle">EXECUTIVE DATA MANAGEMENT ENVIRONMENT v9.7</div>
         </div>
     </header>
 
@@ -170,7 +169,7 @@
                         </div>
                         <div class="form-group">
                             <label>Location / Store *</label>
-                            <input type="text" id="storeLocation" placeholder="e.g. Milan Arese" required>
+                            <input type="text" id="storeLocation" placeholder="e.g. Milano Arese" required>
                         </div>
                         <div class="form-group">
                             <label>Date *</label>
@@ -300,7 +299,6 @@
         const databaseConfig = { name: "ZTE_LFM_FieldManagement_DB", version: 1 };
         let activeVisitPhotos = [];
         let activePowerBiPhoto = null;
-
         const ZTE_PALETTE = ["0d1628", "00a0d2", "e61e28", "64748b", "f59e0b", "10b981"];
 
         document.addEventListener("DOMContentLoaded", () => {
@@ -312,14 +310,9 @@
             const request = indexedDB.open(databaseConfig.name, databaseConfig.version);
             request.onupgradeneeded = (e) => {
                 let db = e.target.result;
-                if (!db.objectStoreNames.contains("fieldVisits")) {
-                    db.createObjectStore("fieldVisits", { keyPath: "uid" });
-                }
+                if (!db.objectStoreNames.contains("fieldVisits")) db.createObjectStore("fieldVisits", { keyPath: "uid" });
             };
-            request.onsuccess = (e) => {
-                localIndexedDB = e.target.result;
-                refreshDataEngine();
-            };
+            request.onsuccess = (e) => { localIndexedDB = e.target.result; refreshDataEngine(); };
         }
 
         function switchModule(targetId) {
@@ -348,8 +341,7 @@
                         const canvas = document.createElement("canvas");
                         let w = img.width, h = img.height;
                         if (w > maxDimen || h > maxDimen) {
-                            if (w > h) { h = (h * maxDimen) / w; w = maxDimen; }
-                            else { w = (w * maxDimen) / h; h = maxDimen; }
+                            if (w > h) { h = (h * maxDimen) / w; w = maxDimen; } else { w = (w * maxDimen) / h; h = maxDimen; }
                         }
                         canvas.width = w; canvas.height = h;
                         canvas.getContext("2d").drawImage(img, 0, 0, w, h);
@@ -380,9 +372,7 @@
         function rebuildPreview() {
             const gallery = document.getElementById("visitPhotosPreviewGallery");
             gallery.innerHTML = "";
-            activeVisitPhotos.forEach((b, i) => {
-                gallery.innerHTML += `<div class="gallery-item"><img src="${b}"><button type="button" class="remove-btn" onclick="removePhoto(${i})">X</button></div>`;
-            });
+            activeVisitPhotos.forEach((b, i) => { gallery.innerHTML += `<div class="gallery-item"><img src="${b}"><button type="button" class="remove-btn" onclick="removePhoto(${i})">X</button></div>`; });
         }
 
         function renderPowerBiPreview() {
@@ -420,9 +410,7 @@
             };
 
             localIndexedDB.transaction(["fieldVisits"], "readwrite").objectStore("fieldVisits").put(record).onsuccess = () => {
-                alert("Dati sincronizzati correttamente.");
-                clearForm(); 
-                switchModule("archive-section");
+                alert("Dati sincronizzati."); clearForm(); switchModule("archive-section");
             };
         };
 
@@ -489,22 +477,8 @@
             });
             let currentWeek = null;
             recs.forEach(r => {
-                if(r.operatingWeek !== currentWeek) {
-                    currentWeek = r.operatingWeek;
-                    body.innerHTML += `<tr><td colspan="7" class="week-header">OPERATING WEEK: ${currentWeek}</td></tr>`;
-                }
-                body.innerHTML += `<tr>
-                    <td><strong>${r.storeChain}</strong></td>
-                    <td>${r.storeLocation}</td>
-                    <td>${r.visitDate}</td>
-                    <td><span style="font-size:0.65rem; background:#eee; padding:2px 5px; border-radius:3px;">${r.visitMode || 'N/A'}</span></td>
-                    <td>${r.selloutUnits}</td>
-                    <td>${r.targetUnits}</td>
-                    <td style="display:flex; gap:5px;">
-                        <button type="button" class="action-btn btn-edit" style="padding:0.3rem 0.6rem;" onclick="editRec('${r.uid}')">Edit</button>
-                        <button type="button" class="action-btn btn-danger" style="padding:0.3rem 0.6rem;" onclick="deleteRec('${r.uid}')">Del</button>
-                    </td>
-                </tr>`;
+                if(r.operatingWeek !== currentWeek) { currentWeek = r.operatingWeek; body.innerHTML += `<tr><td colspan="7" class="week-header">WEEK: ${currentWeek}</td></tr>`; }
+                body.innerHTML += `<tr><td><strong>${r.storeChain}</strong></td><td>${r.storeLocation}</td><td>${r.visitDate}</td><td><span style="font-size:0.65rem; background:#eee; padding:2px 5px;">${r.visitMode || 'N/A'}</span></td><td>${r.selloutUnits}</td><td>${r.targetUnits}</td><td style="display:flex; gap:5px;"><button type="button" class="action-btn btn-edit" style="padding:0.3rem 0.6rem;" onclick="editRec('${r.uid}')">Edit</button><button type="button" class="action-btn btn-danger" style="padding:0.3rem 0.6rem;" onclick="deleteRec('${r.uid}')">Del</button></td></tr>`;
             });
         }
 
@@ -532,14 +506,12 @@
 
             const pptx = new PptxGenJS();
             pptx.layout = "LAYOUT_16x9";
-            
-            // MASTER SLIDE DEFINITION
             pptx.defineSlideMaster({
                 title: "ZTE_MASTER",
                 background: { color: "ffffff" },
                 objects: [
                     { rect: { x: 0, y: 0, w: "100%", h: 0.5, fill: { color: "0d1628" } } },
-                    { text: { text: "ZTE - LFM Field Training Activity Report", options: { x: 0.4, y: 0.1, fontSize: 11, color: "ffffff", bold: true, fontFace: "Montserrat" } } }
+                    { text: { text: "ZTE - LFM Field Operations Dashboard", options: { x: 0.4, y: 0.1, fontSize: 10, color: "ffffff", bold: true, fontFace: "Montserrat" } } }
                 ]
             });
 
@@ -547,102 +519,71 @@
             const cover = pptx.addSlide();
             cover.addShape(pptx.ShapeType.rect, { x: 0, y: 0, w: "100%", h: "100%", fill: { color: "0d1628" } });
             cover.addText("FIELD PERFORMANCE\nSUMMARY", { x: 0.5, y: 2.0, fontSize: 48, bold: true, color: "ffffff", fontFace: "Montserrat" });
-            cover.addText(`${scope.toUpperCase()} RECAP | ${period} - 2026`, { x: 0.5, y: 3.8, fontSize: 18, color: "00a0d2", fontFace: "Montserrat", bold: true });
+            cover.addText(`${scope.toUpperCase()} | ${period} - 2026`, { x: 0.5, y: 3.8, fontSize: 18, color: "00a0d2", fontFace: "Montserrat", bold: true });
 
-            // AGGREGATION LOGIC
-            let totSO=0, totT=0, p=0, a=0, s=0;
-            let productStats = {};
-            let chainStats = {};
-            let modeStats = {};
+            // AGGREGATION
+            let totSO=0, totT=0, pT=0, aT=0, sT=0;
+            let chainStats = {}, modeStats = {}, productReach = {};
+            const categories = ["nubia AIR Series", "nubia NEO Series", "Blade V80/V70 Series", "Blade V36/V55 Series"];
+            categories.forEach(c => productReach[c] = {p:0, a:0, s:0});
 
             filtered.forEach(r => {
                 totSO += (r.selloutUnits || 0); totT += (r.targetUnits || 0);
-                p += (r.promotersFormed || 0); a += (r.ambassadorsEngaged || 0); s += (r.staffTrained || 0);
-                
-                // Mode frequency
-                const mode = r.visitMode || "N/A";
-                modeStats[mode] = (modeStats[mode]||0) + 1;
-
-                // Chain Sell-out
+                const p = (r.promotersFormed||0), a = (r.ambassadorsEngaged||0), s = (r.staffTrained||0);
+                pT += p; aT += a; sT += s;
+                modeStats[r.visitMode || "N/A"] = (modeStats[r.visitMode || "N/A"]||0) + 1;
                 chainStats[r.storeChain] = (chainStats[r.storeChain]||0) + (r.selloutUnits || 0);
-
-                // Product mentions frequency (logic: 1 visit = 1 session per product)
-                if(r.productFocus) r.productFocus.forEach(pf => productStats[pf] = (productStats[pf]||0) + 1);
+                if(r.productFocus) r.productFocus.forEach(pf => { if(productReach[pf]) { productReach[pf].p += p; productReach[pf].a += a; productReach[pf].s += s; } });
             });
 
             // 2. EXECUTIVE DASHBOARD
             const dash = pptx.addSlide({ masterName: "ZTE_MASTER" });
             dash.addText("EXECUTIVE OVERVIEW", { x: 0.5, y: 0.8, fontSize: 24, bold: true, color: "0d1628", fontFace: "Montserrat" });
-            const kpiItems = [
-                { l: "TOTAL VISITS", v: filtered.length, x: 0.5 },
-                { l: "STAFF TRAINED", v: p+a+s, x: 3.0 },
-                { l: "SELL-OUT UNITS", v: totSO, x: 5.5 },
-                { l: "TARGET ACH.", v: totT>0 ? Math.round((totSO/totT)*100)+"%" : "0%", x: 8.0 }
-            ];
+            const kpiItems = [{ l: "SESSIONS", v: filtered.length, x: 0.5 }, { l: "PEOPLE REACHED", v: pT+aT+sT, x: 3.0 }, { l: "SELL-OUT UNITS", v: totSO, x: 5.5 }, { l: "ACHIEVEMENT", v: totT>0?Math.round((totSO/totT)*100)+"%":"0%", x: 8.0 }];
             kpiItems.forEach(k => {
                 dash.addShape(pptx.ShapeType.rect, { x: k.x, y: 1.5, w: 2.2, h: 1.5, fill: { color: "f8fafc" }, line: { color: "00a0d2", width: 1 } });
                 dash.addText(k.v.toString(), { x: k.x, y: 1.8, w: 2.2, fontSize: 36, bold: true, color: "0d1628", align: "center", fontFace: "Montserrat" });
                 dash.addText(k.l, { x: k.x, y: 2.6, w: 2.2, fontSize: 10, bold: true, color: "64748b", align: "center", fontFace: "Montserrat" });
             });
 
-            // 3. ANALYTICS: MODES & PRODUCTS
-            const analytics = pptx.addSlide({ masterName: "ZTE_MASTER" });
-            analytics.addText("STRATEGIC MIX", { x: 0.5, y: 0.8, fontSize: 24, bold: true, color: "0d1628", fontFace: "Montserrat" });
-            
-            // Mode Pie
-            let mLabels = Object.keys(modeStats);
-            let mVals = Object.values(modeStats);
-            if(mLabels.length > 0) {
-                analytics.addText("VISIT MODES DISTRIBUTION", { x: 0.5, y: 1.4, fontSize: 12, bold: true, color: "64748b", fontFace: "Montserrat" });
-                analytics.addChart(pptx.ChartType.pie, [{ name: "Modes", labels: mLabels, values: mVals }], {
-                    x: 0.5, y: 1.8, w: 4.5, h: 3.0, showLegend: true, legendPos: "b", chartColors: ZTE_PALETTE, fontFace: "Montserrat"
-                });
-            }
+            // 3. MIX & MODES
+            const mix = pptx.addSlide({ masterName: "ZTE_MASTER" });
+            mix.addText("VISIT MODES & CHANNEL PERFORMANCE", { x: 0.5, y: 0.8, fontSize: 22, bold: true, color: "0d1628", fontFace: "Montserrat" });
+            mix.addChart(pptx.ChartType.pie, [{ name: "Modes", labels: Object.keys(modeStats), values: Object.values(modeStats) }], { x: 0.5, y: 1.5, w: 4.0, h: 4.0, showLegend: true, legendPos: "b", chartColors: ZTE_PALETTE });
+            mix.addChart(pptx.ChartType.bar, [{ name: "SO", labels: Object.keys(chainStats), values: Object.values(chainStats) }], { x: 5.0, y: 1.5, w: 4.5, h: 4.0, barDir: "bar", chartColors: ["00a0d2"], showValue: true });
 
-            // Product Mix Bar
-            let pLabels = Object.keys(productStats);
-            let pVals = Object.values(productStats);
-            if(pLabels.length > 0) {
-                analytics.addText("PRODUCT CATEGORY FOCUS (SESSIONS)", { x: 5.5, y: 1.4, fontSize: 12, bold: true, color: "64748b", fontFace: "Montserrat" });
-                analytics.addChart(pptx.ChartType.bar, [{ name: "Sessions", labels: pLabels, values: pVals }], {
-                    x: 5.3, y: 1.8, w: 4.5, h: 3.0, barDir: "bar", chartColors: ["00a0d2"], showValue: true, fontFace: "Montserrat"
-                });
-            }
-
-            // 4. CHANNEL MIX
-            const channels = pptx.addSlide({ masterName: "ZTE_MASTER" });
-            channels.addText("CHANNEL PERFORMANCE", { x: 0.5, y: 0.8, fontSize: 24, bold: true, color: "0d1628", fontFace: "Montserrat" });
-            let cLabels = Object.keys(chainStats);
-            let cVals = Object.values(chainStats);
-            if(cLabels.length > 0) {
-                channels.addChart(pptx.ChartType.bar, [{ name: "Sell-Out", labels: cLabels, values: cVals }], {
-                    x: 1.0, y: 1.5, w: 8.0, h: 4.0, barDir: "col", chartColors: ["0d1628"], showValue: true, fontFace: "Montserrat"
-                });
-            }
+            // 4. TRAINING MATRIX (REACH PER PRODUCT)
+            const matrix = pptx.addSlide({ masterName: "ZTE_MASTER" });
+            matrix.addText("TRAINING REACH MATRIX | PEOPLE BY CATEGORY", { x: 0.5, y: 0.8, fontSize: 22, bold: true, color: "0d1628", fontFace: "Montserrat" });
+            let tableData = [
+                [{text:"PRODUCT CATEGORY", options:{bold:true, fill:"0d1628", color:"ffffff"}}, {text:"PROMOTERS", options:{bold:true, fill:"0d1628", color:"ffffff"}}, {text:"AMBASSADORS", options:{bold:true, fill:"0d1628", color:"ffffff"}}, {text:"STORE STAFF", options:{bold:true, fill:"0d1628", color:"ffffff"}}, {text:"TOTAL", options:{bold:true, fill:"0d1628", color:"ffffff"}}]
+            ];
+            categories.forEach(c => {
+                const d = productReach[c];
+                tableData.push([c, d.p.toString(), d.a.toString(), d.s.toString(), (d.p+d.a+d.s).toString()]);
+            });
+            matrix.addTable(tableData, { x:0.5, y:1.5, w:9.0, border:{pt:1, color:"e2e8f0"}, fontFace:"Montserrat", fontSize:11, align:"center", rowH:0.6 });
 
             // 5. DETAIL SLIDES
             filtered.forEach(r => {
                 const s = pptx.addSlide({ masterName: "ZTE_MASTER" });
                 s.addText(`${r.storeChain} | ${r.storeLocation}`, { x: 0.5, y: 0.8, fontSize: 20, bold: true, color: "0d1628", fontFace: "Montserrat" });
-                s.addText(`${r.visitDate} • Mode: ${r.visitMode || 'N/A'} • ${r.operatingWeek}`, { x: 0.5, y: 1.1, fontSize: 12, color: "00a0d2", fontFace: "Montserrat", bold: true });
-                
-                s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.6, w: 4.5, h: 1.2, fill: { color: "f8fafc" } });
-                s.addText(`SO: ${r.selloutUnits} / TGT: ${r.targetUnits}\nStaff Reached: ${(r.promotersFormed||0)+(r.ambassadorsEngaged||0)+(r.staffTrained||0)}`, { x: 0.7, y: 1.8, fontSize: 11, bold: true, fontFace: "Montserrat" });
-                
-                s.addText(`FOCUS: ${r.productFocus ? r.productFocus.join(", ") : 'N/A'}`, { x: 0.5, y: 3.2, w: 4.5, fontSize: 10, bold: true, fontFace: "Montserrat" });
-                if(r.notes) s.addText(`INSIGHTS: ${r.notes}`, { x: 0.5, y: 4.5, w: 4.5, fontSize: 9, italic: true, color: "64748b", fontFace: "Montserrat" });
-
+                s.addText(`${r.visitDate} • Mode: ${r.visitMode} • ${r.operatingWeek}`, { x: 0.5, y: 1.1, fontSize: 12, color: "00a0d2", fontFace: "Montserrat", bold: true });
+                s.addShape(pptx.ShapeType.rect, { x: 0.5, y: 1.6, w: 4.5, h: 1.4, fill: { color: "f8fafc" } });
+                const p = (r.promotersFormed||0), a = (r.ambassadorsEngaged||0), st = (r.staffTrained||0);
+                s.addText(`SO: ${r.selloutUnits} / TGT: ${r.targetUnits}\nStaff Reached: ${p+a+st}\nBreakdown: ${p}P, ${a}A, ${st}S`, { x: 0.7, y: 1.7, fontSize: 10, bold: true, fontFace: "Inter" });
+                s.addText(`FOCUS: ${r.productFocus ? r.productFocus.join(", ") : 'N/A'}`, { x: 0.5, y: 3.3, w: 4.5, fontSize: 9, fontFace: "Montserrat" });
+                if(r.notes) s.addText(`INSIGHTS: ${r.notes}`, { x: 0.5, y: 4.5, w: 4.5, fontSize: 9, italic: true, color: "64748b" });
                 const grid = [{x:5.4, y:1.5}, {x:7.8, y:1.5}, {x:5.4, y:3.3}, {x:7.8, y:3.3}];
                 if (r.photos) r.photos.slice(0, 4).forEach((img, idx) => s.addImage({ data: img, x: grid[idx].x, y: grid[idx].y, w: 2.3, h: 1.7 }));
 
                 if (r.powerBiScreen) {
                     const bi = pptx.addSlide({ masterName: "ZTE_MASTER" });
-                    bi.addText(`DATA INTELLIGENCE | ${r.storeChain}`, { x: 0.5, y: 0.8, fontSize: 18, bold: true, color: "0d1628", fontFace: "Montserrat" });
+                    bi.addText(`DATA INTELLIGENCE | ${r.storeChain} ${r.storeLocation}`, { x: 0.5, y: 0.8, fontSize: 18, bold: true, color: "0d1628", fontFace: "Montserrat" });
                     bi.addImage({ data: r.powerBiScreen, x: 0.5, y: 1.4, w: 9.0, h: 4.2 });
                 }
             });
-
-            pptx.writeFile({ fileName: `ZTE_ExecutiveReport_${period}.pptx` });
+            pptx.writeFile({ fileName: `ZTE_LFM_ExecutiveReport_${period}.pptx` });
         }
     </script>
 </body>
